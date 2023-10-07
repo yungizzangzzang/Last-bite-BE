@@ -1,9 +1,6 @@
-
-
-Src/users/dto/create-user.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import {
-    IsBoolean,
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsString,

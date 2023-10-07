@@ -5,7 +5,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 
-export const jwtSecret = 'fejfoiewjfoiefwiofjw'
+export const jwtSecret = 'fejfoiewjfoiefwiofjw';
 
 @Module({
   imports: [
@@ -13,10 +13,10 @@ export const jwtSecret = 'fejfoiewjfoiefwiofjw'
     PassportModule,
     JwtModule.register({
       secret: jwtSecret,
-      signOptions: { expiresIn: '24h'}
+      signOptions: { expiresIn: '24h' },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService]
+  providers: [AuthService],
 })
 export class AuthModule {}
