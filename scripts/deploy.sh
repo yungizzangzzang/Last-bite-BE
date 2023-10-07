@@ -1,5 +1,5 @@
 REPOSITORY=/home/ubuntu/yungizzang
-NODE_APP_DIR=$REPOSITORY/yungizzangzzang-BE
+NODE_APP_DIR=$REPOSITORY
 BACKEND_ENV_PATH=$NODE_APP_DIR/.env.production
 
 export NVM_DIR="$HOME/.nvm"
@@ -13,7 +13,7 @@ pm2 delete 'NestJS App'
 if [ -f $BACKEND_ENV_PATH ]; then
     source $BACKEND_ENV_PATH
 else
-    echo "> backend/.env.production 파일이 존재하지 않습니다."
+    echo "> .env.production 파일이 존재하지 않습니다."
 fi
 
 echo "> Installing backend dependencies"
