@@ -54,15 +54,19 @@ export class AuthService {
       const user = this.prisma.users.create({
         data: { email, password: hashedPassword, name, isClient, nickname },
       });
+      
+      console.log(user);
+      
       await user; // await 을 붙이지 않을 경우 save가 안되어도 return 메시지를 반환할 수 있는 문제 발생 예상.
       return { message: '회원가입 성공' };
+      
     } catch (err) {
       throw new InternalServerErrorException({
         errorMessage: '회원가입에 실패하였습니다',
       });
     }
   }
-
+  
   async login(body: LoginDto) {
     // body.email, body.password 만 체크하면 될 거 같음.
     if (!body.email || !body.password) {
