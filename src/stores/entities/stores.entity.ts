@@ -3,50 +3,50 @@ import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class StoreEntity {
   @IsNumber()
   @IsNotEmpty()
-  id: number | undefined;
+  id!: number;
 
   @IsNumber()
-  OwnerId: number | undefined;
+  OwnerId!: number | null;
 
   @IsString()
   @IsNotEmpty()
-  name: string | undefined;
-
-  @IsNumber()
-  @IsNotEmpty()
-  longitude: number | undefined;
+  name!: string;
 
   @IsNumber()
   @IsNotEmpty()
-  latitude: number | undefined;
+  longitude!: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  latitude!: number;
 
   @IsString()
   @IsNotEmpty()
-  address: string | undefined;
+  address!: string;
 
   @IsString()
-  storePhoneNumber: string | undefined;
-
-  @IsString()
-  @IsNotEmpty()
-  category: string | undefined;
+  storePhoneNumber!: string | null;
 
   @IsString()
   @IsNotEmpty()
-  managementNumber: string | undefined;
+  category!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  managementNumber!: string;
 
   @IsDate()
   @IsNotEmpty()
-  createdAt: string | undefined;
+  createdAt!: string;
 
   @IsDate()
   @IsNotEmpty()
-  updatedAt: string | undefined;
+  updatedAt!: string;
 
   @IsDate()
-  deletedAt: string | undefined;
+  deletedAt!: string | null;
 
   @IsString()
   @IsNotEmpty()
-  closeTime: string | undefined;
+  closeTime!: string;
 }
