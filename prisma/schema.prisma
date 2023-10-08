@@ -1,35 +1,100 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url   = env("DATABASE_URL")
 }
 
 model Users {
-  id Int @id @default(autoincrement())
+  userId    Int       @id @default(autoincrement()) @map("id")
+  isClient  Boolean
+  email     String    @unique
+  password  String
+  name      String
+  point     Int       @default(0)
+  nickname  String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? 
 
-  Store Stores?
+  Likes     Likes[]   @relation("LikesToUser")
+  Histories Histories[] @relation("HistoriesToUser")
+  Reviews   Reviews[] @relation("ReviewsToUser")
+  Store     Stores?   @relation("UserToStore")
 }
 
 model Stores {
-  id Int @id @default(autoincrement())
-  OwnerId Int? @unique
-  name String
-  longitude Float
-  latitude Float
-  address String
-  storePhoneNumber String?
-  category String
-  managementNumber String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  deletedAt DateTime?
-  closeTime String
+  storeId           Int       @id @default(autoincrement()) @map("id")
+  name              String
+  longitude         Int
+  latitude          Int
+  address           String
+  storePhoneNumber  String
+  category          String
+  managementNumber  String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime? 
+  ownerId           Int?      @unique
 
-  Owner Users? @relation(fields: [OwnerId], references: [id], onUpdate: Cascade)
+  Owner             Users?    @relation("UserToStore", fields: [ownerId], references: [userId])
+  Likes             Likes[]   @relation("LikesToStore")
+  Items             Items[]   @relation("ItemsToStore")
+  Reviews           Reviews[] @relation("ReviewsToStore")
+}
+
+model Likes {
+  likeId    Int       @id @default(autoincrement()) @map("id")
+  createdAt DateTime
+
+  User      Users     @relation("LikesToUser", fields: [userId], references: [userId], onDelete: Cascade)
+  Store     Stores    @relation("LikesToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
+
+  userId    Int
+  storeId   Int
+}
+
+model Reviews {
+  reviewId  Int       @id @default(autoincrement()) @map("id")
+  content   String
+  star      Int
+  createdAt DateTime
+  deletedAt DateTime?
+
+  Store     Stores     @relation("ReviewsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
+  User      Users      @relation("ReviewsToUser", fields: [userId], references: [userId], onDelete: Cascade)
+
+  storeId   Int
+  userId    Int
+}
+
+model Histories{
+  historyId Int       @id @default(autoincrement()) @map("id")
+  count     Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? 
+
+  Item      Items      @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
+  User      Users      @relation("HistoriesToUser", fields: [userId], references: [userId], onDelete: Cascade)
+
+  itemId    Int
+  userId    Int
+}
+
+model Items {
+  itemId    Int       @id @default(autoincrement()) @map("id")
+  name      String
+  price     Int
+  count     Int
+  startTime String
+  endTime   String
+  imgUrl    String
+
+  Histories Histories[]
+  Store     Stores     @relation("ItemsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
+
+  storeId   Int
 }
