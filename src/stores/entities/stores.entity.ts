@@ -6,7 +6,7 @@ export class StoreEntity {
   id!: number;
 
   @IsNumber()
-  OwnerId!: number | null;
+  ownerId!: number | null;
 
   @IsString()
   @IsNotEmpty()
@@ -41,12 +41,8 @@ export class StoreEntity {
 
   @IsDate()
   @IsNotEmpty()
-  updatedAt!: string;
+  updatedAt!: string | null;
 
   @IsDate()
   deletedAt!: string | null;
-
-  @IsString()
-  @IsNotEmpty()
-  closeTime!: string;
 }

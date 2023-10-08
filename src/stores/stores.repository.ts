@@ -9,7 +9,7 @@ export class StoresRepository {
   async selectAllStores(): Promise<GetStoreDto[]> {
     const stores: GetStoreDto[] = await this.prisma.stores.findMany({
       select: {
-        OwnerId: true,
+        ownerId: true,
         name: true,
         longitude: true,
         latitude: true,

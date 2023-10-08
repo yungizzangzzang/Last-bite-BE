@@ -2,7 +2,7 @@ import { PickType } from '@nestjs/mapped-types';
 import { StoreEntity } from '../entities/stores.entity';
 
 export class GetStoreDto extends PickType(StoreEntity, [
-  'OwnerId',
+  'ownerId',
   'name',
   'longitude',
   'latitude',
