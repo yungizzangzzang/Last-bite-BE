@@ -4,6 +4,8 @@ import { UndefinedToNullInterceptor } from './common/interceptors/undefinedToNul
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import * as cookieParser from 'cookie-parser';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,13 +18,28 @@ async function bootstrap() {
     .addTag('Yungizzang')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('doc', app, document);
+  SwaggerModule.setup('api', app, document);
 
   app.useGlobalInterceptors(
     new UndefinedToNullInterceptor(),
     new SuccessInterceptor(),
   );
   app.useGlobalFilters(new HttpExceptionFilter());
+
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  app.use(cookieParser());
 
   await app.listen(PORT);
 }
