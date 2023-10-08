@@ -3,7 +3,7 @@ import { AppService } from './app.service';
 import { AuthGuard } from './users/guards/auth.guard';
 
 @UseGuards(AuthGuard)
-@Controller()
+@Controller('main')
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
