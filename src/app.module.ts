@@ -4,21 +4,24 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
+import { PrismaService } from './prisma/prisma.service';
+import { UsersService } from './users/users.service';
 import { UsersModule } from './users/users.module';
+// import { AuthService } from './users/auth.service';
+import { CreateUserDto } from './users/dto/create-user.dto';
+import { AuthService } from './users/auth.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.develpoment' }),
     PrismaModule,
-    AuthModule,
     UsersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PrismaService, UsersService, CreateUserDto, AuthService],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
-  }
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer.apply(LoggerMiddleware).forRoutes('*');
+  // }
 }

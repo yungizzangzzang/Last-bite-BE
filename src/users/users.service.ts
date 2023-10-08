@@ -1,43 +1,38 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import * as bcypt from 'bcrypt';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private createUserDto: CreateUserDto,
+  ) {}
 
-  async createUser(createUserDto: CreateUserDto) {
-    const existedUser = await this.prisma.users.findUnique({
-      where: { email: createUserDto.email },
-    });
-
-    if (existedUser) {
-      throw new BadRequestException('Email already in use');
-    }
-
-    const hashedPassword = await bcypt.hash(createUserDto.password, 10);
-    createUserDto.password = hashedPassword;
-
-    return await this.prisma.users.create({ data: createUserDto });
+  createUser(createUserDto: CreateUserDto) {
+    const user = this.prisma.users.create({  data: createUserDto });
+    return user;
   }
 
   findAllUsers() {
     return this.prisma.users.findMany();
   }
 
-  async findOne(id: number) {
-    const user = await this.prisma.users.findUnique({ where: { userId: id } });
+  async findOneUser(email: string) {
+    const user = await this.prisma.users.findUnique({
+      where: { email: email },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.prisma.users.findUnique({ where: { email: email } });
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto) {
+  async updateUser(id: number, updateUserDto: UpdateUserDto) {
     if (updateUserDto.password) {
-      updateUserDto.password = await bcypt.hash(updateUserDto.password, 10);
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
     const user = await this.prisma.users.findUnique({ where: { userId: id } });
@@ -47,14 +42,15 @@ export class UsersService {
     return this.prisma.users.update({
       where: { userId: id },
       data: {
-        name: updateUserDto.name,
-        password: updateUserDto.password,
         email: updateUserDto.email,
+        password: updateUserDto.password,
+        name: updateUserDto.name,
+        isClient: updateUserDto.isClient,
+        nickname: updateUserDto.nickname,
       },
     });
   }
-
-  async remove(id: number) {
+  async removeUser(id: number) {
     const user = await this.prisma.users.findUnique({ where: { userId: id } });
     if (!user) {
       throw new NotFoundException('User not found');
