@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Users } from '@prisma/client';
+import { UserEntity } from './user.entity';
 
-export class UserEntity implements Users {
-  constructor(partial: Partial<UserEntity>) {
+export class AuthEntity implements UserEntity {
+  constructor(partial: Partial<AuthEntity>) {
     Object.assign(this, partial);
   }
   @ApiProperty()
@@ -34,4 +35,7 @@ export class UserEntity implements Users {
 
   @ApiProperty()
   deletedAt: Date | null;
+
+  @ApiProperty()
+  accessToken: string;
 }

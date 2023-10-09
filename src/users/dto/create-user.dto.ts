@@ -12,12 +12,13 @@ export class CreateUserDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsEmail()
-  readonly email: string;
+  email: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
   @MinLength(4)
+  @MaxLength(8)
   password: string;
 
   @ApiProperty()
@@ -25,8 +26,15 @@ export class CreateUserDto {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
-  readonly name: string;
+  name: string;
 
   @IsBoolean()
   isClient: boolean;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(10)
+  nickname: string;
 }
