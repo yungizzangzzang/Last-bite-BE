@@ -1,6 +1,6 @@
 import { AlarmsRepository } from './alarms.repository';
 import { Logger } from '@nestjs/common';
-import { Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 // import { Prisma } from '@prisma/client';
 import {
   ConnectedSocket,
@@ -10,14 +10,25 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 
-@WebSocketGateway() // nsp is here
+@WebSocketGateway({
+  cors: {
+    origin: '*', // or "http://localhost:xxxx"
+    methods: ['GET', 'POST'],
+    allowedHeaders: '*',
+    credentials: true,
+  },
+  // nsp is here
+})
 export class AlarmsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(private readonly alarmsRepository: AlarmsRepository) {}
   private logger = new Logger('alarm');
+  @WebSocketServer() public server: Server;
+
   afterInit() {
     this.logger.log('socket Init');
   }
@@ -29,7 +40,7 @@ export class AlarmsGateway
   }
 
   /** 1. 고객 주문 */
-  @SubscribeMessage('clientOrder') // 이벤트명 - 프론트에서emit한 것을 on받는 것과 같음
+  @SubscribeMessage('clientOrder') // 이벤트명 - 프론트에서emit한 것을 on받는 것과 같음(=socket.on)
   async clientOrder(
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
@@ -37,7 +48,7 @@ export class AlarmsGateway
     //data:(Histories)itemId, UserId, count, createdAt
     console.log(data, socket.id); // 체크용
 
-    // *(0)잔금 체크 한번 더 -> 필요한가?
+    // *(0)잔금 체크 한번 더?
     const checkedPoint = await this.alarmsRepository.checkPoint(data.userId);
     // if (checkedPoint < 0) {
     //   throw new UnauthorizedException('남은 포이트가 없습니다')
@@ -50,19 +61,19 @@ export class AlarmsGateway
     const itemUpdated = await this.alarmsRepository.itemHistoryUpdate(data);
     socket.broadcast.emit(
       'itemCountDecreased',
-      '모두에게 감소된 수량 업데이트',
+      '모두에게 감소된 수량 업데이트', // 수정
     );
 
     // (2)해당 사장에게'만' 주문 알람 - a)접속중일 때, b)접속x일 때
-    const findOwnerId = await this.alarmsRepository.findOwnerId(OwnerId);
+    const findOwnerId = await this.alarmsRepository.findOwnerId(data.OwnerId);
     socket
       .to('socket.OwnerId')
-      .emit('orderAlarmToOwner', '사장에게 알림 보내기');
+      .emit('orderAlarmToOwner', '사장에게 알림 보내기'); // 수정
 
     console.log(itemHistoryUpdated, itemUpdated, findOwnerId);
   }
 
-  /** 2. 사장이 핫딜상품 등록 */
+  /** 2. 사장이 핫딜상품 등록 - whimsical보니까, 등록/알림 분리해놨네 그러면 아래 repo로직은 필요없을수도*/
   @SubscribeMessage('itemRegister')
   async itemRegister(
     @MessageBody() data: any,
@@ -74,7 +85,7 @@ export class AlarmsGateway
     // (0)추가된 핫딜 상품 리스트는 모두에게 실시간 업데이트
     socket.broadcast.emit('itemRegister', createdItem);
     // (1)해당 가게를 "단골 등록한" 사람"들"에게"만" 알람
-    socket.to('users리스트').emit('favoriteItemUpdated', '단골들에게만 알람');
+    socket.to('users리스트').emit('favoriteItemUpdated', '단골들에게만 알람'); // 수정
   }
 }
 

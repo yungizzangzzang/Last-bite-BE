@@ -1,3 +1,11 @@
+// *다른 모듈에 코드를 작성하게 된다면, imports에 alarmsModule추가(providers x)
+/* io.of(`/ws-${url}`) ===
+  this.eventsGateway.server
+      .to(`/ws-${url}-${chatWithUser.ChannelId}`)
+      .emit('message', chatWithUser);
+  }
+*/
+
 // import { xxModel } from '../xxs/xxs.model';
 // import { xxModel } from '../xxs/xxs.model';
 // import { xxDto } from '~';

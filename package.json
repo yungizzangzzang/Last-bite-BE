@@ -26,15 +26,12 @@
     "@nestjs/jwt": "^10.1.1",
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.0.0",
-<<<<<<< HEAD
     "@nestjs/swagger": "^7.1.13",
     "@prisma/client": "^5.4.1",
     "@types/bcrypt": "^5.0.0",
     "bcrypt": "^5.1.1",
-=======
     "@nestjs/platform-socket.io": "^10.2.7",
     "@nestjs/websockets": "^10.2.7",
->>>>>>> 98a8f88a8188b88e67cdfee84f9d5b85b3754201
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "reflect-metadata": "^0.1.13",
