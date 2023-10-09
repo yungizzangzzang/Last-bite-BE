@@ -8,6 +8,6 @@ export class UpdateItemDto extends PickType(ItemEntity, [
   'price',
   'count',
   'startTime',
-  'entTime',
+  'endTime',
   'imgUrl',
 ] as const) {}
