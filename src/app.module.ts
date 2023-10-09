@@ -1,3 +1,5 @@
+import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AlarmsModule } from './alarms/alarms.module';
@@ -37,7 +39,7 @@ import { UsersService } from './users/users.service';
   ],
 })
 export class AppModule {
-  // configure(consumer: MiddlewareConsumer) {
-  //   consumer.apply(LoggerMiddleware).forRoutes('*');
-  // }
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
 }
