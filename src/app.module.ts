@@ -7,7 +7,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { UsersService } from './users/users.service';
 import { UsersModule } from './users/users.module';
-// import { AuthService } from './users/auth.service';
+import { AlarmsModule } from './alarms/alarms.module';
+import { AuthService } from './users/auth.service';
 import { CreateUserDto } from './users/dto/create-user.dto';
 import { AuthService } from './users/auth.service';
 
@@ -16,6 +17,7 @@ import { AuthService } from './users/auth.service';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.develpoment' }),
     PrismaModule,
     UsersModule,
+    AlarmsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, UsersService, CreateUserDto, AuthService],
