@@ -21,4 +21,23 @@ export class StoresRepository {
 
     return stores;
   }
+
+  async selectOneStore(storeId: number): Promise<GetStoreDto | null> {
+    const store: GetStoreDto | null = await this.prisma.stores.findUnique({
+      where: {
+        storeId,
+      },
+      select: {
+        ownerId: true,
+        name: true,
+        longitude: true,
+        latitude: true,
+        address: true,
+        storePhoneNumber: true,
+        category: true,
+      },
+    });
+
+    return store;
+  }
 }

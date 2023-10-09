@@ -9,4 +9,8 @@ export class StoresService {
   async getAllStores(): Promise<GetStoreDto[]> {
     return await this.storesRepository.selectAllStores();
   }
+
+  async getOneStore(storeId: number): Promise<GetStoreDto | null> {
+    return await this.storesRepository.selectOneStore(storeId);
+  }
 }
