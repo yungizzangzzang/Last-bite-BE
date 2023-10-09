@@ -39,4 +39,15 @@ export class ItemEntity {
   @IsNumber()
   @IsNotEmpty()
   storeId!: number;
+
+  @IsDate()
+  @IsNotEmpty()
+  createdAt!: Date;
+
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt!: Date | null;
+
+  @IsDate()
+  deletedAt!: Date | null;
 }
