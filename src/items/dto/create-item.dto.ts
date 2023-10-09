@@ -12,3 +12,4 @@ export class CreateItemDto extends PickType(ItemEntity, [
   'endTime',
   'imgUrl',
 ] as const) {}
+
