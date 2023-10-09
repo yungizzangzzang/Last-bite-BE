@@ -32,14 +32,14 @@ export class ItemsController {
 
   // 핫딜 수정
   @Patch(':itemId')
-  async update(@Param('id') id: string, @Body() updateItemDto: UpdateItemDto) {
-    return this.itemsService.update(+id, updateItemDto);
+  async update(@Param('itemId') itemId: string, @Body() updateItemDto: UpdateItemDto) {
+    return this.itemsService.updateItem(+itemId, updateItemDto);
   }
 
   // 핫딜 삭제 -> deletedAt update 방식으로 진행
-  @Delete(':itemId')
-  async remove(@Param('id') id: string) {
-    return this.itemsService.remove(+id);
+  @Patch(':itemId')
+  async remove(@Param('itemId') itemId: string) {
+    return this.itemsService.remove(+itemId);
   }
 
   // // 핫딜 예약 (등록)
