@@ -7,9 +7,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { UsersService } from './users/users.service';
 import { UsersModule } from './users/users.module';
-// import { AuthService } from './users/auth.service';
-import { CreateUserDto } from './users/dto/create-user.dto';
+import { AlarmsModule } from './alarms/alarms.module';
 import { AuthService } from './users/auth.service';
+import { CreateUserDto } from './users/dto/create-user.dto';
 import { StoresModule } from './stores/stores.module';
 
 @Module({
@@ -17,6 +17,7 @@ import { StoresModule } from './stores/stores.module';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.develpoment' }),
     PrismaModule,
     UsersModule,
+    AlarmsModule,
     StoresModule,
   ],
   controllers: [AppController],
