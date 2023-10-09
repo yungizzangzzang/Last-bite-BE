@@ -14,7 +14,13 @@ import { StoresModule } from './stores/stores.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env.develpoment' }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath:
+        process.env.NODE_ENV === 'production'
+          ? '.env.production'
+          : '.env.development',
+    }),
     PrismaModule,
     UsersModule,
     AlarmsModule,
