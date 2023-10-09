@@ -20,7 +20,7 @@ model Users {
   deletedAt DateTime? 
 
   Likes     Likes[]   @relation("LikesToUser")
-  Histories Histories[] @relation("HistoriesToUser")
+  Orders    Orders[]  @relation("OrdersToUser")
   Reviews   Reviews[] @relation("ReviewsToUser")
   Store     Stores?   @relation("UserToStore")
 }
@@ -51,9 +51,9 @@ model Likes {
   createdAt DateTime
 
   User      Users     @relation("LikesToUser", fields: [userId], references: [userId], onDelete: Cascade)
-  Store     Stores    @relation("LikesToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
-
   userId    Int
+  
+  Store     Stores    @relation("LikesToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
   storeId   Int
 }
 
@@ -65,42 +65,61 @@ model Reviews {
   deletedAt DateTime?
 
   Store     Stores     @relation("ReviewsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
-  User      Users      @relation("ReviewsToUser", fields: [userId], references: [userId], onDelete: Cascade)
-
   storeId   Int
+  
+  User      Users      @relation("ReviewsToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId    Int
 }
 
-model Histories{
-  historyId Int       @id @default(autoincrement()) @map("id")
-  count     Int
-  discount  Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime? 
+model Orders {
+  orderId     Int       @id @default(autoincrement()) @map("id")
+  count       Int
+  discount    Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? 
 
-  Item      Items      @relation(fields: [itemId], references: [itemId], onDelete: Cascade)
-  User      Users      @relation("HistoriesToUser", fields: [userId], references: [userId], onDelete: Cascade)
+  User        Users      @relation("OrdersToUser", fields: [userId], references: [userId], onDelete: Cascade)
+  userId      Int
 
-  itemId    Int
-  userId    Int
+  OrdersItems OrdersItems[] 
+}
+
+model OrdersItems {
+  orderItemId Int    @id @default(autoincrement()) @map("id")
+  count       Int    
+
+  Order       Orders  @relation(fields: [orderId], references: [orderId])
+  orderId     Int
+
+  Item        Items  @relation(fields: [itemId], references: [itemId])
+  itemId      Int
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? 
 }
 
 model Items {
-  itemId    Int       @id @default(autoincrement()) @map("id")
-  name      String
-  prevPrice Int
-  price     Int
-  count     Int
-  startTime DateTime
-  endTime   DateTime
-  imgUrl    String?
-  content   String
+  itemId      Int       @id @default(autoincrement()) @map("id")
+  name        String
+  prevPrice   Int
+  price       Int
+  count       Int
+  startTime   DateTime
+  endTime     DateTime
+  imgUrl      String?
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? 
 
-  Histories Histories[]
-  Store     Stores     @relation("ItemsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
+  Store       Stores     @relation("ItemsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
+  storeId     Int
 
-  storeId   Int
+  OrdersItems OrdersItems[] 
+
+
 }
 
 model Alarms {
@@ -110,6 +129,5 @@ model Alarms {
   createdAt DateTime  @default(now())
   
   Store     Stores    @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
-  
   storeId   Int
 }
