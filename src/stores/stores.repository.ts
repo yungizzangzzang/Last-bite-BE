@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetStoreDto } from './dto/get.store.dto';
+import { UpdateStoreDto } from './dto/update.store.dto';
 
 @Injectable()
 export class StoresRepository {
@@ -39,5 +40,19 @@ export class StoresRepository {
     });
 
     return store;
+  }
+
+  async updateStore(
+    storeId: number,
+    updateStoreDto: UpdateStoreDto,
+  ): Promise<void> {
+    await this.prisma.stores.update({
+      where: {
+        storeId,
+      },
+      data: {
+        ...updateStoreDto,
+      },
+    });
   }
 }
