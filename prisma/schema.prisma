@@ -28,14 +28,14 @@ model Users {
 model Stores {
   storeId           Int       @id @default(autoincrement()) @map("id")
   name              String
-  longitude         Int
-  latitude          Int
+  longitude         Float
+  latitude          Float
   address           String
-  storePhoneNumber  String
+  storePhoneNumber  String?
   category          String
   managementNumber  String
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  updatedAt         DateTime? @updatedAt
   deletedAt         DateTime? 
   ownerId           Int?      @unique
 
@@ -43,6 +43,7 @@ model Stores {
   Likes             Likes[]   @relation("LikesToStore")
   Items             Items[]   @relation("ItemsToStore")
   Reviews           Reviews[] @relation("ReviewsToStore")
+  Alarms            Alarms[] 
 }
 
 model Likes {
@@ -73,6 +74,7 @@ model Reviews {
 model Histories{
   historyId Int       @id @default(autoincrement()) @map("id")
   count     Int
+  discount  Int
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? 
@@ -87,14 +89,27 @@ model Histories{
 model Items {
   itemId    Int       @id @default(autoincrement()) @map("id")
   name      String
+  prevPrice Int
   price     Int
   count     Int
-  startTime String
-  endTime   String
-  imgUrl    String
+  startTime DateTime
+  endTime   DateTime
+  imgUrl    String?
+  content   String
 
   Histories Histories[]
   Store     Stores     @relation("ItemsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
 
+  storeId   Int
+}
+
+model Alarms {
+  alarmId   Int       @id @default(autoincrement()) @map("id")
+  title     String
+  content   String
+  createdAt DateTime  @default(now())
+  
+  Store     Stores    @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
+  
   storeId   Int
 }
