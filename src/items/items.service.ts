@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { GetItemDto } from './dto/get-item.dto';
+import { ItemsRepository } from './items.repository';
 
 @Injectable()
 export class ItemsService {
+  constructor(private readonly itemsRepository: ItemsRepository) {}
+
   create(createItemDto: CreateItemDto) {
     return 'This action adds a new item';
   }
 
-  findAll() {
-    return `This action returns all items`;
+  async getAllitems(itemId: number): Promise<GetItemDto[]> {
+    return await this.itemsRepository.selectAllItems(itemId)
   }
 
   findOne(id: number) {
@@ -24,3 +28,4 @@ export class ItemsService {
     return `This action removes a #${id} item`;
   }
 }
+
