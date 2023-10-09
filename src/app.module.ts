@@ -10,7 +10,7 @@ import { UsersModule } from './users/users.module';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AuthService } from './users/auth.service';
 import { CreateUserDto } from './users/dto/create-user.dto';
-import { AuthService } from './users/auth.service';
+import { StoresModule } from './stores/stores.module';
 
 @Module({
   imports: [
@@ -18,9 +18,16 @@ import { AuthService } from './users/auth.service';
     PrismaModule,
     UsersModule,
     AlarmsModule,
+    StoresModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService, UsersService, CreateUserDto, AuthService],
+  providers: [
+    AppService,
+    PrismaService,
+    UsersService,
+    CreateUserDto,
+    AuthService,
+  ],
 })
 export class AppModule {
   // configure(consumer: MiddlewareConsumer) {
