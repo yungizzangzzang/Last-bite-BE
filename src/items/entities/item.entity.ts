@@ -1,45 +1,49 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class ItemEntity {
+export class StoreEntity {
+  @IsNumber()
+  @IsNotEmpty()
+  id!: number;
 
-// * createdAt, updatedAt, deletedAt 가 없어도 괜찮을까요?
+  @IsNumber()
+  ownerId!: number | null;
 
-@IsNumber()
-@IsNotEmpty()
-itemId!: number
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
 
-@IsString()
-@IsNotEmpty()
-name!: string
+  @IsNumber()
+  @IsNotEmpty()
+  longitude!: number;
 
-@IsNumber()
-@IsNotEmpty()
-prevPrice!: number
+  @IsNumber()
+  @IsNotEmpty()
+  latitude!: number;
 
-@IsNumber()
-@IsNotEmpty()
-price!: number
+  @IsString()
+  @IsNotEmpty()
+  address!: string;
 
-@IsNumber()
-@IsNotEmpty()
-count!: number
+  @IsString()
+  storePhoneNumber!: string | null;
 
-@IsDate()
-@IsNotEmpty()
-startTime!: Date
+  @IsString()
+  @IsNotEmpty()
+  category!: string;
 
-@IsDate()
-@IsNotEmpty()
-entTime!: Date
+  @IsString()
+  @IsNotEmpty()
+  managementNumber!: string;
 
-@IsString()
-imgUrl!: number | null
+  @IsDate()
+  @IsNotEmpty()
+  createdAt!: string;
 
-@IsString()
-@IsNotEmpty()
-content!: string
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt!: string | null;
 
-@IsNumber()
-@IsNotEmpty()
-storeId!: number
+  @IsDate()
+  deletedAt!: string | null;
 }
+

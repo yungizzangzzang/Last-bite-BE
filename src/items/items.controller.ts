@@ -21,8 +21,8 @@ export class ItemsController {
 
   // 핫딜 조회
   @Get(':itemId')
-  findAll() {
-    return this.itemsService.findAll();
+  async getAllItems(@Param('itemId') itemId: string) {
+    return this.itemsService.getAllitems(+itemId);
   }
 
   // 핫딜 수정
@@ -37,3 +37,4 @@ export class ItemsController {
     return this.itemsService.remove(+id);
   }
 }
+
