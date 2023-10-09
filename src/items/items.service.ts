@@ -13,8 +13,8 @@ export class ItemsService {
     return await this.itemsRepository.createItem(createItemDto);
   }
 
-  async getAllitems(itemId: number): Promise<GetItemDto[]> {
-    return await this.itemsRepository.selectAllItems(itemId);
+  async getAllitems(): Promise<GetItemDto[]> {
+    return await this.itemsRepository.selectAllItems();
   }
 
   async findOne(id: number) {

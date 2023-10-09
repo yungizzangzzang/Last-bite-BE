@@ -25,11 +25,12 @@ export class ItemsRepository {
     return { message: '핫딜 생성이 완료되었습니다.' };
   }
 
-  async selectAllItems(itemId: number): Promise<GetItemDto[]> {
+  // * where에 store request로 받아오기!! 
+  async selectAllItems(): Promise<GetItemDto[]> {
     const items: GetItemDto[] = await this.prisma.items.findMany({
-      where: {
-        itemId,
-      },
+    //   where: {
+    //     storeId,
+    //   },
       select: {
         name: true,
         content: true,
