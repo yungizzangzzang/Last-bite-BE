@@ -23,6 +23,7 @@ jobs:
           echo 'DATABASE_URL=${{ secrets.DATABASE_URL }}' >> .env.production
           echo 'ACCESS_SECRET_KEY=${{ secrets.ACCESS_SECRET_KEY }}' >> .env.production
           echo 'REFRESH_SECRET_KEY=${{ secrets.REFRESH_SECRET_KEY }}' >> .env.production
+          echo 'CLIENT_URL=${{ secrets.CLIENT_URL }}' >> .env.production
 
       - name: Make Zip File
         run: |
