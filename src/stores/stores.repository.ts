@@ -55,4 +55,12 @@ export class StoresRepository {
       },
     });
   }
+
+  async deleteStore(storeId: number): Promise<void> {
+    await this.prisma.stores.delete({
+      where: {
+        storeId,
+      },
+    });
+  }
 }

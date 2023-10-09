@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { GetStoreDto } from './dto/get.store.dto';
 import { UpdateStoreDto } from './dto/update.store.dto';
@@ -25,5 +25,10 @@ export class StoresController {
     @Body() updateStoreDto: UpdateStoreDto,
   ): Promise<void> {
     return await this.storesService.updateStore(storeId, updateStoreDto);
+  }
+
+  @Delete(':storeId')
+  async deleteStore(@Param('storeId') storeId: number): Promise<void> {
+    return await this.storesService.deleteStore(storeId);
   }
 }

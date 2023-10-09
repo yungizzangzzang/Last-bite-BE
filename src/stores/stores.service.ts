@@ -21,4 +21,8 @@ export class StoresService {
   ): Promise<void> {
     return await this.storesRepository.updateStore(storeId, updateStoreDto);
   }
+
+  async deleteStore(storeId: number): Promise<void> {
+    return await this.storesRepository.deleteStore(storeId);
+  }
 }
