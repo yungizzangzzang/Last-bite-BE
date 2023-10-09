@@ -28,14 +28,14 @@ model Users {
 model Stores {
   storeId           Int       @id @default(autoincrement()) @map("id")
   name              String
-  longitude         Float
-  latitude          Float
+  longitude         Int
+  latitude          Int
   address           String
-  storePhoneNumber  String?
+  storePhoneNumber  String
   category          String
   managementNumber  String
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime?  @updatedAt
+  updatedAt         DateTime  @updatedAt
   deletedAt         DateTime? 
   ownerId           Int?      @unique
 
