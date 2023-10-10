@@ -1,0 +1,48 @@
+name: Build and Deploy Node Express to AWS EC2
+
+on:
+  push:
+    branches: ['dev']
+
+env:
+  PROJECT_NAME: jonghun_project
+  BUCKET_NAME: jonghun-cicd-bucket
+  CODE_DEPLOY_APP_NAME: yungizzang_cicd
+  DEPLOYMENT_GROUP_NAME: yungizzang_instance
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create backend .env.production file
+        run: |
+          echo 'PORT=${{ secrets.PORT }}' > .env.production
+          echo 'COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}' >> .env.production
+          echo 'DATABASE_URL=${{ secrets.DATABASE_URL }}' >> .env.production
+          echo 'ACCESS_SECRET_KEY=${{ secrets.ACCESS_SECRET_KEY }}' >> .env.production
+          echo 'REFRESH_SECRET_KEY=${{ secrets.REFRESH_SECRET_KEY }}' >> .env.production
+          echo 'CLIENT_URL=${{ secrets.CLIENT_URL }}' >> .env.production
+
+      - name: Make Zip File
+        run: |
+          zip -qq -r ./$GITHUB_SHA.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_PRIVATE_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp ./$GITHUB_SHA.zip s3://$BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip
+
+      - name: Code Deploy To EC2 instance
+        run: aws deploy create-deployment
+          --application-name $CODE_DEPLOY_APP_NAME
+          --deployment-config-name CodeDeployDefault.AllAtOnce
+          --deployment-group-name $DEPLOYMENT_GROUP_NAME
+          --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
