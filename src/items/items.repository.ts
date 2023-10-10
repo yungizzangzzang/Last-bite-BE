@@ -8,7 +8,7 @@ import { UpdateItemDto } from './dto/update-item.dto';
 export class ItemsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-// * storeId, user 정보에서 받아올 수 있게 수정
+  // * storeId, user 정보에서 받아올 수 있게 수정
   async createItem(createItemDto: CreateItemDto): Promise<{ message: string }> {
     await this.prisma.items.create({
       data: {
@@ -20,18 +20,18 @@ export class ItemsRepository {
         startTime: createItemDto.startTime,
         endTime: createItemDto.endTime,
         imgUrl: createItemDto.imgUrl,
-        storeId: 1
+        storeId: 1,
       },
     });
     return { message: '핫딜 생성이 완료되었습니다.' };
   }
 
-  // * where에 store request로 받아오기!! 
-  async selectAllItems(): Promise<GetItemDto[]> {
+  // * where에 store request로 받아오기!!
+  async selectAllItems(storeId: number): Promise<GetItemDto[]> {
     const items: GetItemDto[] = await this.prisma.items.findMany({
-    //   where: {
-    //     storeId,
-    //   },
+      where: {
+        storeId,
+      },
       select: {
         name: true,
         content: true,
@@ -47,11 +47,14 @@ export class ItemsRepository {
     return items;
   }
 
-  async updateItem(itemId: number,updateItemDto: UpdateItemDto): Promise<{message: string}> {
+  async updateItem(
+    itemId: number,
+    updateItemDto: UpdateItemDto,
+  ): Promise<{ message: string }> {
     await this.prisma.items.update({
-        where: {itemId},
-        data: updateItemDto,
-      });
-    return { message: "핫딜 수정이 완료되었습니다." }
+      where: { itemId },
+      data: updateItemDto,
+    });
+    return { message: '핫딜 수정이 완료되었습니다.' };
   }
 }

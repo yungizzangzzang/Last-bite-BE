@@ -13,12 +13,8 @@ export class ItemsService {
     return await this.itemsRepository.createItem(createItemDto);
   }
 
-  async getAllitems(): Promise<GetItemDto[]> {
-    return await this.itemsRepository.selectAllItems();
-  }
-
   async updateItem(itemId: number, updateItemDto: UpdateItemDto) {
-    return await this.itemsRepository.updateItem(itemId,updateItemDto);
+    return await this.itemsRepository.updateItem(itemId, updateItemDto);
   }
 
   async remove(id: number) {
