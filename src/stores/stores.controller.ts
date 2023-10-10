@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { StoresService } from './stores.service';
 import { GetStoreDto } from './dto/get.store.dto';
+import { StoresService } from './stores.service';
 
 @Controller('stores')
 export class StoresController {
