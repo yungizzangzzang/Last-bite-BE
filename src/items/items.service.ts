@@ -13,10 +13,16 @@ export class ItemsService {
   async createItem(createItemDto: CreateItemDto): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
-      now.getTime() + createItemDto.startTime * 60 * 60 * 1000,
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      createItemDto.startTime,
     );
     const endTime = new Date(
-      now.getTime() + createItemDto.endTime * 60 * 60 * 1000,
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      createItemDto.endTime,
     );
     return await this.itemsRepository.createItem(
       createItemDto,
