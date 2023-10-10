@@ -56,13 +56,15 @@ export class AlarmsGateway
     // *deadlock문제도 생각해보기
     const changedItemCnt = await this.alarmsRepository.checkAndUpdate(
       data.userId,
-      data.sumPoint,
+      data.totalPrice,
       data.itemList,
     );
 
     // (1-1)Orders, OrdersItems 테이블 생성
     const createdBothOrder = await this.alarmsRepository.createdBothOrderTable(
       data.userId,
+      data.storeId,
+      data.totalPrice,
       data.discount,
       data.itemList, // {itemId:count, 1:3, 2:5, ...}
     );
