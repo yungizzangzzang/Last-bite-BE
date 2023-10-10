@@ -1,16 +1,7 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
-import { ItemsService } from './items.service';
+import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
-import { GetItemDto } from './dto/get-item.dto';
+import { ItemsService } from './items.service';
 
 // * storeId, user 정보에서 받아올 수 있게 수정
 @Controller('items')

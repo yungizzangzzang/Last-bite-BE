@@ -11,8 +11,6 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { Response } from 'express';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -21,10 +19,12 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
+import { JwtAuthGuard } from 'src/users/guards/jwt-auth.guard';
+import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { JwtAuthGuard } from 'src/users/guards/jwt-auth.guard';
 
 @ApiTags('auth')
 @Controller('auth')
