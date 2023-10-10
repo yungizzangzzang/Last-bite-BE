@@ -10,6 +10,7 @@ import {
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { GetItemDto } from './dto/get-item.dto';
 
 // * storeId, user 정보에서 받아올 수 있게 수정
 @Controller('items')
@@ -18,26 +19,27 @@ export class ItemsController {
 
   // 핫딜 등록
   @Post()
-  async createItem(@Body() createItemDto: CreateItemDto) {
+  async createItem(@Body() createItemDto: CreateItemDto): Promise<{message: string}> {
     return this.itemsService.createItem(createItemDto);
   }
 
   // 핫딜 조회
-  @Get(':itemId')
-  async getAllItems(@Param('itemId') itemId: string) {
-    return this.itemsService.getAllitems(+itemId);
+  // * user request로 받아오기 -> 조회 조건에 where로 추가
+  @Get()
+  async getAllItems(): Promise<GetItemDto[]> {
+    return this.itemsService.getAllitems();
   }
 
   // 핫딜 수정
   @Patch(':itemId')
-  async update(@Param('id') id: string, @Body() updateItemDto: UpdateItemDto) {
-    return this.itemsService.update(+id, updateItemDto);
+  async update(@Param('itemId') itemId: string, @Body() updateItemDto: UpdateItemDto) {
+    return this.itemsService.updateItem(+itemId, updateItemDto);
   }
 
   // 핫딜 삭제 -> deletedAt update 방식으로 진행
-  @Delete(':itemId')
-  async remove(@Param('id') id: string) {
-    return this.itemsService.remove(+id);
+  @Patch(':itemId')
+  async remove(@Param('itemId') itemId: string) {
+    return this.itemsService.remove(+itemId);
   }
 
   // // 핫딜 예약 (등록)

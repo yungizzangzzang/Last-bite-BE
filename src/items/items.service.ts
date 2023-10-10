@@ -13,16 +13,12 @@ export class ItemsService {
     return await this.itemsRepository.createItem(createItemDto);
   }
 
-  async getAllitems(itemId: number): Promise<GetItemDto[]> {
-    return await this.itemsRepository.selectAllItems(itemId);
+  async getAllitems(): Promise<GetItemDto[]> {
+    return await this.itemsRepository.selectAllItems();
   }
 
-  async findOne(id: number) {
-    return `This action returns a #${id} item`;
-  }
-
-  async update(id: number, updateItemDto: UpdateItemDto) {
-    return `This action updates a #${id} item`;
+  async updateItem(itemId: number, updateItemDto: UpdateItemDto) {
+    return await this.itemsRepository.updateItem(itemId,updateItemDto);
   }
 
   async remove(id: number) {

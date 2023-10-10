@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GetItemDto } from './dto/get-item.dto';
 import { CreateItemDto } from './dto/create-item.dto';
+import { UpdateItemDto } from './dto/update-item.dto';
 
 @Injectable()
 export class ItemsRepository {
@@ -25,11 +26,12 @@ export class ItemsRepository {
     return { message: '핫딜 생성이 완료되었습니다.' };
   }
 
-  async selectAllItems(itemId: number): Promise<GetItemDto[]> {
+  // * where에 store request로 받아오기!! 
+  async selectAllItems(): Promise<GetItemDto[]> {
     const items: GetItemDto[] = await this.prisma.items.findMany({
-      where: {
-        itemId,
-      },
+    //   where: {
+    //     storeId,
+    //   },
       select: {
         name: true,
         content: true,
@@ -43,5 +45,13 @@ export class ItemsRepository {
     });
 
     return items;
+  }
+
+  async updateItem(itemId: number,updateItemDto: UpdateItemDto): Promise<{message: string}> {
+    await this.prisma.items.update({
+        where: {itemId},
+        data: updateItemDto,
+      });
+    return { message: "핫딜 수정이 완료되었습니다." }
   }
 }

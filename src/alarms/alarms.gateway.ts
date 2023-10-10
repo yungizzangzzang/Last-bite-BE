@@ -1,7 +1,6 @@
 import { AlarmsRepository } from './alarms.repository';
-import { Logger } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
-// import { Prisma } from '@prisma/client';
 import {
   ConnectedSocket,
   MessageBody,
@@ -12,15 +11,16 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+// import { JwtAuthGuard } from 'src/users/guards/jwt-auth.guard';
 
+// @UseGuards(JwtAuthGuard)
 @WebSocketGateway({
   cors: {
     origin: '*', // or "http://localhost:xxxx"
     methods: ['GET', 'POST'],
     allowedHeaders: '*',
     credentials: true,
-  },
-  // nsp is here
+  }, // nsp is here
 })
 export class AlarmsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -39,59 +39,91 @@ export class AlarmsGateway
     this.logger.log(`disconnected: ${socket.id}`);
   }
 
-  /** 1. 고객 주문 */
+  // Todo: clients에 잘 담기는지, test하기 & dto
+  // clients: any = {};
+  // clients[userId] = socket.id // useGuards이용
+
+  /** 1. 고객이 주문 */
+  // @UseGuards(AuthGuard('jwt'))
   @SubscribeMessage('clientOrder') // 이벤트명 - 프론트에서emit한 것을 on받는 것과 같음(=socket.on)
   async clientOrder(
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    //data:(Histories)itemId, UserId, count, createdAt
     console.log(data, socket.id); // 체크용
 
-    // *(0)잔금 체크 한번 더?
-    const checkedPoint = await this.alarmsRepository.checkPoint(data.userId);
-    // if (checkedPoint < 0) {
-    //   throw new UnauthorizedException('남은 포이트가 없습니다')
-    // }
-
-    // (1)해당 상품 재고수 감소 및 '모두에게' 알람
-    const itemHistoryUpdated = await this.alarmsRepository.itemHistoryUpdate(
-      data,
+    // (1-0)잔금 체크 & 재고 체크 -> 업데이트 (by트랜잭션)
+    // *deadlock문제 chk
+    const changedItemCnt = await this.alarmsRepository.checkAndUpdate(
+      data.userId,
+      data.sumPoint,
+      data.itemList,
     );
-    const itemUpdated = await this.alarmsRepository.itemHistoryUpdate(data);
+
+    // (1-1)Orders, OrdersItems 테이블 생성
+    const createdBothOrder = await this.alarmsRepository.createdBothOrderTable(
+      data.userId,
+      data.discount,
+      data.itemList, // {itemId:count, 1:3, 2:5, ...}
+    );
+
+    // (2-1)바뀐 재고량 모두에게 emit
     socket.broadcast.emit(
-      'itemCountDecreased',
-      '모두에게 감소된 수량 업데이트', // 수정
+      'changedItemCnt',
+      changedItemCnt, // itemId가 key, 변화한 재고량이 value를 요소로 가진 객체
     );
-
-    // (2)해당 사장에게'만' 주문 알람 - a)접속중일 때, b)접속x일 때
-    const findOwnerId = await this.alarmsRepository.findOwnerId(data.OwnerId);
+    // (2-2)해당 사장에게'만' 주문 알람
+    const findOwnerId = await this.alarmsRepository.findOwnerId(data.storeId);
+    console.log(findOwnerId);
+    // const ownerSocketId = clients[findOwnerId];
     socket
-      .to('socket.OwnerId')
-      .emit('orderAlarmToOwner', '사장에게 알림 보내기'); // 수정
-
-    console.log(itemHistoryUpdated, itemUpdated, findOwnerId);
+      .to('Owner의 socketId') // 수정
+      .emit('orderAlarmToOwner', createdBothOrder[1]); // [1]가 OrdersItems테이블, [0]는 Orders
   }
 
-  /** 2. 사장이 핫딜상품 등록 - whimsical보니까, 등록/알림 분리해놨네 그러면 아래 repo로직은 필요없을수도*/
+  /** 2. 사장이 핫딜상품 등록 */
+  // @UseGuards(AuthGuard('jwt'))
   @SubscribeMessage('itemRegister')
   async itemRegister(
-    @MessageBody() data: any,
+    @MessageBody() item: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log(data, socket.id);
-    const createdItem = await this.alarmsRepository.createItem(data);
+    console.log(item, socket.id);
+    const createdItem = await this.alarmsRepository.createItem(
+      item.name,
+      item.storeId,
+      item.prevPrice,
+      item.price,
+      item.count,
+      item.startTime,
+      item.endTime,
+      item.conten,
+    );
 
     // (0)추가된 핫딜 상품 리스트는 모두에게 실시간 업데이트
     socket.broadcast.emit('itemRegister', createdItem);
     // (1)해당 가게를 "단골 등록한" 사람"들"에게"만" 알람
+    const favoriteUsers = await this.alarmsRepository.findFavoriteUsers(
+      item.StoreId,
+    );
+    console.log(favoriteUsers);
     socket.to('users리스트').emit('favoriteItemUpdated', '단골들에게만 알람'); // 수정
+  }
+
+  /** 3. 사장이 단골 고객에게만 보내는 알림*/
+  // @UseGuards(AuthGuard('jwt'))
+  @SubscribeMessage('AlarmToFavoriteClient')
+  async AlarmToFavoriteClient(
+    @MessageBody() data: any,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    console.log(data, socket.id);
   }
 }
 
 // return, nsp
 // 각 함수뒤에 type일단 빼놓음
-/* item, history 모듈에 아래 로직?
+/* item 모듈에 아래 로직?
 if (result) {
   const io = req.app.get('io');
   io.of('/board').emit('addColumn', result.column); // .column추가 api
