@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, HttpException, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/common/decorators/user.decorator';
 import { OneOrderDTO } from './dto/get-one-order.dto';
@@ -27,6 +27,10 @@ export class OrdersController {
   @ApiOperation({ summary: '특정 주문 조회' })
   @ApiOkResponse({ type: OneOrderDTO, description: '특정 주문의 상세 정보' })
   async getOneOrder(@Param('orderId') orderId: string) {
+    if (!Number.isInteger(orderId) || +orderId <= 0) {
+      throw new HttpException('유효하지 않은 주문 ID입니다.', 400);
+    }
+
     const result: OneOrderDTO = await this.ordersService.getOneOrder(+orderId);
 
     return result;
