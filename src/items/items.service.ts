@@ -30,11 +30,24 @@ export class ItemsService {
     );
   }
 
-  async updateItem(itemId: number, updateItemDto: UpdateItemDto) {
-    return await this.itemsRepository.updateItem(itemId, updateItemDto);
+  async updateItem(itemId: number, updateItemDto: UpdateItemDto): Promise<{message: string}>{
+    const now = new Date();
+    const startTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      updateItemDto.startTime,
+    );
+    const endTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      updateItemDto.endTime,
+    );
+    return await this.itemsRepository.updateItem(itemId, updateItemDto, startTime, endTime);
   }
 
-  async deleteItem(itemId: number) {
+  async deleteItem(itemId: number): Promise<{message: string}> {
     return await this.itemsRepository.deleteItem(itemId);
   }
 }

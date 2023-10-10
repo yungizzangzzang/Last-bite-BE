@@ -36,7 +36,7 @@ export class ItemsRepository {
     const items: GetItemDto[] = await this.prisma.items.findMany({
       where: {
         storeId,
-        deletedAt: null
+        deletedAt: null,
       },
       select: {
         name: true,
@@ -56,10 +56,21 @@ export class ItemsRepository {
   async updateItem(
     itemId: number,
     updateItemDto: UpdateItemDto,
+    startTime: Date,
+    endTime: Date,
   ): Promise<{ message: string }> {
     await this.prisma.items.update({
       where: { itemId },
-      data: updateItemDto,
+      data: {
+        name: updateItemDto.name,
+        content: updateItemDto.content,
+        prevPrice: updateItemDto.prevPrice,
+        price: updateItemDto.price,
+        count: updateItemDto.count,
+        startTime,
+        endTime,
+        imgUrl: updateItemDto.imgUrl,
+      },
     });
     return { message: '핫딜 수정이 완료되었습니다.' };
   }
@@ -67,7 +78,7 @@ export class ItemsRepository {
   async deleteItem(itemId: number): Promise<{ message: string }> {
     await this.prisma.items.update({
       where: { itemId },
-      data: {deletedAt: new Date()},
+      data: { deletedAt: new Date() },
     });
     return { message: '핫딜 삭제가 완료되었습니다.' };
   }
