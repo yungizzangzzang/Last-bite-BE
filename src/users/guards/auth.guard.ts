@@ -1,10 +1,10 @@
-import { Request } from 'express';
 import {
   CanActivate,
   ExecutionContext,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { AuthService } from 'src/users/auth/auth.service';
 @Injectable()

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { GetStoreDto } from './dto/get-store.dto';
-import { StoresRepository } from './stores.repository';
-import { UpdateStoreDto } from './dto/update-store.dto';
-import { ItemsRepository } from 'src/items/items.repository';
 import { GetItemDto } from 'src/items/dto/get-item.dto';
+import { ItemsRepository } from 'src/items/items.repository';
+import { GetStoreDto } from './dto/get-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
+import { StoresRepository } from './stores.repository';
 
 @Injectable()
 export class StoresService {

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
-import { GetItemDto } from './dto/get-item.dto';
 import { ItemsRepository } from './items.repository';
 
 // * storeId, user 정보에서 받아올 수 있게 수정

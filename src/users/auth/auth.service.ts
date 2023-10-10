@@ -1,14 +1,14 @@
 import {
-  Injectable,
   BadRequestException,
-  ForbiddenException,
-  InternalServerErrorException,
   ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
 import { LoginDto } from './dtos/login.dto';

@@ -1,7 +1,6 @@
 import { PickType } from '@nestjs/mapped-types';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { ItemEntity } from '../entities/item.entity';
-import { IsInt, IsNotEmpty, IsNumber } from 'class-validator';
-
 
 export class CreateItemDto extends PickType(ItemEntity, [
   'name',
@@ -14,9 +13,8 @@ export class CreateItemDto extends PickType(ItemEntity, [
   @IsNumber()
   @IsNotEmpty()
   startTime!: number;
-  
+
   @IsNumber()
   @IsNotEmpty()
   endTime!: number;
 }
-
