@@ -1,13 +1,11 @@
-import { PickType } from '@nestjs/swagger';
-import { IsArray, IsInt, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { OrderEntity } from '../entities/order.entity';
 
 export class OrderItemForUserDTO {
-  @IsString()
+  @ApiProperty({ description: '주문한 상품 이름' })
   name: string;
 
-  @IsOptional()
-  @IsString()
+  @ApiProperty({ description: '상품 이미지 URL', required: false })
   imgUrl?: string | null;
 }
 
@@ -16,16 +14,15 @@ export class UserOrdersDTO extends PickType(OrderEntity, [
   'discount',
   'createdAt',
 ]) {
-  @IsInt()
+  @ApiProperty({ description: '가게 ID' })
   storeId: number;
 
-  @IsString()
+  @ApiProperty({ description: '가게 이름' })
   storeName: string;
 
-  @IsArray()
+  @ApiProperty({ type: [OrderItemForUserDTO], description: '주문한 항목들' })
   items: OrderItemForUserDTO[];
 
-  @IsOptional()
-  @IsInt()
+  @ApiProperty({ description: '별점', required: false })
   star?: number | null;
 }

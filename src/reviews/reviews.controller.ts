@@ -3,6 +3,7 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -44,6 +45,7 @@ export class ReviewsController {
     description: '가게 리뷰 조회',
     type: [ResponseReviewDto],
   })
+  @ApiNotFoundResponse({ description: '해당 상점이 존재하지 않습니다.' })
   async getStoreReview(@Param('storeId') storeId: string) {
     const result: ResponseReviewDto[] =
       await this.reviewsService.getStoreReview(+storeId);
