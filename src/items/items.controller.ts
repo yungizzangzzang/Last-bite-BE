@@ -27,13 +27,7 @@ export class ItemsController {
 
   // 핫딜 삭제 -> deletedAt update 방식으로 진행
   @Patch(':itemId')
-  async remove(@Param('itemId') itemId: string) {
-    return this.itemsService.remove(+itemId);
+  async deleteItem(@Param('itemId') itemId: string) {
+    return this.itemsService.deleteItem(+itemId);
   }
-
-  // // 핫딜 예약 (등록)
-  // @Post(':itemId')
-  // async  createReservation(@Body() createItemDto: CreateItemDto) {
-  //   return this.itemsService.create(createItemDto);
-  // }
 }

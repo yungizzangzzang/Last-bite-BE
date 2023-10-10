@@ -24,7 +24,7 @@ export class ItemEntity {
   @IsDate()
   @IsNotEmpty()
   startTime!: Date;
-
+  
   @IsDate()
   @IsNotEmpty()
   endTime!: Date;
