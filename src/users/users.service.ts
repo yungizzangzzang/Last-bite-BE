@@ -6,10 +6,7 @@ import { CreateUserDto } from '../auth/dtos/create-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private prisma: PrismaService,
-    private createUserDto: CreateUserDto,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   createUser(createUserDto: CreateUserDto) {
     const user = this.prisma.users.create({ data: createUserDto });

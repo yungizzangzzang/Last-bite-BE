@@ -13,7 +13,6 @@ import { CreateUserDto } from './users/dto/create-user.dto';
 import { UsersModule } from './users/users.module';
 import { UsersService } from './users/users.service';
 import { ReviewsModule } from './reviews/reviews.module';
-import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -30,7 +29,6 @@ import { OrdersModule } from './orders/orders.module';
     StoresModule,
     ItemsModule,
     ReviewsModule,
-    OrdersModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetStoreDto } from './dto/get.store.dto';
-import { UpdateStoreDto } from './dto/update.store.dto';
+import { GetStoreDto } from './dto/get-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
 
 @Injectable()
 export class StoresRepository {
@@ -56,10 +56,14 @@ export class StoresRepository {
     });
   }
 
+  // * 가게 삭제
   async deleteStore(storeId: number): Promise<void> {
-    await this.prisma.stores.delete({
+    await this.prisma.stores.update({
       where: {
         storeId,
+      },
+      data: {
+        deletedAt: new Date(),
       },
     });
   }
