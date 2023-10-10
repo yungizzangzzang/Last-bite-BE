@@ -65,37 +65,36 @@ export class AlarmsRepository {
 
   /** 2. 구매내역 생성 */
   // Orders먼저 만들고 -> OrdersItems만들기
-  async createdBothOrderTable(UserId: number, discount: number, itemList: any) {
-    return [UserId, discount, itemList]; // tmp
-    // try {
-    //   const result = await this.prisma.$transaction(async (prisma) => {
-    //     // (1)Orders
-    //     const createdOrder = await prisma.orders.create({
-    //       data: {
-    //         UserId,
-    //         discount,
-    //       },
-    //     });
-    //     const orderId = createdOrder.orderId; // 테이블 id명 orderId맞는지 체크
-    //     // (2)OrdersItems
-    //     const orderItemsList: any = [];
-    //     for (const key in itemList) {
-    //       const createdOrderItems = await prisma.ordersItems.create({
-    //         data: {
-    //           itemId: key,
-    //           count: itemList[key],
-    //           OrderId: orderId,
-    //         },
-    //       });
-    //       orderItemsList.push(createdOrderItems);
-    //     }
-    //     return [createdOrder, orderItemsList];
-    //   });
-    //   return result;
-    // } catch (err) {
-    //   console.error(err);
-    //   throw new HttpException('서버에러', 500);
-    // }
+  async createdBothOrderTable(userId: number, discount: number, itemList: any) {
+    try {
+      const result = await this.prisma.$transaction(async (prisma) => {
+        // (1)Orders
+        const createdOrder = await prisma.orders.create({
+          data: {
+            userId,
+            discount,
+          },
+        });
+        const orderId = createdOrder.orderId; // 테이블 id명 orderId맞는지 체크
+        // (2)OrdersItems
+        const orderItemsList: any = [];
+        for (const key in itemList) {
+          const createdOrderItems = await prisma.ordersItems.create({
+            data: {
+              itemId: Number(key),
+              count: itemList[key],
+              orderId,
+            },
+          });
+          orderItemsList.push(createdOrderItems);
+        }
+        return [createdOrder, orderItemsList];
+      });
+      return result;
+    } catch (err) {
+      console.error(err);
+      throw new HttpException('서버에러', 500);
+    }
   }
 
   // 3. 사장id 찾기 - for socket.to(ownerId).emit
@@ -162,13 +161,13 @@ export class AlarmsRepository {
   }
 
   // 6. 사장님의 수동 알람1 - 알람 생성
-  async createAlarm(title: string, content: string, StoreId: number) {
+  async createAlarm(title: string, content: string, storeId: number) {
     try {
       const createdAlarm = this.prisma.alarms.create({
         data: {
           title,
           content,
-          storeId: StoreId, // 대소문자
+          storeId,
         },
       });
       return createdAlarm;

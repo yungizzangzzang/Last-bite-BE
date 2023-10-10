@@ -73,7 +73,6 @@ model Reviews {
 
 model Orders {
   orderId     Int       @id @default(autoincrement()) @map("id")
-  count       Int
   discount    Int
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
