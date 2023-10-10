@@ -100,10 +100,16 @@ export class AlarmsRepository {
 
   // 3. 사장id 찾기 - for socket.to(ownerId).emit
   async findOwnerId(StoreId: number) {
-    const store = await this.prisma.stores.findUnique({
-      where: { storeId: StoreId },
-    });
-    return store?.ownerId; // *스키마 바뀌면 OwnerId로(대문자)
+    try {
+      const store = await this.prisma.stores.findUnique({
+        where: { storeId: StoreId },
+      });
+
+      return store?.ownerId; // *스키마 바뀌면 OwnerId로(대문자)
+    } catch (err) {
+      console.error(err);
+      throw new HttpException('서버에러', 500);
+    }
   }
 
   // 4. 사장님의 핫딜 상품 등록
@@ -117,31 +123,60 @@ export class AlarmsRepository {
     endTime: Date,
     content: string,
   ) {
-    const createdItem = await this.prisma.items.create({
-      data: {
-        name,
-        storeId, // 대문자 - 스키마확이, StoreId: storeId..
-        prevPrice,
-        price,
-        count,
-        startTime,
-        endTime,
-        content,
-      },
-    });
-    return createdItem;
+    try {
+      const createdItem = await this.prisma.items.create({
+        data: {
+          name,
+          storeId, // 대문자 - 스키마확인, StoreId: storeId..
+          prevPrice,
+          price,
+          count,
+          startTime,
+          endTime,
+          content,
+        },
+      });
+
+      return createdItem;
+    } catch (err) {
+      console.error(err);
+      throw new HttpException('서버에러', 500);
+    }
   }
 
   // 5. 해당 가게를 단골등록한 유저들의 리스트 뽑기
   async findFavoriteUsers(StoreId: number) {
-    const users = await this.prisma.likes.findMany({
-      where: { storeId: StoreId },
-    });
-    console.log(users);
-    return users;
+    try {
+      const likes = await this.prisma.likes.findMany({
+        where: { storeId: StoreId },
+      });
+      // console.log(likes);
+      const users = likes.map((row) => row.userId); // 대소문자
+      console.log(users);
+
+      return users;
+    } catch (err) {
+      console.error(err);
+      throw new HttpException('서버에러', 500);
+    }
   }
 
-  // 6. 사장님의 수동 알람
+  // 6. 사장님의 수동 알람1 - 알람 생성
+  async createAlarm(title: string, content: string, StoreId: number) {
+    try {
+      const createdAlarm = this.prisma.alarms.create({
+        data: {
+          title,
+          content,
+          storeId: StoreId, // 대소문자
+        },
+      });
+      return createdAlarm;
+    } catch (err) {
+      console.error(err);
+      throw new HttpException('서버에러', 500);
+    }
+  }
 }
 
 /* 백업 코드

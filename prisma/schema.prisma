@@ -61,8 +61,8 @@ model Reviews {
   reviewId  Int       @id @default(autoincrement()) @map("id")
   content   String
   star      Int
-  createdAt DateTime
-  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  deletedAt DateTime? 
 
   Store     Stores     @relation("ReviewsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
   storeId   Int

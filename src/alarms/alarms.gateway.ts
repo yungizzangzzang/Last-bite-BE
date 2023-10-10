@@ -72,7 +72,7 @@ export class AlarmsGateway
       'changedItemCnt',
       changedItemCnt, // itemId가 key, 변화한 재고량이 value를 요소로 가진 객체
     );
-    // (2-2)해당 사장에게'만' 주문 알람
+    // (2-2)해당 사장에게'만' 주문 알람 emit
     const findOwnerId = await this.alarmsRepository.findOwnerId(data.storeId);
     console.log(findOwnerId);
     // const ownerSocketId = clients[findOwnerId];
@@ -100,11 +100,11 @@ export class AlarmsGateway
       item.conten,
     );
 
-    // (0)추가된 핫딜 상품 리스트는 모두에게 실시간 업데이트
+    // (emit1)추가된 핫딜 상품 리스트는 "모두에게" 실시간 업데이트
     socket.broadcast.emit('itemRegister', createdItem);
-    // (1)해당 가게를 "단골 등록한" 사람"들"에게"만" 알람
+    // (emit2)해당 가게를 "단골 등록한" 사람"들"에게"만" 알람 -> 이 로직이 3번째 socket함수랑 살짝 겹치는데 흠..
     const favoriteUsers = await this.alarmsRepository.findFavoriteUsers(
-      item.StoreId,
+      item.storeId,
     );
     console.log(favoriteUsers);
     socket.to('users리스트').emit('favoriteItemUpdated', '단골들에게만 알람'); // 수정
@@ -118,6 +118,22 @@ export class AlarmsGateway
     @ConnectedSocket() socket: Socket,
   ) {
     console.log(data, socket.id);
+    // (1)
+    const createdAlarm = await this.alarmsRepository.createAlarm(
+      data.title,
+      data.content,
+      data.storeId,
+    );
+    // (2)
+    const favoriteUsers = await this.alarmsRepository.findFavoriteUsers(
+      data.storeId,
+    );
+    // (3)emit
+    for (const favoriteUser of favoriteUsers) {
+      socket
+        .to('favoriteUser의 socketId') // clients객체이용해서
+        .emit('AlarmToFavoriteClient', createdAlarm);
+    }
   }
 }
 
