@@ -12,7 +12,8 @@ import { StoresModule } from './stores/stores.module';
 
 import { ReviewsModule } from './reviews/reviews.module';
 import { AuthService } from './users/auth/auth.service';
-// import { OrdersModule } from './orders/orders.module';
+import { AuthModule } from './users/auth/auth.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -24,12 +25,12 @@ import { AuthService } from './users/auth/auth.service';
           : '.env.development',
     }),
     PrismaModule,
-
     AlarmsModule,
     StoresModule,
     ItemsModule,
     ReviewsModule,
-    // OrdersModule,
+    AuthModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, AuthService],

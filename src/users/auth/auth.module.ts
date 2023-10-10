@@ -19,5 +19,6 @@ export const jwtSecret = process.env.JWT_SECRET;
   ],
   providers: [CreateUserDto, AuthService, UpdateUserDto],
   controllers: [AuthController],
+  exports: [AuthService],
 })
-export class UsersModule {}
+export class AuthModule {}
