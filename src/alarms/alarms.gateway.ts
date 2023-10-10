@@ -56,7 +56,7 @@ export class AlarmsGateway
     // *deadlock문제도 생각해보기
     const changedItemCnt = await this.alarmsRepository.checkAndUpdate(
       data.userId,
-      data.sumPoint,
+      data.totalPrice,
       data.itemList,
     );
 
