@@ -30,7 +30,10 @@ export class ItemsService {
     );
   }
 
-  async updateItem(itemId: number, updateItemDto: UpdateItemDto): Promise<{message: string}>{
+  async updateItem(
+    itemId: number,
+    updateItemDto: UpdateItemDto,
+  ): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
       now.getFullYear(),
@@ -44,10 +47,15 @@ export class ItemsService {
       now.getDate(),
       updateItemDto.endTime,
     );
-    return await this.itemsRepository.updateItem(itemId, updateItemDto, startTime, endTime);
+    return await this.itemsRepository.updateItem(
+      itemId,
+      updateItemDto,
+      startTime,
+      endTime,
+    );
   }
 
-  async deleteItem(itemId: number): Promise<{message: string}> {
+  async deleteItem(itemId: number): Promise<{ message: string }> {
     return await this.itemsRepository.deleteItem(itemId);
   }
 }
