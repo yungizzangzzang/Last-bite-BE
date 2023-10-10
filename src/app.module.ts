@@ -1,6 +1,5 @@
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-
 import { ConfigModule } from '@nestjs/config';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AppController } from './app.controller';
