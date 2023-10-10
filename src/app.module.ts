@@ -1,6 +1,5 @@
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AppController } from './app.controller';
@@ -13,6 +12,8 @@ import { AuthService } from './users/auth.service';
 import { CreateUserDto } from './users/dto/create-user.dto';
 import { UsersModule } from './users/users.module';
 import { UsersService } from './users/users.service';
+import { ReviewsModule } from './reviews/reviews.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -28,6 +29,8 @@ import { UsersService } from './users/users.service';
     AlarmsModule,
     StoresModule,
     ItemsModule,
+    ReviewsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
