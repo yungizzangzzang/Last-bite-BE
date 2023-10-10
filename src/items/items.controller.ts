@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post, Put } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { ItemsService } from './items.service';
@@ -17,23 +17,19 @@ export class ItemsController {
   }
 
   // 핫딜 수정
-  @Patch(':itemId')
+  @Put(':itemId')
   async update(
     @Param('itemId') itemId: string,
     @Body() updateItemDto: UpdateItemDto,
-  ) {
+  ): Promise<{ message: string }> {
     return this.itemsService.updateItem(+itemId, updateItemDto);
   }
 
   // 핫딜 삭제 -> deletedAt update 방식으로 진행
   @Patch(':itemId')
-  async remove(@Param('itemId') itemId: string) {
-    return this.itemsService.remove(+itemId);
+  async deleteItem(
+    @Param('itemId') itemId: string,
+  ): Promise<{ message: string }> {
+    return this.itemsService.deleteItem(+itemId);
   }
-
-  // // 핫딜 예약 (등록)
-  // @Post(':itemId')
-  // async  createReservation(@Body() createItemDto: CreateItemDto) {
-  //   return this.itemsService.create(createItemDto);
-  // }
 }
