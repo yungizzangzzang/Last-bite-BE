@@ -1,5 +1,4 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { CreateUserDto } from './create-user.dto';
 import { IsOptional, Matches, MaxLength, MinLength } from 'class-validator';
 import { UserEntity } from 'src/users/entities/user.entity';
 

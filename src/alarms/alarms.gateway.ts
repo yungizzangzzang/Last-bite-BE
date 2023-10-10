@@ -1,16 +1,16 @@
-import { AlarmsRepository } from './alarms.repository';
-import { Logger, UseGuards } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
+import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
-  OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { AlarmsRepository } from './alarms.repository';
 // import { JwtAuthGuard } from 'src/users/guards/jwt-auth.guard';
 
 // @UseGuards(JwtAuthGuard)
