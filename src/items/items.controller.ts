@@ -23,13 +23,6 @@ export class ItemsController {
     return this.itemsService.createItem(createItemDto);
   }
 
-  // 핫딜 조회
-  // * user request로 받아오기 -> 조회 조건에 where로 추가
-  @Get()
-  async getAllItems(): Promise<GetItemDto[]> {
-    return this.itemsService.getAllitems();
-  }
-
   // 핫딜 수정
   @Patch(':itemId')
   async update(@Param('itemId') itemId: string, @Body() updateItemDto: UpdateItemDto) {
