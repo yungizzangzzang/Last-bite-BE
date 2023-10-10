@@ -5,9 +5,6 @@ export class StoreEntity {
   @IsNotEmpty()
   id!: number;
 
-  @IsNumber()
-  ownerId!: number | null;
-
   @IsString()
   @IsNotEmpty()
   name!: string;
@@ -37,12 +34,14 @@ export class StoreEntity {
 
   @IsDate()
   @IsNotEmpty()
-  createdAt!: string;
+  createdAt!: Date;
 
   @IsDate()
-  @IsNotEmpty()
-  updatedAt!: string | null;
+  updatedAt!: Date | null;
 
   @IsDate()
-  deletedAt!: string | null;
+  deletedAt!: Date | null;
+
+  @IsNumber()
+  ownerId!: number | null;
 }
