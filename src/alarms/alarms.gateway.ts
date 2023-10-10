@@ -63,6 +63,8 @@ export class AlarmsGateway
     // (1-1)Orders, OrdersItems 테이블 생성
     const createdBothOrder = await this.alarmsRepository.createdBothOrderTable(
       data.userId,
+      data.storeId,
+      data.totalPrice,
       data.discount,
       data.itemList, // {itemId:count, 1:3, 2:5, ...}
     );

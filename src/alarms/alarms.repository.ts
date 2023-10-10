@@ -65,13 +65,21 @@ export class AlarmsRepository {
 
   /** 2. 구매내역 생성 */
   // Orders먼저 만들고 -> OrdersItems만들기
-  async createdBothOrderTable(userId: number, discount: number, itemList: any) {
+  async createdBothOrderTable(
+    userId: number,
+    storeId: number,
+    totalPrice: number,
+    discount: number,
+    itemList: any,
+  ) {
     try {
       const result = await this.prisma.$transaction(async (prisma) => {
         // (1)Orders
         const createdOrder = await prisma.orders.create({
           data: {
             userId,
+            storeId,
+            totalPrice,
             discount,
           },
         });
