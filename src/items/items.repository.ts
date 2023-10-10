@@ -7,9 +7,14 @@ import { UpdateItemDto } from './dto/update-item.dto';
 @Injectable()
 export class ItemsRepository {
   constructor(private readonly prisma: PrismaService) {}
-
+  
   // * storeId, user 정보에서 받아올 수 있게 수정
-  async createItem(createItemDto: CreateItemDto): Promise<{ message: string }> {
+  // ? DB에서 startTime을 빼고, 핫딜 시작 시간을 등록 시점부터 하면 어떨까요??
+  async createItem(
+    createItemDto: CreateItemDto,
+    endTime: Date,
+    startTime: Date
+  ): Promise<{ message: string }> {
     await this.prisma.items.create({
       data: {
         name: createItemDto.name,
@@ -17,8 +22,8 @@ export class ItemsRepository {
         prevPrice: createItemDto.prevPrice,
         price: createItemDto.price,
         count: createItemDto.count,
-        startTime: createItemDto.startTime,
-        endTime: createItemDto.endTime,
+        startTime,
+        endTime,
         imgUrl: createItemDto.imgUrl,
         storeId: 1,
       },

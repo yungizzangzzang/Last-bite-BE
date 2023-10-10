@@ -8,11 +8,11 @@ import { ItemsModule } from './items/items.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { StoresModule } from './stores/stores.module';
-import { AuthService } from './users/auth.service';
-import { CreateUserDto } from './users/dto/create-user.dto';
-import { UsersModule } from './users/users.module';
-import { UsersService } from './users/users.service';
+
 import { ReviewsModule } from './reviews/reviews.module';
+import { AuthService } from './users/auth/auth.service';
+import { AuthModule } from './users/auth/auth.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -24,20 +24,15 @@ import { ReviewsModule } from './reviews/reviews.module';
           : '.env.development',
     }),
     PrismaModule,
-    UsersModule,
     AlarmsModule,
     StoresModule,
     ItemsModule,
     ReviewsModule,
+    AuthModule,
+    OrdersModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    PrismaService,
-    UsersService,
-    CreateUserDto,
-    AuthService,
-  ],
+  providers: [AppService, PrismaService, AuthService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

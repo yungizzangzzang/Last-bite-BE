@@ -4,16 +4,21 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateUserDto } from 'src/auth/dtos/create-user.dto';
+import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
 import { LoginDto } from './dtos/login.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
 export class AuthService {
+  verify(jwtString: string) {
+    throw new Error('Method not implemented.');
+  }
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService, // jwt 의존성 주입
@@ -86,12 +91,13 @@ export class AuthService {
       password?: string | undefined;
       isClient: boolean;
     } | null = await this.prisma.users.findUnique({
-      where: { email: email },
+      where: { email },
       select: {
         userId: true,
         nickname: true,
         password: true,
         isClient: true,
+        name: true,
       },
     });
 
@@ -112,7 +118,7 @@ export class AuthService {
     }
     delete user.password;
     try {
-      const payload = { userId: user.userId };
+      const payload = { user };
 
       const accessToken = this.jwtService.sign(payload, {
         expiresIn: '5m',
@@ -122,9 +128,52 @@ export class AuthService {
       return { accessToken, user };
     } catch (err) {
       console.error(err);
-      // throw new InternalServerErrorException({
-      //   errorMessage: '로그인에 실패하였습니다',
-      // });
+      throw new InternalServerErrorException({
+        errorMessage: '로그인에 실패하였습니다',
+      });
     }
+  }
+
+  createUser(createUserDto: CreateUserDto) {
+    const user = this.prisma.users.create({ data: createUserDto });
+    return user;
+  }
+
+  async findOneUser(email: string) {
+    const user = await this.prisma.users.findUnique({
+      where: { email },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.prisma.users.findUnique({ where: { email: email } });
+  }
+
+  async updateUser(id: number, updateUserDto: UpdateUserDto) {
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+
+    const user = await this.prisma.users.findUnique({ where: { userId: id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.prisma.users.update({
+      where: { userId: id },
+      data: {
+        email: updateUserDto.email,
+        password: updateUserDto.password,
+        name: updateUserDto.name,
+        isClient: updateUserDto.isClient,
+        nickname: updateUserDto.nickname,
+      },
+    });
+  }
+  async removeUser(id: number) {
+    const user = await this.prisma.users.findUnique({ where: { userId: id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.prisma.users.delete({ where: { userId: id } });
   }
 }

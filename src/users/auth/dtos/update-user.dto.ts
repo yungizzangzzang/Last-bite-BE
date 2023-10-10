@@ -1,8 +1,9 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateUserDto } from './create-user.dto';
 import { IsOptional, Matches, MaxLength, MinLength } from 'class-validator';
+import { UserEntity } from 'src/users/entities/user.entity';
 
-export class UpdateUserDto extends PartialType(CreateUserDto) {
+export class UpdateUserDto extends PartialType(UserEntity) {
   @IsOptional()
   @MinLength(2, { message: '2자 이상을 입력해주세요' })
   @MaxLength(6, { message: '6자 이하를 입력해주세요' })
