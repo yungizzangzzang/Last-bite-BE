@@ -1,9 +1,9 @@
 import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class StoreEntity {
+export class ItemEntity {
   @IsNumber()
   @IsNotEmpty()
-  id!: number;
+  itemId!: number;
 
   @IsString()
   @IsNotEmpty()
@@ -11,37 +11,43 @@ export class StoreEntity {
 
   @IsNumber()
   @IsNotEmpty()
-  longitude!: number;
+  prevPrice!: number;
 
   @IsNumber()
   @IsNotEmpty()
-  latitude!: number;
+  price!: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  count!: number;
+
+  @IsDate()
+  @IsNotEmpty()
+  startTime!: Date;
+
+  @IsDate()
+  @IsNotEmpty()
+  endTime!: Date;
+
+  @IsString()
+  imgUrl!: string | null;
 
   @IsString()
   @IsNotEmpty()
-  address!: string;
+  content!: string;
 
-  @IsString()
-  storePhoneNumber!: string | null;
-
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  category!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  managementNumber!: string;
+  storeId!: number;
 
   @IsDate()
   @IsNotEmpty()
   createdAt!: Date;
 
   @IsDate()
+  @IsNotEmpty()
   updatedAt!: Date | null;
 
   @IsDate()
   deletedAt!: Date | null;
-
-  @IsNumber()
-  ownerId!: number | null;
 }

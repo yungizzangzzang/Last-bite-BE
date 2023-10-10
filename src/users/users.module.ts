@@ -1,14 +1,13 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { UsersController } from './users.controller';
+import { Module } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { UsersService } from './users.service';
-// import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { CreateUserDto } from './dto/create-user.dto';
-import { AuthService } from './auth.service';
-// import { CurrentUserMiddleware } from './middlewares/current-user.middleware';
-
+import { CreateUserDto } from '../auth/dtos/create-user.dto';
+import { UsersController } from './users.controller';
+import { UpdateUserDto } from '../auth/dtos/update-user.dto';
+import { AuthService } from 'src/auth/auth.service';
+import { AuthController } from 'src/auth/auth.controller';
 export const jwtSecret = process.env.JWT_SECRET;
 @Module({
   imports: [
@@ -20,11 +19,7 @@ export const jwtSecret = process.env.JWT_SECRET;
       signOptions: { expiresIn: '24h' },
     }),
   ],
-  providers: [UsersService, CreateUserDto, AuthService],
-  controllers: [UsersController],
+  providers: [UsersService, CreateUserDto, AuthService, UpdateUserDto],
+  controllers: [AuthController, UsersController],
 })
-export class UsersModule {
-  // configure(consuemer: MiddlewareConsumer) {
-  //   consuemer.apply(CurrentUserMiddleware).forRoutes('*');
-  // }
-}
+export class UsersModule {}
