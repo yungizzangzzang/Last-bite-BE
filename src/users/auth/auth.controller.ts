@@ -6,6 +6,7 @@ import {
   Post,
   Put,
   Req,
+  Request,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -43,7 +44,10 @@ export class AuthController {
     status: 500,
     description: '서버 에러',
   })
-  async signUp(@Res({ passthrough: true }) @Body() body: CreateUserDto) {
+  async signUp(
+    @Res({ passthrough: true }) response: Response,
+    @Body() body: CreateUserDto,
+  ) {
     return await this.authService.signUp(body);
   }
 
@@ -73,6 +77,7 @@ export class AuthController {
     description: '서버 에러',
   })
   async login(
+    @Request() req: any,
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
@@ -114,7 +119,9 @@ export class AuthController {
   })
   @UseGuards(JwtAuthGuard)
   async whoAmI(@Req() req) {
-    const currentUser = await this.authService.findOneUser(req.userId);
+    console.log(req);
+
+    const currentUser = await this.authService.findOneUser(req.user.userId);
     return currentUser;
   }
 
@@ -138,17 +145,13 @@ export class AuthController {
   @ApiBearerAuth('jwt')
   @UseGuards(JwtAuthGuard)
   async updateUserInfo(@Req() req, @Body() updateUserDto: UpdateUserDto) {
-    if (updateUserDto.nickname) {
-      await this.authService.updateUser(req.nickname, req.user.userId);
-    }
-    if (updateUserDto.password && updateUserDto.password) {
-      this.authService.updateUser(req.password, req.user.userId);
-    }
-    if (
-      !updateUserDto.nickname &&
-      !updateUserDto.password &&
-      !updateUserDto.password
-    ) {
+    if (updateUserDto.nickname || updateUserDto.password) {
+      await this.authService.updateUser(
+        req.nickname,
+        req.user.userId,
+        req.password,
+      );
+    } else {
       throw new UnauthorizedException('입력된 값이 없습니다');
     }
     return { success: true, message: '수정성공' };

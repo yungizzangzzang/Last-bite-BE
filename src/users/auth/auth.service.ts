@@ -15,12 +15,9 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService, // jwt 의존성 주입
-  ) {}
+  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
-  async signUp(body: CreateUserDto) {
+  async signUp(body: CreateUserDto): Promise<void> {
     const { email, password, name, isClient, nickname } = body;
     if (!email || !password || !name || !isClient || !nickname) {
       throw new BadRequestException({
@@ -55,7 +52,7 @@ export class AuthService {
         },
       });
 
-      return { message: '회원가입 성공' };
+      // return { message: '회원가입 성공' };
     } catch (err) {
       console.error(err);
 
@@ -125,31 +122,32 @@ export class AuthService {
   }
 
   async findOneUser(userId: number) {
+    console.log(userId);
+
     const user = await this.prisma.users.findFirst({
       where: { userId },
     });
+    console.log(user);
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return this.prisma.users.findFirst({ where: { userId } });
+    return user;
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto) {
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+  async updateUser(id: number, password: string, updateUserDto: UpdateUserDto) {
+    if (password) {
+      password = await bcrypt.hash(password, 10);
     }
 
-    const user = await this.prisma.users.findUnique({ where: { userId: id } });
+    const user = await this.prisma.users.findFirst({ where: { userId: id } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return this.prisma.users.update({
       where: { userId: id },
       data: {
-        email: updateUserDto.email,
         password: updateUserDto.password,
-        name: updateUserDto.name,
-        isClient: updateUserDto.isClient,
         nickname: updateUserDto.nickname,
       },
     });
