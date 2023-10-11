@@ -4,9 +4,6 @@ import { User } from 'src/common/decorators/user.decorator';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 import { OrdersService } from './orders.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
-import {ApiTags} from '@nestjs/swagger';
 
 @ApiTags('orders')
 @Controller('orders')

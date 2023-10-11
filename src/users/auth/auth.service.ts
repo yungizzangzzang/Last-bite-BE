@@ -6,7 +6,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -111,7 +110,6 @@ export class AuthService {
     delete user.password;
     try {
       const payload = { user };
-      // payload엔 email이 없는데 jwt strategy에서 user를 찾을때 payload에서 email로 유저를 찾으려고 해서 오류가 남.
       const accessToken = this.jwtService.sign(payload, {
         expiresIn: '5m',
         secret: process.env.ACCESS_SECRET_KEY,
