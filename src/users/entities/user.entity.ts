@@ -7,7 +7,7 @@ import {
   IsString,
   Matches,
   MaxLength,
-  MinLength
+  MinLength,
 } from 'class-validator';
 
 export class UserEntity implements Users {
