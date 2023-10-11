@@ -1,15 +1,15 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetStoreDto } from './dto/get-store.dto';
-import { UpdateStoreDto } from './dto/update-store.dto';
+import { UpdateStoreReqDto } from './dto/store.request.dto';
+import { GetStoreResData } from './dto/store.response.dto';
 
 @Injectable()
 export class StoresRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // * 가게 전체 조회
-  async selectAllStores(): Promise<GetStoreDto[]> {
-    const stores: GetStoreDto[] = await this.prisma.stores.findMany({
+  async selectAllStores(): Promise<GetStoreResData[]> {
+    const stores: GetStoreResData[] = await this.prisma.stores.findMany({
       select: {
         ownerId: true,
         name: true,
@@ -25,8 +25,8 @@ export class StoresRepository {
   }
 
   // * 가게 상세 조회
-  async selectOneStore(storeId: number): Promise<GetStoreDto> {
-    const store: GetStoreDto | null = await this.prisma.stores.findUnique({
+  async selectOneStore(storeId: number): Promise<GetStoreResData> {
+    const store: GetStoreResData | null = await this.prisma.stores.findUnique({
       where: {
         storeId,
       },
@@ -55,14 +55,14 @@ export class StoresRepository {
   // * 가게 수정
   async updateStore(
     storeId: number,
-    updateStoreDto: UpdateStoreDto,
+    updateStoreReqDto: UpdateStoreReqDto,
   ): Promise<void> {
     await this.prisma.stores.update({
       where: {
         storeId,
       },
       data: {
-        ...updateStoreDto,
+        ...updateStoreReqDto,
       },
     });
   }
