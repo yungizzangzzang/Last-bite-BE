@@ -13,14 +13,14 @@ export class AlarmsRepository {
   // (1)잔금체크 -> (ok) -> (2)재고 체크 -> (ok) -> (3)잔금차감 및 재고차감 업데이트
   // transaction안에서는 this.prisma x -> prisma.tables
   // *재고가 없는 경우? -> 각 모든 상품의 경우 재고를 일일이 비교 해야 한다 -> 한개라도 x면 주문 통째로 취소
-  async checkAndUpdate(userId: number, sumPoint: number, itemList: any) {
+  async checkAndUpdate(userId: number, totalPrice: number, itemList: any) {
     try {
       const result = await this.prisma.$transaction(async (prisma) => {
         // a. 잔금체크
         const user: any = await prisma.users.findUnique({
           where: { userId },
         });
-        const remainedPoint = user.point - sumPoint;
+        const remainedPoint = user.point - totalPrice;
         if (remainedPoint < 0) {
           throw new UnauthorizedException('tx실패1: 잔금이 부족합니다');
         }
@@ -65,13 +65,21 @@ export class AlarmsRepository {
 
   /** 2. 구매내역 생성 */
   // Orders먼저 만들고 -> OrdersItems만들기
-  async createdBothOrderTable(userId: number, discount: number, itemList: any) {
+  async createdBothOrderTable(
+    userId: number,
+    storeId: number,
+    totalPrice: number,
+    discount: number,
+    itemList: any,
+  ) {
     try {
       const result = await this.prisma.$transaction(async (prisma) => {
         // (1)Orders
         const createdOrder = await prisma.orders.create({
           data: {
             userId,
+            storeId,
+            totalPrice,
             discount,
           },
         });

@@ -18,7 +18,6 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "strictPropertyInitialization": false,
     "noFallthroughCasesInSwitch": false
   }
 }

@@ -1,7 +1,7 @@
-import { PickType } from '@nestjs/mapped-types';
+import { PickType } from '@nestjs/swagger';
 import { StoreEntity } from '../entities/stores.entity';
 
-export class UpdateStoreDto extends PickType(StoreEntity, [
+export class UpdateStoreReqDto extends PickType(StoreEntity, [
   'name',
   'storePhoneNumber',
   'category',

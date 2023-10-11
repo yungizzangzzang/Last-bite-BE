@@ -40,6 +40,10 @@ export class OrdersRepository {
       },
     });
 
+    if (rawOrders.length === 0) {
+      throw new HttpException('해당 사용자의 주문이 존재하지 않습니다.', 404);
+    }
+
     const orders: UserOrdersDTO[] = rawOrders.map((rawOrder) => ({
       orderId: rawOrder.orderId,
       discount: rawOrder.discount,
@@ -83,7 +87,11 @@ export class OrdersRepository {
     });
 
     if (!rawOrder) {
-      throw new HttpException('선택한 페이지를 찾을 수 없습니다.', 404);
+      throw new HttpException('페이지를 찾을 수 없습니다.', 404);
+    }
+
+    if (!rawOrder.Store || !rawOrder.OrdersItems) {
+      throw new HttpException('주문 정보가 완전하지 않습니다.', 400);
     }
 
     const order: OneOrderDTO = {

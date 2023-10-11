@@ -4,7 +4,6 @@ import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -12,15 +11,14 @@ import {
 } from 'class-validator';
 
 export class UserEntity implements Users {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '이메일은 필수 입력값입니다.' })
   @IsEmail()
   @IsString()
   @IsString()
   @ApiProperty({ type: String, description: 'email', example: 'asdf@asdf.com' })
   email: string;
 
-  @IsOptional()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '비밀번호는 필수 입력값입니다.' })
   @IsString()
   @MinLength(4, { message: '4자이상을 입력해주세요' })
   @MaxLength(8, { message: '8자 이하를 입력해주세요' })
@@ -34,19 +32,18 @@ export class UserEntity implements Users {
   })
   password: string;
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '이름은 필수 입력값입니다.' })
   @IsString()
   @MinLength(1, { message: '최소 1글자 이상은 입력해주세용' })
   @MaxLength(20, { message: '20자 이하로 입력해주세요' })
   @ApiProperty({ type: String, description: '이름', example: 'Dcafrio' })
   name: string;
 
-  @IsNotEmpty()
-  @IsBoolean({ message: '유저, 사장 중 하나를 선택해주세요.' })
+  @IsBoolean()
   @ApiProperty({ type: Boolean, description: '고객/사장', example: true })
   isClient: boolean;
 
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '닉네임은 필수 입력값입니다.' })
   @IsString()
   @MinLength(2, { message: '2자 이상을 입력해주세요' })
   @MaxLength(20, { message: '20자 이하를 입력해주세요' })
