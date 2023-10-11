@@ -1,5 +1,16 @@
-import { Body, Controller, Delete, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  Put,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AwsService } from './aws.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import {
   CreateItemDtoResponse,
@@ -14,10 +25,14 @@ import { ItemsService } from './items.service';
 @Controller('items')
 @ApiTags('items')
 export class ItemsController {
-  constructor(private readonly itemsService: ItemsService) {}
+  constructor(
+    private readonly itemsService: ItemsService,
+    private readonly awsService: AwsService,
+  ) {}
 
   // 핫딜 등록
   @Post()
+  @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: '핫딜 등록', description: '핫딜(아이템) 정보 등록' })
   @ApiResponse({
     status: 200,
@@ -26,12 +41,23 @@ export class ItemsController {
   })
   async createItem(
     @Body() createItemDto: CreateItemDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<{ message: string }> {
-    return this.itemsService.createItem(createItemDto);
+    // 이미지 파일 안 넣은 경우는 default이미지로 대체
+    if (!file) {
+      const defaultUrlS3 =
+        'https://megis3.s3.ap-northeast-2.amazonaws.com/default.png';
+      return this.itemsService.createItem(createItemDto, defaultUrlS3);
+    }
+    // 이미지 파일 넣은 경우는 아래 로직
+    const s3 = await this.awsService.uploadFileToS3('items', file);
+    const urlByS3Key = this.awsService.getAwsS3FileUrl(s3.key);
+    return this.itemsService.createItem(createItemDto, urlByS3Key);
   }
 
-  // 핫딜 수정
+  // 핫딜 수정 - 원래 있던 s3 이미지 제거 -> 새 이미지를 upload & db변경
   @Put(':itemId')
+  @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: '핫딜 수정', description: '핫딜(아이템) 정보 수정' })
   @ApiResponse({
     status: 200,
@@ -41,8 +67,26 @@ export class ItemsController {
   async update(
     @Param('itemId') itemId: string,
     @Body() updateItemDto: UpdateItemDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<{ message: string }> {
-    return this.itemsService.updateItem(+itemId, updateItemDto);
+    // 1. 수정할 이미지를 추가한 경우
+    if (file) {
+      // 1-1. 기존의 s3이미지 삭제
+      const item = await this.itemsService.getOneItem(+itemId);
+      const oldKey: any = item?.imgUrl?.split('com/')[1];
+      if (oldKey !== 'default.png') {
+        await this.awsService.deleteS3Object(oldKey);
+      }
+      // 1-2. 새로운 s3이미지 업데이트
+      const s3 = await this.awsService.uploadFileToS3('items', file);
+      const urlByS3Key = this.awsService.getAwsS3FileUrl(s3.key);
+      // 1-3. item 업데이트(db수정)
+      return this.itemsService.updateItem(+itemId, updateItemDto, urlByS3Key);
+    } else {
+      // 2. 수정 데이터에 이미지는 없는 경우
+      const item: any = await this.itemsService.getOneItem(+itemId);
+      return this.itemsService.updateItem(+itemId, updateItemDto, item.imgUrl);
+    }
   }
 
   // 핫딜 삭제 -> deletedAt update 방식으로 진행
@@ -59,6 +103,13 @@ export class ItemsController {
   async deleteItem(
     @Param('itemId') itemId: string,
   ): Promise<{ message: string }> {
+    // s3에 올라가있는 image 삭제
+    const item = await this.itemsService.getOneItem(+itemId);
+    const oldKey: any = item?.imgUrl?.split('com/')[1];
+    if (oldKey !== 'default.png') {
+      await this.awsService.deleteS3Object(oldKey);
+    }
+
     return this.itemsService.deleteItem(+itemId);
   }
 }
