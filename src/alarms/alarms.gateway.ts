@@ -53,16 +53,18 @@ export class AlarmsGateway
     console.log(data, socket.id); // 체크용
 
     // (1-0)잔금 체크 & 재고 체크 -> 업데이트 (by트랜잭션)
-    // *deadlock문제 chk
+    // *deadlock문제도 생각해보기
     const changedItemCnt = await this.alarmsRepository.checkAndUpdate(
       data.userId,
-      data.sumPoint,
+      data.totalPrice,
       data.itemList,
     );
 
     // (1-1)Orders, OrdersItems 테이블 생성
     const createdBothOrder = await this.alarmsRepository.createdBothOrderTable(
       data.userId,
+      data.storeId,
+      data.totalPrice,
       data.discount,
       data.itemList, // {itemId:count, 1:3, 2:5, ...}
     );
@@ -97,22 +99,27 @@ export class AlarmsGateway
       item.count,
       item.startTime,
       item.endTime,
-      item.conten,
+      item.content,
     );
 
     // (emit1)추가된 핫딜 상품 리스트는 "모두에게" 실시간 업데이트
-    socket.broadcast.emit('itemRegister', createdItem);
+    socket.broadcast.emit('itemRegistered', createdItem);
     // (emit2)해당 가게를 "단골 등록한" 사람"들"에게"만" 알람 -> 이 로직이 3번째 socket함수랑 살짝 겹치는데 흠..
     const favoriteUsers = await this.alarmsRepository.findFavoriteUsers(
       item.storeId,
     );
     console.log(favoriteUsers);
-    socket.to('users리스트').emit('favoriteItemUpdated', '단골들에게만 알람'); // 수정
+    socket
+      .to('users리스트')
+      .emit(
+        'favoriteItemUpdated',
+        `${item.sotreId}번 가게의 핫딜(${item.name})이 추가되었습니다`,
+      );
   }
 
   /** 3. 사장이 단골 고객에게만 보내는 알림*/
   // @UseGuards(AuthGuard('jwt'))
-  @SubscribeMessage('AlarmToFavoriteClient')
+  @SubscribeMessage('alarmToFavoriteClient')
   async AlarmToFavoriteClient(
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
@@ -132,7 +139,7 @@ export class AlarmsGateway
     for (const favoriteUser of favoriteUsers) {
       socket
         .to('favoriteUser의 socketId') // clients객체이용해서
-        .emit('AlarmToFavoriteClient', createdAlarm);
+        .emit('alarmToFavoriteClient', createdAlarm);
     }
   }
 }
