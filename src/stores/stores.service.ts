@@ -20,9 +20,13 @@ export class StoresService {
   // * 가게 상세 조회
   async getOneStore(
     storeId: number,
-  ): Promise<{ store: GetStoreDto | null; items: GetItemDto[] | null }> {
-    const store = await this.storesRepository.selectOneStore(storeId);
-    const items = await this.itemsRepository.selectAllItems(storeId);
+  ): Promise<{ store: GetStoreDto; items: GetItemDto[] }> {
+    const store: GetStoreDto = await this.storesRepository.selectOneStore(
+      storeId,
+    );
+    const items: GetItemDto[] = await this.itemsRepository.selectAllItems(
+      storeId,
+    );
 
     return { store, items };
   }
@@ -32,11 +36,32 @@ export class StoresService {
     storeId: number,
     updateStoreDto: UpdateStoreDto,
   ): Promise<void> {
+    const store: GetStoreDto = await this.storesRepository.selectOneStore(
+      storeId,
+    );
+    // ! 수정 권한이 없는 경우
+    // if () {
+    // throw new HttpException(
+    //   { message: '수정 권한이 없습니다.' },
+    //   HttpStatus.FORBIDDEN,
+    // );
+    // }
+
     return await this.storesRepository.updateStore(storeId, updateStoreDto);
   }
 
   // * 가게 삭제
   async deleteStore(storeId: number): Promise<void> {
+    const store: GetStoreDto = await this.storesRepository.selectOneStore(
+      storeId,
+    );
+    // ! 삭제 권한이 없는 경우
+    // if () {
+    // throw new HttpException(
+    //   { message: '삭제 권한이 없습니다.' },
+    //   HttpStatus.FORBIDDEN,
+    // );
+    // }
     return await this.storesRepository.deleteStore(storeId);
   }
 }
