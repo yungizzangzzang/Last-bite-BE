@@ -10,6 +10,9 @@ export class StoresRepository {
   // * 가게 전체 조회
   async selectAllStores(): Promise<GetStoreResData[]> {
     const stores: GetStoreResData[] = await this.prisma.stores.findMany({
+      where: {
+        deletedAt: null,
+      },
       select: {
         ownerId: true,
         name: true,
@@ -29,6 +32,7 @@ export class StoresRepository {
     const store: GetStoreResData | null = await this.prisma.stores.findUnique({
       where: {
         storeId,
+        deletedAt: null,
       },
       select: {
         ownerId: true,

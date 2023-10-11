@@ -1,7 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Users } from '@prisma/client';
+import { User } from 'src/common/decorators/user.decorator';
 import { CustomSuccessRes } from 'src/common/dto/response.dto';
 import { GetItemDto } from 'src/items/dto/get-item.dto';
+import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
 import { UpdateStoreReqDto } from './dto/store.request.dto';
 import {
   GetAllStoresResDto,
@@ -49,12 +60,18 @@ export class StoresController {
     type: CustomSuccessRes,
     description: '특정 가게의 데이터를 일부 변경합니다.',
   })
+  @UseGuards(JwtAuthGuard)
   @Put(':storeId')
   async updateStore(
+    @User() user: Users,
     @Param('storeId') storeId: number,
     @Body() updateStoreDto: UpdateStoreReqDto,
   ): Promise<void> {
-    return await this.storesService.updateStore(storeId, updateStoreDto);
+    return await this.storesService.updateStore(
+      user.userId,
+      storeId,
+      updateStoreDto,
+    );
   }
 
   // * 가게 삭제
@@ -64,8 +81,12 @@ export class StoresController {
     type: CustomSuccessRes,
     description: '특정 가게의 데이터를 전부 삭제합니다.',
   })
+  @UseGuards(JwtAuthGuard)
   @Delete(':storeId')
-  async deleteStore(@Param('storeId') storeId: number): Promise<void> {
-    return await this.storesService.deleteStore(storeId);
+  async deleteStore(
+    @User() user: Users,
+    @Param('storeId') storeId: number,
+  ): Promise<void> {
+    return await this.storesService.deleteStore(user.userId, storeId);
   }
 }
