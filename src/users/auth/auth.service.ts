@@ -16,26 +16,14 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
 export class AuthService {
-  verify(jwtString: string) {
-    throw new Error('Method not implemented.');
-  }
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService, // jwt 의존성 주입
-    private configService: ConfigService, // env 파일 읽게 하기 위함.
   ) {}
 
   async signUp(body: CreateUserDto) {
-    console.log(body);
-
     const { email, password, name, isClient, nickname } = body;
-    if (
-      !body.email ||
-      !body.password ||
-      !body.name ||
-      !body.isClient ||
-      !body.nickname
-    ) {
+    if (!email || !password || !name || !isClient || !nickname) {
       throw new BadRequestException({
         errorMessage: '데이터 형식이 잘못되었습니다.',
       });
@@ -54,15 +42,18 @@ export class AuthService {
       }
     }
 
-    console.log('1234', body);
-
     try {
       // const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log(hashedPassword);
 
       const user = await this.prisma.users.create({
-        data: { email, password: hashedPassword, name, isClient, nickname },
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          isClient,
+          nickname,
+        },
       });
 
       return { message: '회원가입 성공' };
@@ -76,7 +67,6 @@ export class AuthService {
   }
 
   async login(body: LoginDto) {
-    // body.email, body.password 만 체크하면 될 거 같음.
     if (!body.email || !body.password) {
       throw new BadRequestException({
         errorMessage: '데이터 형식이 잘못되었습니다.',
@@ -90,6 +80,7 @@ export class AuthService {
       nickname: string;
       password?: string | undefined;
       isClient: boolean;
+      email: string;
     } | null = await this.prisma.users.findUnique({
       where: { email },
       select: {
@@ -98,6 +89,7 @@ export class AuthService {
         password: true,
         isClient: true,
         name: true,
+        email: true,
       },
     });
 
@@ -134,19 +126,14 @@ export class AuthService {
     }
   }
 
-  createUser(createUserDto: CreateUserDto) {
-    const user = this.prisma.users.create({ data: createUserDto });
-    return user;
-  }
-
-  async findOneUser(email: string) {
-    const user = await this.prisma.users.findUnique({
-      where: { email },
+  async findOneUser(userId: number) {
+    const user = await this.prisma.users.findFirst({
+      where: { userId },
     });
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return this.prisma.users.findUnique({ where: { email: email } });
+    return this.prisma.users.findFirst({ where: { userId } });
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto) {

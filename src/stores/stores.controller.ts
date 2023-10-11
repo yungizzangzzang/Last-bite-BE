@@ -4,6 +4,7 @@ import { GetStoreDto } from './dto/get-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { StoresService } from './stores.service';
 
+@ApiTags('stores')
 @Controller('stores')
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}

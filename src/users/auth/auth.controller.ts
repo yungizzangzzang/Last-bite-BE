@@ -6,7 +6,6 @@ import {
   Post,
   Put,
   Req,
-  Request,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -26,17 +25,13 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 
-@ApiTags('auth')
+@ApiTags('authentication')
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly createUserDto: CreateUserDto,
-    private readonly updateUserDto: UpdateUserDto,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('/signup')
-  @ApiTags('users')
+  @ApiTags()
   @ApiOperation({ summary: '회원가입', description: '유저를 생성합니다.' })
   @ApiCreatedResponse({ description: '회원가입' })
   @ApiResponse({
@@ -49,20 +44,20 @@ export class AuthController {
     description: '서버 에러',
   })
   async signUp(@Res({ passthrough: true }) @Body() body: CreateUserDto) {
-    console.log(body);
-
     return await this.authService.signUp(body);
   }
 
   // 유저 닉네임 중복검사
+  @ApiOperation({
+    summary: '닉네임 중복 검사',
+    description: '닉네임 중복 검사',
+  })
   @Get('signup')
-  @ApiTags('users')
   async getNickname(@Req() req) {
     return await this.authService.signUp(req.query.nickname);
   }
 
   @Post('login')
-  @ApiTags('users')
   @ApiOperation({
     summary: '로그인',
     description: 'Login을 진행합니다.',
@@ -78,13 +73,12 @@ export class AuthController {
     description: '서버 에러',
   })
   async login(
-    @Request() req: any,
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.login(body);
     res.cookie('Authorization', result?.accessToken, {
-      httpOnly: true,
+      httpOnly: false,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
@@ -93,6 +87,10 @@ export class AuthController {
 
   // 유저 로그아웃
   @Post('logout')
+  @ApiOperation({
+    summary: '로그아웃',
+    description: ' 로그아웃',
+  })
   async logOut(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('jwt');
   }
@@ -100,7 +98,6 @@ export class AuthController {
   // 유저 정보 불러오기
   @ApiBearerAuth('jwt')
   @Get('userinfo')
-  @ApiTags('users')
   @ApiOperation({
     summary: '회원정보',
     description: '회원정보',
@@ -117,13 +114,12 @@ export class AuthController {
   })
   @UseGuards(JwtAuthGuard)
   async whoAmI(@Req() req) {
-    const currentUser = await this.authService.findOneUser(req.email);
+    const currentUser = await this.authService.findOneUser(req.userId);
     return currentUser;
   }
 
   // 유저 닉네임, 패스워드 수정
   @Put('userinfo')
-  @ApiTags('users')
   @ApiOperation({
     summary: '회원정보 수정(닉네임, 비밀번호)',
     description: '회원정보 수정(닉네임, 비밀번호)',
@@ -133,7 +129,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: '성공',
-    type: CreateUserDto,
+    type: UpdateUserDto,
   })
   @ApiResponse({
     status: 500,
@@ -160,8 +156,11 @@ export class AuthController {
 
   // 회원탈퇴
   @Delete('delete')
-  @ApiTags('users')
   @ApiBearerAuth('jwt')
+  @ApiOperation({
+    summary: '유저 삭제',
+    description: '유저 삭제',
+  })
   @UseGuards(JwtAuthGuard)
   async deleteUser(@Req() req): Promise<object> {
     return this.authService.removeUser(req.user);
