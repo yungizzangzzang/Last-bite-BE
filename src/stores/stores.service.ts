@@ -13,8 +13,8 @@ export class StoresService {
   ) {}
 
   // * 가게 전체 조회
-  async getAllStores(): Promise<GetStoreResData[]> {
-    return await this.storesRepository.selectAllStores();
+  async getAllStore(): Promise<GetStoreResData[]> {
+    return await this.storesRepository.selectAllStore();
   }
 
   // * 가게 상세 조회

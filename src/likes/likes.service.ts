@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Likes } from '@prisma/client';
+import { GetStoreResData } from 'src/stores/dto/store.response.dto';
 import { StoresRepository } from 'src/stores/stores.repository';
 import { LikesRepository } from './likes.repository';
 
@@ -30,5 +31,10 @@ export class LikesService {
       // * 단골가게로 등록되어 있는 경우
       await this.likesRepository.deleteFavoriteStore(like[0].likeId);
     }
+  }
+
+  // * 단골가게 조회
+  async getAllFavoriteStore(userId: number): Promise<GetStoreResData[]> {
+    return await this.likesRepository.selectAllFavoriteStore(userId);
   }
 }
