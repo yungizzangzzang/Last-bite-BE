@@ -1,4 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 import { ItemEntity } from '../entities/item.entity';
 
@@ -8,10 +9,11 @@ export class UpdateItemDto extends PickType(ItemEntity, [
   'prevPrice',
   'price',
   'count',
-  'imgUrl',
+  // 'imgUrl',
 ] as const) {
   @IsNumber()
   @IsNotEmpty()
+  @Transform(({ value }) => parseInt(value))
   @ApiProperty({
     type: Number,
     description: '할인 시작 시간',
@@ -21,6 +23,7 @@ export class UpdateItemDto extends PickType(ItemEntity, [
 
   @IsNumber()
   @IsNotEmpty()
+  @Transform(({ value }) => parseInt(value))
   @ApiProperty({
     type: Number,
     description: '할인 마감 시간',
