@@ -8,7 +8,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from 'src/common/decorators/user.decorator';
-import { JwtAuthGuard } from 'src/users/guards/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ResponseReviewDto } from './dto/response-review.dto';
 import { ReviewsService } from './reviews.service';
