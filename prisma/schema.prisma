@@ -49,7 +49,7 @@ model Stores {
 
 model Likes {
   likeId    Int       @id @default(autoincrement()) @map("id")
-  createdAt DateTime
+  createdAt DateTime  @default(now())
 
   User      Users     @relation("LikesToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId    Int

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class ItemEntity {
@@ -22,16 +23,19 @@ export class ItemEntity {
 
   @IsNumber()
   @IsNotEmpty()
+  @Transform(({ value }) => parseInt(value))
   @ApiProperty({ type: Number, description: '기존 가격', example: 4000 })
   prevPrice!: number;
 
   @IsNumber()
   @IsNotEmpty()
+  @Transform(({ value }) => parseInt(value))
   @ApiProperty({ type: Number, description: '할인 가격', example: 3000 })
   price!: number;
 
   @IsNumber()
   @IsNotEmpty()
+  @Transform(({ value }) => parseInt(value))
   @ApiProperty({ type: Number, description: '할인 수량', example: 9 })
   count!: number;
 

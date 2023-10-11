@@ -11,10 +11,11 @@ export class ItemsRepository {
   // * storeId, user 정보에서 받아올 수 있게 수정
   async createItem(
     createItemDto: CreateItemDto,
-    endTime: Date,
+    urlByS3Key: string,
     startTime: Date,
+    endTime: Date,
   ): Promise<{ message: string }> {
-    await this.prisma.items.create({
+    const createdItem = await this.prisma.items.create({
       data: {
         name: createItemDto.name,
         content: createItemDto.content,
@@ -23,10 +24,11 @@ export class ItemsRepository {
         count: createItemDto.count,
         startTime,
         endTime,
-        imgUrl: createItemDto.imgUrl,
+        imgUrl: urlByS3Key,
         storeId: 1,
       },
     });
+    console.log(createdItem);
     return { message: '핫딜 생성이 완료되었습니다.' };
   }
 
@@ -54,6 +56,7 @@ export class ItemsRepository {
   async updateItem(
     itemId: number,
     updateItemDto: UpdateItemDto,
+    urlByS3Key: string,
     startTime: Date,
     endTime: Date,
   ): Promise<{ message: string }> {
@@ -67,7 +70,7 @@ export class ItemsRepository {
         count: updateItemDto.count,
         startTime,
         endTime,
-        imgUrl: updateItemDto.imgUrl,
+        imgUrl: urlByS3Key,
       },
     });
     return { message: '핫딜 수정이 완료되었습니다.' };
@@ -79,5 +82,12 @@ export class ItemsRepository {
       data: { deletedAt: new Date() },
     });
     return { message: '핫딜 삭제가 완료되었습니다.' };
+  }
+
+  async getOneItem(itemId: number) {
+    const item = await this.prisma.items.findUnique({
+      where: { itemId },
+    });
+    return item;
   }
 }
