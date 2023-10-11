@@ -6,7 +6,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -111,7 +110,6 @@ export class AuthService {
     delete user.password;
     try {
       const payload = { user };
-
       const accessToken = this.jwtService.sign(payload, {
         expiresIn: '5m',
         secret: process.env.ACCESS_SECRET_KEY,
