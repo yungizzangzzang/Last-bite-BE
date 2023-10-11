@@ -7,7 +7,6 @@ import {
   UpdateItemDtoResponse,
 } from './dto/item-response.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
-import { GetItemDto } from './dto/get-item.dto';
 import { ItemsService } from './items.service';
 
 // * storeId, user 정보에서 받아올 수 있게 수정
