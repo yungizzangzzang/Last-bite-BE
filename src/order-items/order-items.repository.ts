@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateOrderItemDto } from './dto/create-order-item.dto';
+import { GetOrderItemDto } from './dto/get-order-item.dto';
 
 @Injectable()
 export class OrderItemsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // * storeId, user 정보에서 받아올 수 있게 수정
-  // ? DB에서 startTime을 빼고, 핫딜 시작 시간을 등록 시점부터 하면 어떨까요??
+  // 예약 시 개별 예약 메뉴 리스트 생성
   async createOrderItem(
     createOrderItem: CreateOrderItemDto,
     orderId: number,
@@ -19,5 +19,29 @@ export class OrderItemsRepository {
         orderId,
       },
     });
+  }
+
+  // 예약 상세 조회 시 메뉴 리스트 조회
+  // totalPrice = price * count
+  async gelAllOrderItems(orderId: number): Promise<GetOrderItemDto[]> {
+    const getOrderItems = await this.prisma.ordersItems.findMany({
+      where: { orderId },
+      select: {
+        Item: {
+          select: {
+            name: true,
+            price: true,
+          },
+        },
+        count: true,
+      },
+    });
+    const orderItems = getOrderItems.map((items) => ({
+      name: items.Item.name,
+      count: items.count,
+      price: items.Item.price,
+      totalPrice: items.count * items.Item.price,
+    }));
+    return orderItems;
   }
 }
