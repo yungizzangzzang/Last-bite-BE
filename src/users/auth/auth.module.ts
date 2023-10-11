@@ -12,7 +12,7 @@ export const jwtSecret = process.env.JWT_SECRET;
 @Module({
   imports: [
     PrismaModule,
-    PassportModule,
+    PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
