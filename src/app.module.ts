@@ -14,6 +14,7 @@ import { AuthController } from './users/auth/auth.controller';
 import { AuthModule } from './users/auth/auth.module';
 import { AuthService } from './users/auth/auth.service';
 import { OrderItemsModule } from './order-items/order-items.module';
+import { LikesModule } from './likes/likes.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { OrderItemsModule } from './order-items/order-items.module';
     AuthModule,
     OrdersModule,
     OrderItemsModule,
+    LikesModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, PrismaService, AuthService],
