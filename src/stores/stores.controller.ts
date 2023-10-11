@@ -34,8 +34,8 @@ export class StoresController {
     description: '모든 가게를 조회합니다.',
   })
   @Get()
-  async getAllStores(): Promise<{ stores: GetStoreResData[] | null }> {
-    return { stores: await this.storesService.getAllStores() };
+  async getAllStore(): Promise<{ stores: GetStoreResData[] }> {
+    return { stores: await this.storesService.getAllStore() };
   }
 
   // * 가게 상세 조회
@@ -49,7 +49,7 @@ export class StoresController {
   @Get(':storeId')
   async getOneStore(
     @Param('storeId') storeId: number,
-  ): Promise<{ store: GetStoreResData | null; items: GetItemDto[] | null }> {
+  ): Promise<{ store: GetStoreResData; items: GetItemDto[] }> {
     return await this.storesService.getOneStore(storeId);
   }
 
