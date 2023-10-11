@@ -21,7 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
-import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
+import { JwtAuthGuard } from '../guards/jwt.guard';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
