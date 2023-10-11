@@ -1,7 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { GetStoreDto } from './dto/get.store.dto';
+import {ApiTags} from '@nestjs/swagger';
 
+@ApiTags('stores')
 @Controller('stores')
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}

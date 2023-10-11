@@ -11,8 +11,10 @@ import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { GetItemDto } from './dto/get-item.dto';
+import {ApiTags} from '@nestjs/swagger';
 
 // * storeId, user 정보에서 받아올 수 있게 수정
+@ApiTags('items')
 @Controller('items')
 export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}

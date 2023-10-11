@@ -1,5 +1,5 @@
-import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 
 import { ConfigModule } from '@nestjs/config';
 import { AlarmsModule } from './alarms/alarms.module';
@@ -10,10 +10,11 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { StoresModule } from './stores/stores.module';
 
-import { ReviewsModule } from './reviews/reviews.module';
-import { AuthService } from './users/auth/auth.service';
-import { AuthModule } from './users/auth/auth.module';
 import { OrdersModule } from './orders/orders.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { AuthController } from './users/auth/auth.controller';
+import { AuthModule } from './users/auth/auth.module';
+import { AuthService } from './users/auth/auth.service';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { OrdersModule } from './orders/orders.module';
     AuthModule,
     OrdersModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthController],
   providers: [AppService, PrismaService, AuthService],
 })
 export class AppModule {
