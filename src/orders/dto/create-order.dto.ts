@@ -1,26 +1,16 @@
-import { PickType } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { OrderEntity } from '../entities/order.entity';
+import { CreateOrderItemDto } from 'src/order-items/dto/create-order-item.dto';
+import { IsArray } from 'class-validator';
 
+// orders 생성 Dto, 장바구니에서 정보 받아오기
 export class CreateOrderDto extends PickType(OrderEntity, [
   'discount',
-  'totalPrice'
+  'storeId',
+  'totalPrice',
 ]){
-  name: string;
-
-  imgUrl?: string | null;
+  @ApiProperty({type: [CreateOrderItemDto], description: "주문 항목"})
+  @IsArray()
+  items: CreateOrderItemDto[];
 }
 
-export class UserOrdersDTO extends PickType(OrderEntity, [
-  'orderId',
-  'discount',
-  'createdAt',
-]) {
-  
-  storeId: number;
-
-  storeName: string;
-
-  // items: OrderItemForUserDTO[];
-
-  star?: number | null;
-}

@@ -2,6 +2,7 @@ import { ApiProperty, PickType } from '@nestjs/swagger';
 import { OrderItemEntity } from '../entities/order-item.entity';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
+// OrdersItems 목록 조회 Dto, 주문 상세 하단 사용 (Order 정보 - OrdersItems - totalPrice)
 export class GetOrderItemDto extends PickType(OrderItemEntity, [
   'count',
 ]) {
