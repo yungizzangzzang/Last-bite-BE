@@ -6,7 +6,7 @@ import { StoresRepository } from './stores.repository';
 import { StoresService } from './stores.service';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, ItemsModule],
   controllers: [StoresController],
   providers: [StoresService, StoresRepository],
 })

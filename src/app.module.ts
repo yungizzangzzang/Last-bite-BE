@@ -5,14 +5,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { ItemsModule } from './items/items.module';
+import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
-import { StoresModule } from './stores/stores.module';
-
-import { OrdersModule } from './orders/orders.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { StoresModule } from './stores/stores.module';
+import { AuthController } from './users/auth/auth.controller';
 import { AuthModule } from './users/auth/auth.module';
 import { AuthService } from './users/auth/auth.service';
+import { OrderItemsModule } from './order-items/order-items.module';
 
 @Module({
   imports: [
@@ -30,8 +31,9 @@ import { AuthService } from './users/auth/auth.service';
     ReviewsModule,
     AuthModule,
     OrdersModule,
+    OrderItemsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthController],
   providers: [AppService, PrismaService, AuthService],
 })
 export class AppModule {

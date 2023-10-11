@@ -9,7 +9,10 @@ export class ItemsService {
   constructor(private readonly itemsRepository: ItemsRepository) {}
 
   // startTime -> 현재시간 + 입력시간
-  async createItem(createItemDto: CreateItemDto): Promise<{ message: string }> {
+  async createItem(
+    createItemDto: CreateItemDto,
+    urlByS3Key: string,
+  ): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
       now.getFullYear(),
@@ -25,16 +28,45 @@ export class ItemsService {
     );
     return await this.itemsRepository.createItem(
       createItemDto,
+      urlByS3Key,
       endTime,
       startTime,
     );
   }
 
-  async updateItem(itemId: number, updateItemDto: UpdateItemDto) {
-    return await this.itemsRepository.updateItem(itemId, updateItemDto);
+  async updateItem(
+    itemId: number,
+    updateItemDto: UpdateItemDto,
+    urlByS3Key: string,
+  ): Promise<{ message: string }> {
+    const now = new Date();
+    const startTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      updateItemDto.startTime,
+    );
+    const endTime = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      updateItemDto.endTime,
+    );
+    return await this.itemsRepository.updateItem(
+      itemId,
+      updateItemDto,
+      urlByS3Key,
+      startTime,
+      endTime,
+    );
   }
 
-  async remove(id: number) {
-    return `This action removes a #${id} item`;
+  async deleteItem(itemId: number): Promise<{ message: string }> {
+    return await this.itemsRepository.deleteItem(itemId);
+  }
+
+  async getOneItem(itemId: number) {
+    const item = await this.itemsRepository.getOneItem(itemId);
+    return item;
   }
 }

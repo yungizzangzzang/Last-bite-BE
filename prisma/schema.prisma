@@ -44,6 +44,7 @@ model Stores {
   Items             Items[]   @relation("ItemsToStore")
   Reviews           Reviews[] @relation("ReviewsToStore")
   Alarms            Alarms[] 
+  Orders            Orders[]
 }
 
 model Likes {
@@ -69,12 +70,15 @@ model Reviews {
   
   User      Users      @relation("ReviewsToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId    Int
+
+  orderId   Int?       @unique
+  Order     Orders?    @relation
 }
 
 model Orders {
   orderId     Int       @id @default(autoincrement()) @map("id")
-  count       Int
   discount    Int
+  totalPrice  Int
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? 
@@ -82,8 +86,14 @@ model Orders {
   User        Users      @relation("OrdersToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId      Int
 
+  Store       Stores     @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
+  storeId     Int
+
+  Review      Reviews?    @relation(fields: [orderId], references: [reviewId])
+
   OrdersItems OrdersItems[] 
 }
+
 
 model OrdersItems {
   orderItemId Int    @id @default(autoincrement()) @map("id")

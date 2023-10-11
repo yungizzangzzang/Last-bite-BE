@@ -1,26 +1,28 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from './auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly configService: ConfigService,
-  ) {
+  constructor(private readonly authService: AuthService) {
     super({
-      jwtFromReqeust: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: process.env.ACCESS_SECRET_KEY,
+      ignoreExpiration: true,
     });
   }
 
-  async validate(payload: { email: string }) {
-    const user = await this.authService.findOneUser(payload.email);
-    if (!user) {
-      throw new UnauthorizedException('invalid token');
+  async validate(payload: any) {
+    try {
+      const user = await this.authService.findOneUser(payload.user.userId);
+      if (user) {
+        return user;
+      } else {
+        throw new Error('해당하는 유저는 없습니다.');
+      }
+    } catch (error) {
+      throw new UnauthorizedException(error);
     }
-    return user;
   }
 }

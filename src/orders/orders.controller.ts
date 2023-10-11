@@ -1,42 +1,39 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Controller, Get, HttpException, Param } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/common/decorators/user.decorator';
+import { OneOrderDTO } from './dto/get-one-order.dto';
+import { UserOrdersDTO } from './dto/get-user-orders.dto';
+import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { OrdersService } from './orders.service';
 
+@ApiTags('orders')
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
-  }
-
   @Get()
-  findAll() {
-    return this.ordersService.findAll();
+  @ApiOperation({ summary: '사용자의 모든 주문 조회' })
+  @ApiOkResponse({ type: [UserOrdersDTO], description: '사용자의 주문 목록' })
+  async getUserOrders(@User() user) {
+    const { userId } = user;
+    const result: UserOrdersDTO[] = await this.ordersService.getUserOrders(
+      userId,
+    );
+
+    return result;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
-  }
+  @Get(':orderId')
+  @ApiOperation({ summary: '특정 주문 조회' })
+  @ApiOkResponse({ type: OneOrderDTO, description: '특정 주문의 상세 정보' })
+  async getOneOrder(@Param('orderId') orderId: string) {
+    if (!Number.isInteger(orderId) || +orderId <= 0) {
+      throw new HttpException('유효하지 않은 주문 ID입니다.', 400);
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(+id, updateOrderDto);
-  }
+    const result: OneOrderDTO = await this.ordersService.getOneOrder(+orderId);
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ordersService.remove(+id);
+    return result;
   }
 }
