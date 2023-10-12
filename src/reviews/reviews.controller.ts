@@ -19,7 +19,7 @@ import { ReviewsService } from './reviews.service';
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
-  @Post('/:orderId')
+  @Post('/:orderId/stores/:storeId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: '리뷰 생성' })
@@ -28,12 +28,14 @@ export class ReviewsController {
   async createReview(
     @User() user: Users,
     @Param('orderId') orderId: string,
+    @Param('storeId') storeId: string,
     @Body() createReviewDto: CreateReviewDto,
   ): Promise<{ message: string }> {
     const userId = user.userId;
     const result: { message: string } = await this.reviewsService.createReview(
       userId,
       +orderId,
+      +storeId,
       createReviewDto,
     );
 
