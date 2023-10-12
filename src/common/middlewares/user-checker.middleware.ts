@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NestMiddleware,
-} from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
 import { AuthService } from 'src/users/auth/auth.service';
@@ -29,20 +24,7 @@ export class UserCheckerMiddleware implements NestMiddleware {
         });
 
         request.user = user.user;
-      } catch (error: any) {
-        switch (error.name) {
-          case 'TokenExpiredError':
-            throw new HttpException(
-              { message: '토큰이 만료되었습니다.' },
-              HttpStatus.FORBIDDEN,
-            );
-          case 'JsonWebTokenError':
-            throw new HttpException(
-              { message: '토큰이 변조되었습니다.' },
-              HttpStatus.FORBIDDEN,
-            );
-        }
-      }
+      } catch (error: any) {}
     }
 
     next();
