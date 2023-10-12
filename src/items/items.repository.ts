@@ -40,6 +40,7 @@ export class ItemsRepository {
         deletedAt: null,
       },
       select: {
+        itemId: true,
         name: true,
         content: true,
         prevPrice: true,
