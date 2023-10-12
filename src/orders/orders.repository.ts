@@ -14,12 +14,6 @@ export class OrdersRepository {
     createOrderDto: CreateOrderDto,
     // ! 타입 나중에 바꿔주기!!
   ): Promise<any> {
-    console.log('요기서 부터 안된당')
-    console.log(createOrderDto.storeId, createOrderDto.discount, createOrderDto.totalPrice)
-    console.log(userId)
-    console.log(null==undefined)
-    console.log(null===undefined)
-    // ? onUpdate: Cascade 외래키에 추가해보기
     const order = await this.prisma.orders.create({
       data: {
         userId,

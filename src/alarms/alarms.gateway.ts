@@ -11,9 +11,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AlarmsRepository } from './alarms.repository';
-// import { JwtAuthGuard } from 'src/users/guards/jwt-auth.guard';
 
-// @UseGuards(JwtAuthGuard)
+// Todo: socket에서 타입 any 전부 치우기
 @WebSocketGateway({
   cors: {
     origin: '*', // or "http://localhost:xxxx"
@@ -37,20 +36,29 @@ export class AlarmsGateway
   }
   handleDisconnect(@ConnectedSocket() socket: Socket) {
     this.logger.log(`disconnected: ${socket.id}`);
+    const userId = Object.keys(this.clients).find(
+      (key) => this.clients[key] === socket.id,
+    );
+    delete this.clients[Number(userId)];
+    console.log('삭제 후: ', this.clients);
   }
 
-  // Todo: clients에 잘 담기는지, test하기 & dto
-  // clients: any = {};
-  // clients[userId] = socket.id // useGuards이용
+  clients: any = {}; // key: userId, value: socket.id
+  /** 0. 로그인 - 유저정보를 clients에 저장 */
+  @SubscribeMessage('join')
+  async join(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
+    console.log('로그인 할때: ', data, socket.id);
+    this.clients[data] = socket.id;
+    console.log('로그인 직후의 clients: ', this.clients);
+  }
 
   /** 1. 고객이 주문 */
-  // @UseGuards(AuthGuard('jwt'))
   @SubscribeMessage('clientOrder') // 이벤트명 - 프론트에서emit한 것을 on받는 것과 같음(=socket.on)
   async clientOrder(
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log(data, socket.id); // 체크용
+    console.log('여기냐', data, socket.id); // 체크용
 
     // (1-0)잔금 체크 & 재고 체크 -> 업데이트 (by트랜잭션)
     // *deadlock문제도 생각해보기
@@ -75,16 +83,15 @@ export class AlarmsGateway
       changedItemCnt, // itemId가 key, 변화한 재고량이 value를 요소로 가진 객체
     );
     // (2-2)해당 사장에게'만' 주문 알람 emit
-    const findOwnerId = await this.alarmsRepository.findOwnerId(data.storeId);
+    const findOwnerId: any = await this.alarmsRepository.findOwnerId(
+      data.storeId,
+    );
     console.log(findOwnerId);
-    // const ownerSocketId = clients[findOwnerId];
-    socket
-      .to('Owner의 socketId') // 수정
-      .emit('orderAlarmToOwner', createdBothOrder[1]); // [1]가 OrdersItems테이블, [0]는 Orders
+    const ownerSocketId = this.clients[findOwnerId];
+    socket.to(ownerSocketId).emit('orderAlarmToOwner', createdBothOrder[1]); // [1]가 OrdersItems테이블, [0]는 Orders
   }
 
   /** 2. 사장이 핫딜상품 등록 */
-  // @UseGuards(AuthGuard('jwt'))
   @SubscribeMessage('itemRegister')
   async itemRegister(
     @MessageBody() item: any,
@@ -109,16 +116,17 @@ export class AlarmsGateway
       item.storeId,
     );
     console.log(favoriteUsers);
-    socket
-      .to('users리스트')
-      .emit(
-        'favoriteItemUpdated',
-        `${item.sotreId}번 가게의 핫딜(${item.name})이 추가되었습니다`,
-      );
+    for (const favoriteUser of favoriteUsers) {
+      socket
+        .to(this.clients[favoriteUser])
+        .emit(
+          'favoriteItemUpdated',
+          `${item.sotreId}번 가게의 핫딜(${item.name})이 추가되었습니다`,
+        );
+    }
   }
 
   /** 3. 사장이 단골 고객에게만 보내는 알림*/
-  // @UseGuards(AuthGuard('jwt'))
   @SubscribeMessage('alarmToFavoriteClient')
   async AlarmToFavoriteClient(
     @MessageBody() data: any,
@@ -138,7 +146,7 @@ export class AlarmsGateway
     // (3)emit
     for (const favoriteUser of favoriteUsers) {
       socket
-        .to('favoriteUser의 socketId') // clients객체이용해서
+        .to(this.clients[favoriteUser])
         .emit('alarmToFavoriteClient', createdAlarm);
     }
   }

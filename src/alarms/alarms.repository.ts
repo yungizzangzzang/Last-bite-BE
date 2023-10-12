@@ -12,7 +12,7 @@ export class AlarmsRepository {
   /** 1. checkAndUpdate  */
   // (1)잔금체크 -> (ok) -> (2)재고 체크 -> (ok) -> (3)잔금차감 및 재고차감 업데이트
   // transaction안에서는 this.prisma x -> prisma.tables
-  // *재고가 없는 경우? -> 각 모든 상품의 경우 재고를 일일이 비교 해야 한다 -> 한개라도 x면 주문 통째로 취소
+  // 재고가 없는 경우? -> 각 모든 상품의 경우 재고를 일일이 비교 해야 한다 -> 한개라도 x면 주문 통째로 취소
   async checkAndUpdate(userId: number, totalPrice: number, itemList: any) {
     try {
       const result = await this.prisma.$transaction(async (prisma) => {
@@ -122,7 +122,7 @@ export class AlarmsRepository {
   // 4. 사장님의 핫딜 상품 등록
   async createItem(
     name: string,
-    storeId: number, // 대문자 - 스키마확인
+    storeId: number,
     prevPrice: number,
     price: number,
     count: number,
@@ -134,7 +134,7 @@ export class AlarmsRepository {
       const createdItem = await this.prisma.items.create({
         data: {
           name,
-          storeId, // 대문자 - 스키마확인, StoreId: storeId..
+          storeId,
           prevPrice,
           price,
           count,

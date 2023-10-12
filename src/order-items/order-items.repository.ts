@@ -40,12 +40,13 @@ export class OrderItemsRepository {
         count: true,
       },
     });
+
     const orderItems = getOrderItems.map((items) => ({
-      name: items.Item.name,
       count: items.count,
-      price: items.Item.price,
+      ...items.Item,
       totalPrice: items.count * items.Item.price,
     }));
+
     return orderItems;
   }
 }
