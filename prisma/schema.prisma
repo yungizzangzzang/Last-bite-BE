@@ -128,8 +128,6 @@ model Items {
   storeId     Int
 
   OrdersItems OrdersItems[] 
-
-
 }
 
 model Alarms {
