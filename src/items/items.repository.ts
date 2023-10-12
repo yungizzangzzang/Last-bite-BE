@@ -3,13 +3,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { GetItemDto } from './dto/get-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
-import { stringToBytes } from 'scryptlib';
 
 @Injectable()
 export class ItemsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // * storeId, user 정보에서 받아올 수 있게 수정
   async createItem(
     createItemDto: CreateItemDto,
     urlByS3Key: string,
@@ -17,6 +15,7 @@ export class ItemsRepository {
     endTime: Date,
     userId: number,
   ): Promise<{ message: string }> {
+    // userId에 해당하는 storeId가 없을 때 업장 생성 문구 호출
     const store = await this.prisma.stores.findUnique({
       where: { ownerId: userId, deletedAt: null },
       select: {
@@ -48,30 +47,33 @@ export class ItemsRepository {
     return { message: '핫딜 생성이 완료되었습니다.' };
   }
 
-  async selectAllItems(storeId: number): Promise<GetItemDto[] | {message: string}> {
-
-    const items: GetItemDto[] | {message: string} = await this.prisma.items.findMany({
-      where: {
-        storeId,
-        deletedAt: null,
-        NOT: {
-          count: 0,
+  async selectAllItems(
+    storeId: number,
+  ): Promise<GetItemDto[] | { message: string }> {
+    const items: GetItemDto[] | { message: string } =
+      await this.prisma.items.findMany({
+        where: {
+          storeId,
+          deletedAt: null,
+          NOT: {
+            count: 0,
+          },
         },
-      },
-      select: {
-        itemId: true,
-        name: true,
-        content: true,
-        prevPrice: true,
-        price: true,
-        count: true,
-        startTime: true,
-        endTime: true,
-        imgUrl: true,
-      },
-    });
+        select: {
+          itemId: true,
+          name: true,
+          content: true,
+          prevPrice: true,
+          price: true,
+          count: true,
+          startTime: true,
+          endTime: true,
+          imgUrl: true,
+        },
+      });
+    // 진행 중인 핫딜이 없을 때 미진행 문구 리턴
     if (items.length === 0) {
-      return { message: '진행 중인 핫딜 정보가 없습니다.' }
+      return { message: '진행 중인 핫딜 정보가 없습니다.' };
     }
     return items;
   }
@@ -84,6 +86,20 @@ export class ItemsRepository {
     endTime: Date,
     userId: number,
   ): Promise<{ message: string }> {
+    // userId에 해당하는 storeId가 없을 때 업장 생성 문구 호출
+    const store = await this.prisma.stores.findUnique({
+      where: { ownerId: userId, deletedAt: null },
+      select: {
+        storeId: true,
+      },
+    });
+
+    if (!store) {
+      throw new HttpException(
+        { message: '가게가 존재하지 않습니다. 가게 정보를 생성해주세요.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
     await this.prisma.items.update({
       where: { itemId },
       data: {
@@ -104,12 +120,14 @@ export class ItemsRepository {
     itemId: number,
     userId: number,
   ): Promise<{ message: string }> {
+    // userId에 해당하는 storeId가 없을 때 업장 생성 문구 호출
     const store = await this.prisma.stores.findUnique({
       where: { ownerId: userId, deletedAt: null },
       select: {
         storeId: true,
       },
     });
+
     if (!store) {
       throw new HttpException(
         { message: '가게가 존재하지 않습니다. 가게 정보를 생성해주세요.' },
