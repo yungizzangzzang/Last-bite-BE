@@ -26,13 +26,13 @@ export class StoresService {
     storeId: number,
   ): Promise<{
     store: GetStoreResData;
-    items: GetItemDto[];
+    items: GetItemDto[]  | { message: string };
     isLiked: boolean;
   }> {
     const store: GetStoreResData = await this.storesRepository.selectOneStore(
       storeId,
     );
-    const items: GetItemDto[] = await this.itemsRepository.selectAllItems(
+    const items: GetItemDto[] | { message: string } = await this.itemsRepository.selectAllItems(
       storeId,
     );
 
