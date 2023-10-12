@@ -13,7 +13,7 @@ export class ItemEntity {
   itemId!: number;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '메뉴 이름은 필수 입력값입니다.' })
   @ApiProperty({
     type: String,
     description: '메뉴 이름',
@@ -22,30 +22,30 @@ export class ItemEntity {
   name!: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '기존 가격은 필수 입력값입니다.' })
   @Transform(({ value }) => parseInt(value))
   @ApiProperty({ type: Number, description: '기존 가격', example: 4000 })
   prevPrice!: number;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '할인 가격은 필수 입력값입니다.' })
   @Transform(({ value }) => parseInt(value))
   @ApiProperty({ type: Number, description: '할인 가격', example: 3000 })
   price!: number;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '할인 수량은 필수 입력값입니다.' })
   @Transform(({ value }) => parseInt(value))
   @ApiProperty({ type: Number, description: '할인 수량', example: 9 })
   count!: number;
 
   @IsDate()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '할인 시작 시간은 필수 입력값입니다.' })
   @ApiProperty({ type: Number, description: '할인 시작 시간', example: 19 })
   startTime!: Date;
 
   @IsDate()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '할인 시작 시간은 필수 입력값입니다.' })
   @ApiProperty({ type: Number, description: '할일 마감 시간', example: 21 })
   endTime!: Date;
 
@@ -53,12 +53,12 @@ export class ItemEntity {
   @ApiProperty({
     type: String,
     description: '이미지 업로드',
-    example: '얘는 제가 한번 이미지 업로드 해볼게용...!',
+    example: 'https://megis3.s3.ap-northeast-2.amazonaws.com/default.png',
   })
   imgUrl!: string | null;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: '메뉴 설명은 필수 입력값입니다.' })
   @ApiProperty({
     type: String,
     description: '메뉴 설명',
