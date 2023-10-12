@@ -39,7 +39,7 @@ export class OrdersController {
   @Get()
   @ApiOperation({ summary: '사용자의 모든 주문 조회' })
   @ApiOkResponse({ type: [UserOrdersDTO], description: '사용자의 주문 목록' })
-  async getUserOrders(@User() user) {
+  async getUserOrders(@User() user): Promise<UserOrdersDTO[]> {
     const { userId } = user;
     const result: UserOrdersDTO[] = await this.ordersService.getUserOrders(
       userId,
@@ -51,7 +51,7 @@ export class OrdersController {
   @Get(':orderId')
   @ApiOperation({ summary: '특정 주문 조회' })
   @ApiOkResponse({ type: OneOrderDTO, description: '특정 주문의 상세 정보' })
-  async getOneOrder(@Param('orderId') orderId: string) {
+  async getOneOrder(@Param('orderId') orderId: string): Promise<OneOrderDTO> {
     if (!Number.isInteger(orderId) || +orderId <= 0) {
       throw new HttpException('유효하지 않은 주문 ID입니다.', 400);
     }

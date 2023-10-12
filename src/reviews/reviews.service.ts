@@ -10,7 +10,7 @@ export class ReviewsService {
     userId: number,
     storeId: number,
     createReviewDto: CreateReviewDto,
-  ) {
+  ): Promise<{ message: string }> {
     const { content, star } = createReviewDto;
     const result: { message: string } =
       await this.reviewsRepository.createReview(userId, storeId, content, star);
@@ -18,7 +18,7 @@ export class ReviewsService {
     return result;
   }
 
-  async getStoreReview(storeId: number) {
+  async getStoreReview(storeId: number): Promise<ResponseReviewDto[]> {
     const result: ResponseReviewDto[] =
       await this.reviewsRepository.getStoreReview(storeId);
 
