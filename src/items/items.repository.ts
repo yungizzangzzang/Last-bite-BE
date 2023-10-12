@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { GetItemDto } from './dto/get-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { stringToBytes } from 'scryptlib';
 
 @Injectable()
 export class ItemsRepository {
@@ -14,7 +15,22 @@ export class ItemsRepository {
     urlByS3Key: string,
     startTime: Date,
     endTime: Date,
+    userId: number,
   ): Promise<{ message: string }> {
+    const store = await this.prisma.stores.findUnique({
+      where: { ownerId: userId, deletedAt: null },
+      select: {
+        storeId: true,
+      },
+    });
+
+    if (!store) {
+      throw new HttpException(
+        { message: '가게가 존재하지 않습니다. 가게 정보를 생성해주세요.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     const createdItem = await this.prisma.items.create({
       data: {
         name: createItemDto.name,
@@ -25,18 +41,22 @@ export class ItemsRepository {
         startTime,
         endTime,
         imgUrl: urlByS3Key,
-        storeId: 1,
+        storeId: store.storeId,
       },
     });
     console.log(createdItem);
     return { message: '핫딜 생성이 완료되었습니다.' };
   }
 
-  async selectAllItems(storeId: number): Promise<GetItemDto[]> {
-    const items: GetItemDto[] = await this.prisma.items.findMany({
+  async selectAllItems(storeId: number): Promise<GetItemDto[] | {message: string}> {
+
+    const items: GetItemDto[] | {message: string} = await this.prisma.items.findMany({
       where: {
         storeId,
         deletedAt: null,
+        NOT: {
+          count: 0,
+        },
       },
       select: {
         itemId: true,
@@ -50,7 +70,9 @@ export class ItemsRepository {
         imgUrl: true,
       },
     });
-
+    if (items.length === 0) {
+      return { message: '진행 중인 핫딜 정보가 없습니다.' }
+    }
     return items;
   }
 
@@ -60,6 +82,7 @@ export class ItemsRepository {
     urlByS3Key: string,
     startTime: Date,
     endTime: Date,
+    userId: number,
   ): Promise<{ message: string }> {
     await this.prisma.items.update({
       where: { itemId },
@@ -77,7 +100,23 @@ export class ItemsRepository {
     return { message: '핫딜 수정이 완료되었습니다.' };
   }
 
-  async deleteItem(itemId: number): Promise<{ message: string }> {
+  async deleteItem(
+    itemId: number,
+    userId: number,
+  ): Promise<{ message: string }> {
+    const store = await this.prisma.stores.findUnique({
+      where: { ownerId: userId, deletedAt: null },
+      select: {
+        storeId: true,
+      },
+    });
+    if (!store) {
+      throw new HttpException(
+        { message: '가게가 존재하지 않습니다. 가게 정보를 생성해주세요.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     await this.prisma.items.update({
       where: { itemId },
       data: { deletedAt: new Date() },
