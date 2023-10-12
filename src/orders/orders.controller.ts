@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpException,
-  Param,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiOkResponse,
   ApiOperation,
@@ -13,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from 'src/common/decorators/user.decorator';
+import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
@@ -39,12 +33,12 @@ export class OrdersController {
   @Get()
   @ApiOperation({ summary: '사용자의 모든 주문 조회' })
   @ApiOkResponse({ type: [UserOrdersDTO], description: '사용자의 주문 목록' })
+  @UseGuards(JwtAuthGuard)
   async getUserOrders(@User() user): Promise<UserOrdersDTO[]> {
-    const { userId } = user;
+    const userId = user.userId;
     const result: UserOrdersDTO[] = await this.ordersService.getUserOrders(
       userId,
     );
-
     return result;
   }
 
@@ -52,10 +46,6 @@ export class OrdersController {
   @ApiOperation({ summary: '특정 주문 조회' })
   @ApiOkResponse({ type: OneOrderDTO, description: '특정 주문의 상세 정보' })
   async getOneOrder(@Param('orderId') orderId: string): Promise<OneOrderDTO> {
-    if (!Number.isInteger(orderId) || +orderId <= 0) {
-      throw new HttpException('유효하지 않은 주문 ID입니다.', 400);
-    }
-
     const result: OneOrderDTO = await this.ordersService.getOneOrder(+orderId);
 
     return result;

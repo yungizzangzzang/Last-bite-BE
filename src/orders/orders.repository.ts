@@ -51,6 +51,7 @@ export class OrdersRepository {
           select: {
             Item: {
               select: {
+                count: true,
                 name: true,
                 imgUrl: true,
               },
@@ -78,10 +79,10 @@ export class OrdersRepository {
       items: rawOrder.OrdersItems.map((orderItem) => ({
         name: orderItem.Item.name,
         imgUrl: orderItem.Item.imgUrl,
+        count: orderItem.Item.count,
       })),
       star: rawOrder.Review?.star,
     }));
-
     return orders;
   }
 
