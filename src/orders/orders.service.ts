@@ -20,18 +20,17 @@ export class OrdersService {
     createOrderDto: CreateOrderDto,
   ): Promise<{ message: string }> {
     const userId: number = 1;
+    console.log(createOrderDto)
+    console.log(createOrderDto.items)
     const order = await this.ordersRepository.createOrder(
       userId,
       createOrderDto,
     );
-    const orderItem = await this.orderItemsRepository.createOrderItem(
+    await this.orderItemsRepository.createOrderItem(
       order.orderId,
       createOrderDto.items,
     );
-    console.log(createOrderDto.items)
-    console.log(order.orderId)
-
-    return { message: "주문이 완료되었습니다."};
+        return { message: "주문이 완료되었습니다."};
   }
 
   async getUserOrders(userId: number) {

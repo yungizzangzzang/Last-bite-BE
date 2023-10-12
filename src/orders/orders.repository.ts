@@ -14,7 +14,11 @@ export class OrdersRepository {
     createOrderDto: CreateOrderDto,
     // ! 타입 나중에 바꿔주기!!
   ): Promise<any> {
-    console.log('요기서 부터 안됭당');
+    console.log('요기서 부터 안된당')
+    console.log(createOrderDto.storeId, createOrderDto.discount, createOrderDto.totalPrice)
+    console.log(userId)
+    console.log(null==undefined)
+    console.log(null===undefined)
     // ? onUpdate: Cascade 외래키에 추가해보기
     const order = await this.prisma.orders.create({
       data: {
@@ -28,7 +32,7 @@ export class OrdersRepository {
     return order;
   }
 
-  async getUserOrders(userId: number) {
+  async getUserOrders(userId: number): Promise<UserOrdersDTO[]> {
     const rawOrders = await this.prisma.orders.findMany({
       where: {
         userId: userId,
@@ -81,7 +85,7 @@ export class OrdersRepository {
     return orders;
   }
 
-  async getOneOrder(orderId: number) {
+  async getOneOrder(orderId: number): Promise<OneOrderDTO> {
     const rawOrder = await this.prisma.orders.findFirst({
       where: { orderId },
       select: {

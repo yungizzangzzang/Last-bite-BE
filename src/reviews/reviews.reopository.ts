@@ -8,12 +8,13 @@ export class ReviewsRepository {
 
   async createReview(
     userId: number,
+    orderId: number,
     storeId: number,
     content: string,
     star: number,
   ): Promise<{ message: string }> {
     await this.prisma.reviews.create({
-      data: { userId, storeId, content, star },
+      data: { orderId, userId, storeId, content, star },
     });
 
     return { message: '리뷰 작성 완료.' };
