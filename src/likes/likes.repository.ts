@@ -46,9 +46,8 @@ export class LikesRepository {
         where: { userId },
         select: {
           Likes: {
-            select: {
-              Store: true,
-            },
+            where: { Store: { deletedAt: null } },
+            select: { Store: true },
           },
         },
       });
