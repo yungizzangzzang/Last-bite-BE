@@ -48,9 +48,10 @@ export class StoresController {
   })
   @Get(':storeId')
   async getOneStore(
+    @User() user: Users,
     @Param('storeId') storeId: number,
   ): Promise<{ store: GetStoreResData; items: GetItemDto[] }> {
-    return await this.storesService.getOneStore(storeId);
+    return await this.storesService.getOneStore(user, storeId);
   }
 
   // * 가게 수정
@@ -60,7 +61,6 @@ export class StoresController {
     type: CustomSuccessRes,
     description: '특정 가게의 데이터를 일부 변경합니다.',
   })
-  @UseGuards(JwtAuthGuard)
   @Put(':storeId')
   async updateStore(
     @User() user: Users,

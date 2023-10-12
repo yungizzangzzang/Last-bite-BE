@@ -24,4 +24,7 @@ export class GetOneStoreResDto extends CustomSuccessRes {
 
   @ApiProperty({ type: GetItemDto, isArray: true })
   items: GetItemDto[];
+
+  @ApiProperty()
+  isLiked: boolean;
 }
