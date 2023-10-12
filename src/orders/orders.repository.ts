@@ -32,7 +32,7 @@ export class OrdersRepository {
     return order;
   }
 
-  async getUserOrders(userId: number) {
+  async getUserOrders(userId: number): Promise<UserOrdersDTO[]> {
     const rawOrders = await this.prisma.orders.findMany({
       where: {
         userId: userId,
@@ -85,7 +85,7 @@ export class OrdersRepository {
     return orders;
   }
 
-  async getOneOrder(orderId: number) {
+  async getOneOrder(orderId: number): Promise<OneOrderDTO> {
     const rawOrder = await this.prisma.orders.findFirst({
       where: { orderId },
       select: {
