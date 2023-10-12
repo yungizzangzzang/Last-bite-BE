@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateOrderDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 
@@ -7,7 +8,31 @@ import { UserOrdersDTO } from './dto/get-user-orders.dto';
 export class OrdersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getUserOrders(userId: number) {
+  // userId -> 로그인 정보에서 받아오기
+  async createOrder(
+    userId: number,
+    createOrderDto: CreateOrderDto,
+    // ! 타입 나중에 바꿔주기!!
+  ): Promise<any> {
+    console.log('요기서 부터 안된당')
+    console.log(createOrderDto.storeId, createOrderDto.discount, createOrderDto.totalPrice)
+    console.log(userId)
+    console.log(null==undefined)
+    console.log(null===undefined)
+    // ? onUpdate: Cascade 외래키에 추가해보기
+    const order = await this.prisma.orders.create({
+      data: {
+        userId,
+        storeId: createOrderDto.storeId,
+        discount: createOrderDto.discount,
+        totalPrice: createOrderDto.totalPrice,
+      },
+    });
+
+    return order;
+  }
+
+  async getUserOrders(userId: number): Promise<UserOrdersDTO[]> {
     const rawOrders = await this.prisma.orders.findMany({
       where: {
         userId: userId,
@@ -60,7 +85,7 @@ export class OrdersRepository {
     return orders;
   }
 
-  async getOneOrder(orderId: number) {
+  async getOneOrder(orderId: number): Promise<OneOrderDTO> {
     const rawOrder = await this.prisma.orders.findFirst({
       where: { orderId },
       select: {

@@ -71,8 +71,8 @@ model Reviews {
   User      Users      @relation("ReviewsToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId    Int
 
-  orderId   Int?       @unique
-  Order     Orders?    @relation
+  Order     Orders     @relation(fields: [orderId], references: [orderId])
+  orderId   Int        @unique
 }
 
 model Orders {
@@ -83,14 +83,14 @@ model Orders {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime? 
 
-  User        Users      @relation("OrdersToUser", fields: [userId], references: [userId], onDelete: Cascade)
+  User        Users     @relation("OrdersToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId      Int
 
-  Store       Stores     @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
+  Store       Stores    @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
   storeId     Int
 
-  Review      Reviews?    @relation(fields: [orderId], references: [reviewId])
-
+  Review      Reviews?   
+  
   OrdersItems OrdersItems[] 
 }
 
@@ -128,8 +128,6 @@ model Items {
   storeId     Int
 
   OrdersItems OrdersItems[] 
-
-
 }
 
 model Alarms {

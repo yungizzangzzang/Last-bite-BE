@@ -8,7 +8,7 @@ import { UpdateItemDto } from './dto/update-item.dto';
 export class ItemsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // * storeId, user 정보에서 받아올 수 있게 수정ㅋ
+  // * storeId, user 정보에서 받아올 수 있게 수정
   async createItem(
     createItemDto: CreateItemDto,
     urlByS3Key: string,
@@ -32,7 +32,6 @@ export class ItemsRepository {
     return { message: '핫딜 생성이 완료되었습니다.' };
   }
 
-  // * where에 store request로 받아오기!!
   async selectAllItems(storeId: number): Promise<GetItemDto[]> {
     const items: GetItemDto[] = await this.prisma.items.findMany({
       where: {
