@@ -1,10 +1,13 @@
-import { MiddlewareConsumer, Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { UserCheckerMiddleware } from './common/middlewares/user-checker.middleware';
 import { ItemsModule } from './items/items.module';
+import { LikesModule } from './likes/likes.module';
+import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
@@ -13,8 +16,6 @@ import { StoresModule } from './stores/stores.module';
 import { AuthController } from './users/auth/auth.controller';
 import { AuthModule } from './users/auth/auth.module';
 import { AuthService } from './users/auth/auth.service';
-import { OrderItemsModule } from './order-items/order-items.module';
-import { LikesModule } from './likes/likes.module';
 
 @Module({
   imports: [
@@ -41,5 +42,8 @@ import { LikesModule } from './likes/likes.module';
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer
+      .apply(UserCheckerMiddleware)
+      .forRoutes({ path: 'stores/:storeId', method: RequestMethod.GET });
   }
 }
