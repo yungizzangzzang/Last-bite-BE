@@ -46,9 +46,8 @@ export class LikesRepository {
         where: { userId },
         select: {
           Likes: {
-            select: {
-              Store: true,
-            },
+            where: { Store: { deletedAt: null } },
+            select: { Store: true },
           },
         },
       });
@@ -61,6 +60,7 @@ export class LikesRepository {
     } else {
       return stores.Likes.map((store) => {
         return {
+          storeId: store.Store.storeId,
           ownerId: store.Store.ownerId,
           name: store.Store.name,
           longitude: store.Store.longitude,
