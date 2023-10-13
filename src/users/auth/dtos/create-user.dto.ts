@@ -23,6 +23,7 @@ export class CreateUserDto
   createdAt: Date;
   updatedAt: Date | null;
   deletedAt: Date | null;
+  storeId: number;
 
   // @IsNumber()
   ownerId: number | null;
@@ -30,5 +31,5 @@ export class CreateUserDto
   @ApiProperty({ type: String, description: '사업자 번호', example: '434-343' })
   @IsString()
   @IsOptional()
-  managementNumber?: string;
+  managementNumber: string;
 }
