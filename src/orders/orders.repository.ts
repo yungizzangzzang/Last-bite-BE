@@ -1,6 +1,9 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateOrderDto } from './dto/create-order.dto';
+import {
+  CreateOrderDto,
+  CreateOrderOrderItemDto,
+} from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 
@@ -8,21 +11,18 @@ import { UserOrdersDTO } from './dto/get-user-orders.dto';
 export class OrdersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  // userId -> 로그인 정보에서 받아오기
   async createOrder(
+    createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
-    createOrderDto: CreateOrderDto,
-    // ! 타입 나중에 바꿔주기!!
-  ): Promise<any> {
+  ): Promise<CreateOrderDto> {
     const order = await this.prisma.orders.create({
       data: {
         userId,
-        storeId: createOrderDto.storeId,
-        discount: createOrderDto.discount,
-        totalPrice: createOrderDto.totalPrice,
+        storeId: createOrderOrderItemDto.storeId,
+        discount: createOrderOrderItemDto.discount,
+        totalPrice: createOrderOrderItemDto.totalPrice,
       },
     });
-
     return order;
   }
 

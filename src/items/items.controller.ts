@@ -59,6 +59,8 @@ export class ItemsController {
       );
     }
 
+    // count 는 0 초과
+
     // 이미지 파일 안 넣은 경우는 default이미지로 대체
     if (!file) {
       const defaultUrlS3 =

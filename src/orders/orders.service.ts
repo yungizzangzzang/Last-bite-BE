@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrderItemDto } from 'src/order-items/dto/create-order-item.dto';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { OneOrderDTO, OrderItemDetailDTO } from './dto/get-one-order.dto';
+import { CreateOrderOrderItemDto } from './dto/create-order.dto';
+import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 import { OrdersRepository } from './orders.repository';
 
@@ -17,20 +16,21 @@ export class OrdersService {
   // * userId 로그인 정보에서 받아오기
 
   async createOrder(
-    createOrderDto: CreateOrderDto,
+    createOrderOrderItemDto: CreateOrderOrderItemDto,
+    userId: number,
   ): Promise<{ message: string }> {
-    const userId: number = 1;
-    console.log(createOrderDto)
-    console.log(createOrderDto.items)
     const order = await this.ordersRepository.createOrder(
+      createOrderOrderItemDto,
       userId,
-      createOrderDto,
     );
-    await this.orderItemsRepository.createOrderItem(
+    const result = await this.orderItemsRepository.createOrderItem(
       order.orderId,
-      createOrderDto.items,
+      createOrderOrderItemDto.items,
     );
-        return { message: "주문이 완료되었습니다."};
+    
+
+    // count === 0 일때 deletedAt 업데이트
+    return { message: '예약이 완료되었습니다.' };
   }
 
   async getUserOrders(userId: number) {
