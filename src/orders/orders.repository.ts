@@ -45,6 +45,7 @@ export class OrdersRepository {
           select: {
             Item: {
               select: {
+                count: true,
                 name: true,
                 imgUrl: true,
               },

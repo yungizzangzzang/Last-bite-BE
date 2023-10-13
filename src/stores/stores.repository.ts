@@ -14,6 +14,7 @@ export class StoresRepository {
         deletedAt: null,
       },
       select: {
+        storeId: true,
         ownerId: true,
         name: true,
         longitude: true,
@@ -35,6 +36,7 @@ export class StoresRepository {
         deletedAt: null,
       },
       select: {
+        storeId: true,
         ownerId: true,
         name: true,
         longitude: true,

@@ -22,7 +22,6 @@ import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 import { CreateOrderDtoResponse } from './dto/order-response.dto';
 import { OrdersService } from './orders.service';
-import { CreateOrderItemDto } from 'src/order-items/dto/create-order-item.dto';
 
 @ApiTags('orders')
 @Controller('orders')
@@ -55,12 +54,12 @@ export class OrdersController {
   @Get()
   @ApiOperation({ summary: '사용자의 모든 주문 조회' })
   @ApiOkResponse({ type: [UserOrdersDTO], description: '사용자의 주문 목록' })
+  @UseGuards(JwtAuthGuard)
   async getUserOrders(@User() user): Promise<UserOrdersDTO[]> {
-    const { userId } = user;
+    const userId = user.userId;
     const result: UserOrdersDTO[] = await this.ordersService.getUserOrders(
       userId,
     );
-
     return result;
   }
 
@@ -68,10 +67,6 @@ export class OrdersController {
   @ApiOperation({ summary: '특정 주문 조회' })
   @ApiOkResponse({ type: OneOrderDTO, description: '특정 주문의 상세 정보' })
   async getOneOrder(@Param('orderId') orderId: string): Promise<OneOrderDTO> {
-    if (!Number.isInteger(orderId) || +orderId <= 0) {
-      throw new HttpException('유효하지 않은 주문 ID입니다.', 400);
-    }
-
     const result: OneOrderDTO = await this.ordersService.getOneOrder(+orderId);
 
     return result;

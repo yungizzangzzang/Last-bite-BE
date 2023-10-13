@@ -1,8 +1,10 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
+import { IsNumber, IsString } from 'class-validator';
 import { OrderEntity } from '../entities/order.entity';
 
 export class OrderItemForUserDTO {
   @ApiProperty({ description: '주문한 상품 이름', example: '로제 떡볶이' })
+  @IsString()
   name: string;
 
   @ApiProperty({
@@ -11,7 +13,12 @@ export class OrderItemForUserDTO {
     example:
       'https://mys3image.s3.ap-northeast-2.amazonaws.com/1695777107743_original-6412cab88963b9b720f9f5e7e76e297c.jpg',
   })
+  @IsString()
   imgUrl?: string | null;
+
+  @ApiProperty({ description: '주문한 상품 개수', example: '3' })
+  @IsNumber()
+  count: number;
 }
 
 export class UserOrdersDTO extends PickType(OrderEntity, [
