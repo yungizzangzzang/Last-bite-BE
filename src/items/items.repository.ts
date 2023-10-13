@@ -55,9 +55,6 @@ export class ItemsRepository {
         where: {
           storeId,
           deletedAt: null,
-          NOT: {
-            count: 0,
-          },
         },
         select: {
           itemId: true,
@@ -146,6 +143,12 @@ export class ItemsRepository {
     const item = await this.prisma.items.findUnique({
       where: { itemId },
     });
+    if (!item) {
+      throw new HttpException(
+        { message: '핫딜 정보가 존재하지 않습니다.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
     return item;
   }
 }
