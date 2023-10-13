@@ -38,15 +38,27 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   async createOrder(
     @Body() createOrderOrderItemDto: CreateOrderOrderItemDto,
-    @User() user: Users,
-  ): Promise<{ message: string }> {
-    //기업 회원(isclient===true)이 접근한 경우
-    if (user.isClient !== false) {
+    @User() user: Users, //: Promise<{ message: string }>
+  ) {
+    //기업 회원(isclient===false)이 접근한 경우
+    if (user.isClient !== true) {
       throw new HttpException(
         { message: '일반 회원만 예약이 가능합니다.' },
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    // 주문 수량이 0인 경우
+    await Promise.all(
+      createOrderOrderItemDto.items.map(async (item) => {
+        if (item.count === 0) {
+          throw new HttpException(
+            { message: '주문 수량이 0입니다.' },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }),
+    );
 
     return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
   }

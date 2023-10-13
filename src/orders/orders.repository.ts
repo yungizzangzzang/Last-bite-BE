@@ -15,46 +15,59 @@ export class OrdersRepository {
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
   ): Promise<CreateOrderDto> {
-  
-
-    /**
-     * Orders와 연결된 테이블 중
-     * Users 없는 경우 -> userId로 찾기 (근데 이건 request로 받아와서 안해도 된당.)
-     * Stores 없는 경우 -> createOrderOrderItemDto로 찾기 
-     * Items 없는 경우 -> createOrderOrderItemDto.items.itemId로 찾기
-     */
-
-    // ! itemId의 storeId가 storeId와 일치
-    // ! itemId로 Items 찾는다. Items.storeId 찾는다. 입력값과 맞는지 비교한다.
-    // ! Itmes 없는 경우 error
-
-    // storeId에 해당하는 Stores 없는 경우
     const store = await this.prisma.stores.findUnique({
-      where: {storeId: createOrderOrderItemDto.storeId}
-    })
-    console.log(store)
-    if( !store ) {
-      throw new HttpException ({message: '가게 정보가 존재하지 않습니다.'}, HttpStatus.NOT_FOUND)
+      where: { storeId: createOrderOrderItemDto.storeId },
+    });
+    // storeId에 해당하는 Stores 없는 경우
+    if (!store) {
+      throw new HttpException(
+        { message: '가게 정보가 존재하지 않습니다.' },
+        HttpStatus.NOT_FOUND,
+      );
     }
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
-        const item= await this.prisma.items.findUnique({
-          where: { itemId: Item.itemId },
-          select: { storeId: true },
+        const itemId = Item.itemId;
+        const item = await this.prisma.items.findUnique({
+          where: { itemId },
+          select: { storeId: true, count: true },
         });
-      // itemId 해당하는 Items 가 없는 경우
-      if (!item) {
-        throw new HttpException ({message: '핫딜 정보가 존재하지 않습니다.'}, HttpStatus.NOT_FOUND)
-      }
-      // 아이템(핫딜)의 storeId(가게정보)와 입력된 storeId가 다른 경우
-      if   (item.storeId !== createOrderOrderItemDto.storeId) {
-        throw new HttpException ({message: '가게 정보가 올바르지 않습니다.'}, HttpStatus.BAD_REQUEST)
+        // itemId 해당하는 Items 가 없는 경우
+        if (!item) {
+          throw new HttpException(
+            { message: '핫딜 정보가 존재하지 않습니다.' },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        // 아이템(핫딜)의 storeId(가게정보)와 입력된 storeId가 다른 경우
+        if (item.storeId !== createOrderOrderItemDto.storeId) {
+          throw new HttpException(
+            { message: '가게 정보가 올바르지 않습니다.' },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
 
-      }
-      })
-    )
+        // 주문 create 후 count update
+        await this.prisma.items.update({
+          where: { itemId },
+          data: { count: item.count - Item.count },
+        });
+        // count === 0 일때 deletedAt 업데이트
 
-  // 주문 정보 생성
+        const itemToUpdate = await this.prisma.items.findUnique({
+          where: { itemId, count: 0 },
+          select: { deletedAt: true, itemId: true },
+        });
+        if (itemToUpdate) {
+          await this.prisma.items.update({
+            where: { itemId: itemToUpdate.itemId },
+            data: { deletedAt: new Date() },
+          });
+        }
+      }),
+    );
+
+    // 주문 정보 생성
     const order = await this.prisma.orders.create({
       data: {
         userId,
@@ -63,6 +76,7 @@ export class OrdersRepository {
         totalPrice: createOrderOrderItemDto.totalPrice,
       },
     });
+
     return order;
   }
 
