@@ -1,15 +1,26 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Users } from '@prisma/client';
 import { User } from 'src/common/decorators/user.decorator';
 import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
+import { CreateOrderDtoResponse } from './dto/order-response.dto';
 import { OrdersService } from './orders.service';
 
 @ApiTags('orders')
@@ -22,12 +33,22 @@ export class OrdersController {
   @ApiResponse({
     status: 200,
     description: 'Success',
-    type: Object,
+    type: CreateOrderDtoResponse,
   })
+  @UseGuards(JwtAuthGuard)
   async createOrder(
-    @Body() createOrderDto: CreateOrderDto,
+    @Body() createOrderOrderItemDto: CreateOrderOrderItemDto,
+    @User() user: Users,
   ): Promise<{ message: string }> {
-    return this.ordersService.createOrder(createOrderDto);
+    //기업 회원(isclient===true)이 접근한 경우
+    if (user.isClient !== false) {
+      throw new HttpException(
+        { message: '일반 회원만 예약이 가능합니다.' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
   }
 
   @Get()
