@@ -133,7 +133,7 @@ export class AuthService {
     try {
       const payload = { user };
       const accessToken = this.jwtService.sign(payload, {
-        expiresIn: '5m',
+        expiresIn: '24h',
         secret: process.env.ACCESS_SECRET_KEY,
       });
 
