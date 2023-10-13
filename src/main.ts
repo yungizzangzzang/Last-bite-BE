@@ -14,6 +14,17 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Yungizzang')
     .setDescription('Yungizzang API doc')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'jwt',
+    )
     .setVersion('1.0')
     .addTag('Yungizzang')
     .build();

@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class StoreEntity {
@@ -30,7 +31,8 @@ export class StoreEntity {
 
   @IsString()
   @IsNotEmpty()
-  managementNumber!: string;
+  @ApiProperty({ type: String, description: '사업자 번호', example: '434-343' })
+  managementNumber?: string;
 
   @IsDate()
   @IsNotEmpty()
