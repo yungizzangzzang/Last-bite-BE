@@ -19,7 +19,7 @@ import { Users } from '@prisma/client';
 import { Response } from 'express';
 import { User } from 'src/common/decorators/user.decorator';
 import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
-import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
+import { JwtAuthGuard } from '../guards/jwt.guard';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { GettingPointsDto } from './dtos/points.dto';

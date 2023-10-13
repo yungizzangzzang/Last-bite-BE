@@ -1,15 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { GetStoreDto } from './dto/get-store.dto';
-import { UpdateStoreDto } from './dto/update-store.dto';
+import { UpdateStoreReqDto } from './dto/store.request.dto';
+import { GetStoreResData } from './dto/store.response.dto';
 
 @Injectable()
 export class StoresRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async selectAllStores(): Promise<GetStoreDto[]> {
-    const stores: GetStoreDto[] = await this.prisma.stores.findMany({
+  // * 가게 전체 조회
+  async selectAllStore(): Promise<GetStoreResData[]> {
+    const stores: GetStoreResData[] = await this.prisma.stores.findMany({
+      where: {
+        deletedAt: null,
+      },
       select: {
+        storeId: true,
         ownerId: true,
         name: true,
         longitude: true,
@@ -23,12 +28,15 @@ export class StoresRepository {
     return stores;
   }
 
-  async selectOneStore(storeId: number): Promise<GetStoreDto | null> {
-    const store: GetStoreDto | null = await this.prisma.stores.findUnique({
+  // * 가게 상세 조회
+  async selectOneStore(storeId: number): Promise<GetStoreResData> {
+    const store: GetStoreResData | null = await this.prisma.stores.findUnique({
       where: {
         storeId,
+        deletedAt: null,
       },
       select: {
+        storeId: true,
         ownerId: true,
         name: true,
         longitude: true,
@@ -39,19 +47,28 @@ export class StoresRepository {
       },
     });
 
+    // ! 해당하는 가게가 존재하지 않는 경우
+    if (!store) {
+      throw new HttpException(
+        { message: '해당하는 가게가 존재하지 않습니다.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     return store;
   }
 
+  // * 가게 수정
   async updateStore(
     storeId: number,
-    updateStoreDto: UpdateStoreDto,
+    updateStoreReqDto: UpdateStoreReqDto,
   ): Promise<void> {
     await this.prisma.stores.update({
       where: {
         storeId,
       },
       data: {
-        ...updateStoreDto,
+        ...updateStoreReqDto,
       },
     });
   }

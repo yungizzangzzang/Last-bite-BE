@@ -1,11 +1,37 @@
 import { Injectable } from '@nestjs/common';
+import { OrderItemsRepository } from 'src/order-items/order-items.repository';
+import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 import { OrdersRepository } from './orders.repository';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly ordersRepository: OrdersRepository) {}
+  constructor(
+    private readonly ordersRepository: OrdersRepository,
+    private readonly orderItemsRepository: OrderItemsRepository,
+  ) {}
+
+  // * return에서 {} 감싸도 create 혹은 완료 메세지 출력에 이상 없는지 확인!
+  // * userId 로그인 정보에서 받아오기
+
+  async createOrder(
+    createOrderOrderItemDto: CreateOrderOrderItemDto,
+    userId: number,
+  ): Promise<{ message: string }> {
+    const order = await this.ordersRepository.createOrder(
+      createOrderOrderItemDto,
+      userId,
+    );
+    const result = await this.orderItemsRepository.createOrderItem(
+      order.orderId,
+      createOrderOrderItemDto.items,
+    );
+    
+
+    // count === 0 일때 deletedAt 업데이트
+    return { message: '예약이 완료되었습니다.' };
+  }
 
   async getUserOrders(userId: number) {
     const result: UserOrdersDTO[] = await this.ordersRepository.getUserOrders(

@@ -9,7 +9,11 @@ export class ItemsService {
   constructor(private readonly itemsRepository: ItemsRepository) {}
 
   // startTime -> 현재시간 + 입력시간
-  async createItem(createItemDto: CreateItemDto): Promise<{ message: string }> {
+  async createItem(
+    createItemDto: CreateItemDto,
+    urlByS3Key: string,
+    userId: number
+  ): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
       now.getFullYear(),
@@ -25,14 +29,18 @@ export class ItemsService {
     );
     return await this.itemsRepository.createItem(
       createItemDto,
+      urlByS3Key,
       endTime,
       startTime,
+      userId
     );
   }
 
   async updateItem(
     itemId: number,
     updateItemDto: UpdateItemDto,
+    urlByS3Key: string,
+    userId: number
   ): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
@@ -50,12 +58,19 @@ export class ItemsService {
     return await this.itemsRepository.updateItem(
       itemId,
       updateItemDto,
+      urlByS3Key,
       startTime,
       endTime,
+      userId
     );
   }
 
-  async deleteItem(itemId: number): Promise<{ message: string }> {
-    return await this.itemsRepository.deleteItem(itemId);
+  async deleteItem(itemId: number, userId:number): Promise<{ message: string }> {
+    return await this.itemsRepository.deleteItem(itemId, userId);
+  }
+
+  async getOneItem(itemId: number) {
+    const item = await this.itemsRepository.getOneItem(itemId);
+    return item;
   }
 }

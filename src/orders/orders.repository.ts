@@ -1,5 +1,9 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  CreateOrderDto,
+  CreateOrderOrderItemDto,
+} from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 
@@ -7,7 +11,22 @@ import { UserOrdersDTO } from './dto/get-user-orders.dto';
 export class OrdersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getUserOrders(userId: number) {
+  async createOrder(
+    createOrderOrderItemDto: CreateOrderOrderItemDto,
+    userId: number,
+  ): Promise<CreateOrderDto> {
+    const order = await this.prisma.orders.create({
+      data: {
+        userId,
+        storeId: createOrderOrderItemDto.storeId,
+        discount: createOrderOrderItemDto.discount,
+        totalPrice: createOrderOrderItemDto.totalPrice,
+      },
+    });
+    return order;
+  }
+
+  async getUserOrders(userId: number): Promise<UserOrdersDTO[]> {
     const rawOrders = await this.prisma.orders.findMany({
       where: {
         userId: userId,
@@ -26,6 +45,7 @@ export class OrdersRepository {
           select: {
             Item: {
               select: {
+                count: true,
                 name: true,
                 imgUrl: true,
               },
@@ -53,14 +73,14 @@ export class OrdersRepository {
       items: rawOrder.OrdersItems.map((orderItem) => ({
         name: orderItem.Item.name,
         imgUrl: orderItem.Item.imgUrl,
+        count: orderItem.Item.count,
       })),
       star: rawOrder.Review?.star,
     }));
-
     return orders;
   }
 
-  async getOneOrder(orderId: number) {
+  async getOneOrder(orderId: number): Promise<OneOrderDTO> {
     const rawOrder = await this.prisma.orders.findFirst({
       where: { orderId },
       select: {
