@@ -12,7 +12,6 @@ export class OrderItemsRepository {
     orderId: number,
     createOrderItem: CreateOrderItemDto[],
   ): Promise<CreateOrderItemDto[]> {
-    
     // createOrderItem 배열 내 각 요소마다  create 실행 ([떡볶이 2인분, 순대 1인분])
     const orderItems = await Promise.all(
       createOrderItem.map(async (Item) => {
@@ -22,11 +21,11 @@ export class OrderItemsRepository {
             orderId,
           },
         });
-        return orderItem
+        return orderItem;
       }),
     );
 
-    return  orderItems
+    return orderItems;
   }
 
   // 예약 상세 조회 시 메뉴 리스트 조회
