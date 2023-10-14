@@ -55,6 +55,7 @@ export class ItemsRepository {
         where: {
           storeId,
           deletedAt: null,
+          NOT: { count: 0 },
         },
         select: {
           itemId: true,
