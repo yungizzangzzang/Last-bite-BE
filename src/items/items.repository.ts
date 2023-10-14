@@ -57,6 +57,18 @@ export class ItemsRepository {
           deletedAt: null,
           NOT: { count: 0 },
         },
+        select: {
+          itemId: true,
+          name: true,
+          content: true,
+          prevPrice: true,
+          price: true,
+          count: true,
+          startTime: true,
+          endTime: true,
+          imgUrl: true,
+          deletedAt: true,
+        },
       });
     // 진행 중인 핫딜이 없을 때 미진행 문구 리턴
     if (items.length === 0) {
