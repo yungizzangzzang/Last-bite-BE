@@ -30,7 +30,7 @@ export class OrdersRepository {
         const itemId = Item.itemId;
         const item = await this.prisma.items.findUnique({
           where: { itemId },
-          select: { storeId: true, count: true },
+          select: { storeId: true, count: true, price: true },
         });
         // itemId 해당하는 Items 가 없는 경우
         if (!item) {
@@ -47,12 +47,29 @@ export class OrdersRepository {
           );
         }
 
-        // 주문 create 후 count update
+        const user = await this.prisma.users.findUnique({
+          where: { userId },
+          select: { point: true },
+        });
+        if (!user) {
+          throw new HttpException(
+            { message: '사용자 정보가 존재하지 않습니다.' },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        if (user.point < item.price) {
+          throw new HttpException(
+            { message: '포인트를 충전해주세요.' },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        // count update
         await this.prisma.items.update({
           where: { itemId },
           data: { count: item.count - Item.count },
         });
-        
+
         // count === 0 일때 deletedAt 업데이트
         const itemToUpdate = await this.prisma.items.findUnique({
           where: { itemId, count: 0 },
@@ -64,6 +81,11 @@ export class OrdersRepository {
             data: { deletedAt: new Date() },
           });
         }
+        // 예약자 point 차감
+        await this.prisma.users.update({
+          where: { userId },
+          data: { point: user.point - item.price * item.count },
+        });
       }),
     );
 
