@@ -50,7 +50,10 @@ export class StoresController {
   async getOneStore(
     @User() user: Users,
     @Param('storeId') storeId: number,
-  ): Promise<{ store: GetStoreResData; items: GetItemDto[] }> {
+  ): Promise<{
+    store: GetStoreResData;
+    items: GetItemDto[] | { message: string };
+  }> {
     return await this.storesService.getOneStore(user, storeId);
   }
 

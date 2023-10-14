@@ -6,16 +6,19 @@ import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { UserCheckerMiddleware } from './common/middlewares/user-checker.middleware';
 import { ItemsModule } from './items/items.module';
+import { JobsModule } from './jobs/jobs.module';
 import { LikesModule } from './likes/likes.module';
 import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ReviewsModule } from './reviews/reviews.module';
+import { StoreEntity } from './stores/entities/stores.entity';
 import { StoresModule } from './stores/stores.module';
 import { AuthController } from './users/auth/auth.controller';
 import { AuthModule } from './users/auth/auth.module';
 import { AuthService } from './users/auth/auth.service';
+import { UserEntity } from './users/entities/user.entity';
 
 @Module({
   imports: [
@@ -35,9 +38,10 @@ import { AuthService } from './users/auth/auth.service';
     OrdersModule,
     OrderItemsModule,
     LikesModule,
+    JobsModule,
   ],
   controllers: [AppController, AuthController],
-  providers: [AppService, PrismaService, AuthService],
+  providers: [AppService, PrismaService, AuthService, StoreEntity, UserEntity],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

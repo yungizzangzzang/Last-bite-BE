@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url   = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model Users {
@@ -17,45 +17,45 @@ model Users {
   nickname  String    @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime? 
+  deletedAt DateTime?
 
-  Likes     Likes[]   @relation("LikesToUser")
-  Orders    Orders[]  @relation("OrdersToUser")
-  Reviews   Reviews[] @relation("ReviewsToUser")
-  Store     Stores?   @relation("UserToStore")
+  Likes   Likes[]   @relation("LikesToUser")
+  Orders  Orders[]  @relation("OrdersToUser")
+  Reviews Reviews[] @relation("ReviewsToUser")
+  Store   Stores?   @relation("UserToStore")
 }
 
 model Stores {
-  storeId           Int       @id @default(autoincrement()) @map("id")
-  name              String
-  longitude         Float
-  latitude          Float
-  address           String
-  storePhoneNumber  String?
-  category          String
-  managementNumber  String
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime? @updatedAt
-  deletedAt         DateTime? 
-  ownerId           Int?      @unique
+  storeId          Int       @id @default(autoincrement()) @map("id")
+  name             String
+  longitude        Float
+  latitude         Float
+  address          String
+  storePhoneNumber String?
+  category         String
+  managementNumber String @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime? @updatedAt
+  deletedAt        DateTime?
+  ownerId          Int?      @unique
 
-  Owner             Users?    @relation("UserToStore", fields: [ownerId], references: [userId])
-  Likes             Likes[]   @relation("LikesToStore")
-  Items             Items[]   @relation("ItemsToStore")
-  Reviews           Reviews[] @relation("ReviewsToStore")
-  Alarms            Alarms[] 
-  Orders            Orders[]
+  Owner   Users?    @relation("UserToStore", fields: [ownerId], references: [userId])
+  Likes   Likes[]   @relation("LikesToStore")
+  Items   Items[]   @relation("ItemsToStore")
+  Reviews Reviews[] @relation("ReviewsToStore")
+  Alarms  Alarms[]
+  Orders  Orders[]
 }
 
 model Likes {
   likeId    Int       @id @default(autoincrement()) @map("id")
   createdAt DateTime  @default(now())
 
-  User      Users     @relation("LikesToUser", fields: [userId], references: [userId], onDelete: Cascade)
-  userId    Int
-  
-  Store     Stores    @relation("LikesToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
-  storeId   Int
+  User   Users @relation("LikesToUser", fields: [userId], references: [userId], onDelete: Cascade)
+  userId Int
+
+  Store   Stores @relation("LikesToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
+  storeId Int
 }
 
 model Reviews {
@@ -63,51 +63,53 @@ model Reviews {
   content   String
   star      Int
   createdAt DateTime  @default(now())
-  deletedAt DateTime? 
+  deletedAt DateTime?
 
-  Store     Stores     @relation("ReviewsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
-  storeId   Int
-  
-  User      Users      @relation("ReviewsToUser", fields: [userId], references: [userId], onDelete: Cascade)
-  userId    Int
+  Store   Stores @relation("ReviewsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
+  storeId Int
 
-  orderId   Int?       @unique
-  Order     Orders?    @relation
+  User   Users @relation("ReviewsToUser", fields: [userId], references: [userId], onDelete: Cascade)
+  userId Int
+
+
+  Order     Orders     @relation(fields: [orderId], references: [orderId])
+  orderId   Int        @unique
+
 }
 
 model Orders {
-  orderId     Int       @id @default(autoincrement()) @map("id")
-  discount    Int
-  totalPrice  Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? 
+  orderId    Int       @id @default(autoincrement()) @map("id")
+  discount   Int
+  totalPrice Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
 
-  User        Users      @relation("OrdersToUser", fields: [userId], references: [userId], onDelete: Cascade)
+
+  User        Users     @relation("OrdersToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId      Int
 
-  Store       Stores     @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
+  Store       Stores    @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
   storeId     Int
 
-  Review      Reviews?    @relation(fields: [orderId], references: [reviewId])
-
+  Review      Reviews?   
+  
   OrdersItems OrdersItems[] 
 }
 
-
 model OrdersItems {
-  orderItemId Int    @id @default(autoincrement()) @map("id")
-  count       Int    
+  orderItemId Int @id @default(autoincrement()) @map("id")
+  count       Int
 
-  Order       Orders  @relation(fields: [orderId], references: [orderId])
-  orderId     Int
+  Order   Orders @relation(fields: [orderId], references: [orderId])
+  orderId Int
 
-  Item        Items  @relation(fields: [itemId], references: [itemId])
-  itemId      Int
+  Item   Items @relation(fields: [itemId], references: [itemId])
+  itemId Int
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Items {
@@ -129,15 +131,14 @@ model Items {
 
   OrdersItems OrdersItems[] 
 
-
 }
 
 model Alarms {
-  alarmId   Int       @id @default(autoincrement()) @map("id")
+  alarmId   Int      @id @default(autoincrement()) @map("id")
   title     String
   content   String
-  createdAt DateTime  @default(now())
-  
-  Store     Stores    @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
-  storeId   Int
+  createdAt DateTime @default(now())
+
+  Store   Stores @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
+  storeId Int
 }
