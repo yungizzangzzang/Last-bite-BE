@@ -114,10 +114,6 @@ export class OrdersRepository {
       },
     });
 
-    if (rawOrders.length === 0) {
-      throw new HttpException('해당 사용자의 주문이 존재하지 않습니다.', 404);
-    }
-
     const orders: UserOrdersDTO[] = rawOrders.map((rawOrder) => ({
       orderId: rawOrder.orderId,
       discount: rawOrder.discount,

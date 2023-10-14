@@ -16,6 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { Users } from '@prisma/client';
 import { User } from 'src/common/decorators/user.decorator';
+import { JobsService } from 'src/jobs/jobs.service';
 import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
@@ -26,7 +27,10 @@ import { OrdersService } from './orders.service';
 @ApiTags('orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly jobsService: JobsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: '주문 생성, orderItems 생성' })
@@ -72,6 +76,9 @@ export class OrdersController {
     const result: UserOrdersDTO[] = await this.ordersService.getUserOrders(
       userId,
     );
+
+    // await this.jobsService.addJob(`${userId}번 유저의 주문 정보 조회`);
+
     return result;
   }
 
