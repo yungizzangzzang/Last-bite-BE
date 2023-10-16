@@ -7,6 +7,10 @@ import { JobsService } from './jobs.service';
   imports: [
     BullModule.registerQueue({
       name: 'testQueue',
+      redis: {
+        host: process.env.REDIS_HOST,
+        port: 6379,
+      },
     }),
   ],
   providers: [JobsService, TestProcessor],
