@@ -103,7 +103,7 @@ export class AuthController {
   ) {
     // console.log('point', body.point);
     // console.log('user', user);
-    const points = await this.authService.pointAccumulation(user,body);
+    const points = await this.authService.pointAccumulation(user, body);
 
     return points;
   }
@@ -141,5 +141,10 @@ export class AuthController {
 
     const currentUser = await this.authService.findOneUser(req.user.userId);
     return currentUser;
+  }
+
+  @Get()
+  test() {
+    return 'hi';
   }
 }
