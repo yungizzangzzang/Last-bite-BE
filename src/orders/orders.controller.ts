@@ -77,7 +77,7 @@ export class OrdersController {
       userId,
     );
 
-    // await this.jobsService.addJob(`${userId}번 유저의 주문 정보 조회`);
+    await this.jobsService.addJob(`${userId}번 유저의 주문 정보 조회`);
 
     return result;
   }
