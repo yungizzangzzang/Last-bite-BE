@@ -15,9 +15,15 @@ export class StoresService {
     private readonly likesRepository: LikesRepository,
   ) {}
 
-  // * 가게 전체 조회
-  async getAllStore(): Promise<GetStoreResData[]> {
-    return await this.storesRepository.selectAllStore();
+  // * 반경 10km 이내 가게 조회
+  async getAllStoreWithInRadius(
+    userLongitude: number,
+    userLatitude: number,
+  ): Promise<GetStoreResData[]> {
+    return await this.storesRepository.selectAllStoreWithInRadius(
+      userLongitude,
+      userLatitude,
+    );
   }
 
   // * 가게 상세 조회
@@ -26,15 +32,14 @@ export class StoresService {
     storeId: number,
   ): Promise<{
     store: GetStoreResData;
-    items: GetItemDto[]  | { message: string };
+    items: GetItemDto[] | { message: string };
     isLiked: boolean;
   }> {
     const store: GetStoreResData = await this.storesRepository.selectOneStore(
       storeId,
     );
-    const items: GetItemDto[] | { message: string } = await this.itemsRepository.selectAllItems(
-      storeId,
-    );
+    const items: GetItemDto[] | { message: string } =
+      await this.itemsRepository.selectAllItems(storeId);
 
     let isLiked;
     if (user) {

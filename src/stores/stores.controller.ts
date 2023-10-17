@@ -13,7 +13,10 @@ import { User } from 'src/common/decorators/user.decorator';
 import { CustomSuccessRes } from 'src/common/dto/response.dto';
 import { GetItemDto } from 'src/items/dto/get-item.dto';
 import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
-import { UpdateStoreReqDto } from './dto/store.request.dto';
+import {
+  GetAllStoreWithInRadiusReqDto,
+  UpdateStoreReqDto,
+} from './dto/store.request.dto';
 import {
   GetAllStoresResDto,
   GetOneStoreResDto,
@@ -26,16 +29,26 @@ import { StoresService } from './stores.service';
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 
-  // * 가게 전체 조회
-  @ApiOperation({ summary: '가게 전체 조회' })
+  // * 반경 10km 이내 가게 조회
+  @ApiOperation({ summary: '반경 10km 이내 가게 조회' })
   @ApiResponse({
     status: 200,
     type: GetAllStoresResDto,
-    description: '모든 가게를 조회합니다.',
+    description: '반경 10km 이내 가게를 조회합니다.',
   })
   @Get()
-  async getAllStore(): Promise<{ stores: GetStoreResData[] }> {
-    return { stores: await this.storesService.getAllStore() };
+  async getAllStoreWithInRadius(
+    @Body() getAllStoreWithInRadiusReqDto: GetAllStoreWithInRadiusReqDto,
+  ): Promise<{ stores: GetStoreResData[] }> {
+    const userLongitude = getAllStoreWithInRadiusReqDto.longitude;
+    const userLatitude = getAllStoreWithInRadiusReqDto.latitude;
+
+    return await {
+      stores: await this.storesService.getAllStoreWithInRadius(
+        userLongitude,
+        userLatitude,
+      ),
+    };
   }
 
   // * 가게 상세 조회
