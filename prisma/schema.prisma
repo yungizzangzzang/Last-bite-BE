@@ -33,7 +33,7 @@ model Stores {
   address          String
   storePhoneNumber String?
   category         String
-  managementNumber String @unique
+  managementNumber String    @unique
   createdAt        DateTime  @default(now())
   updatedAt        DateTime? @updatedAt
   deletedAt        DateTime?
@@ -48,8 +48,8 @@ model Stores {
 }
 
 model Likes {
-  likeId    Int       @id @default(autoincrement()) @map("id")
-  createdAt DateTime  @default(now())
+  likeId    Int      @id @default(autoincrement()) @map("id")
+  createdAt DateTime @default(now())
 
   User   Users @relation("LikesToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId Int
@@ -71,10 +71,8 @@ model Reviews {
   User   Users @relation("ReviewsToUser", fields: [userId], references: [userId], onDelete: Cascade)
   userId Int
 
-
-  Order     Orders     @relation(fields: [orderId], references: [orderId])
-  orderId   Int        @unique
-
+  Order   Orders @relation(fields: [orderId], references: [orderId])
+  orderId Int    @unique
 }
 
 model Orders {
@@ -84,17 +82,17 @@ model Orders {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
+  ordered    Boolean   @default(false)
 
+  User   Users @relation("OrdersToUser", fields: [userId], references: [userId], onDelete: Cascade)
+  userId Int
 
-  User        Users     @relation("OrdersToUser", fields: [userId], references: [userId], onDelete: Cascade)
-  userId      Int
+  Store   Stores @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
+  storeId Int
 
-  Store       Stores    @relation(fields: [storeId], references: [storeId], onDelete: Cascade)
-  storeId     Int
+  Review Reviews?
 
-  Review      Reviews?   
-  
-  OrdersItems OrdersItems[] 
+  OrdersItems OrdersItems[]
 }
 
 model OrdersItems {
@@ -113,24 +111,23 @@ model OrdersItems {
 }
 
 model Items {
-  itemId      Int       @id @default(autoincrement()) @map("id")
-  name        String
-  prevPrice   Int
-  price       Int
-  count       Int
-  startTime   DateTime
-  endTime     DateTime
-  imgUrl      String?
-  content     String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime? 
+  itemId    Int       @id @default(autoincrement()) @map("id")
+  name      String
+  prevPrice Int
+  price     Int
+  count     Int
+  startTime DateTime
+  endTime   DateTime
+  imgUrl    String?
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  Store       Stores     @relation("ItemsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
-  storeId     Int
+  Store   Stores @relation("ItemsToStore", fields: [storeId], references: [storeId], onDelete: Cascade)
+  storeId Int
 
-  OrdersItems OrdersItems[] 
-
+  OrdersItems OrdersItems[]
 }
 
 model Alarms {

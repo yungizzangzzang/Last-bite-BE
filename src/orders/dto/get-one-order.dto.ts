@@ -1,4 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
+import { IsBoolean } from 'class-validator';
 import { OrderEntity } from '../entities/order.entity';
 
 export class OrderItemDetailDTO {
@@ -20,4 +21,7 @@ export class OneOrderDTO extends PickType(OrderEntity, [
 
   @ApiProperty({ description: '가게 이름', example: '종훈 떡볶이' })
   storeName: string;
+
+  @IsBoolean()
+  ordered: boolean;
 }

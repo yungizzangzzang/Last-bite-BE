@@ -1,8 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
+import { PrismaService } from 'src/prisma/prisma.service';
 
-export class ItemEntity {
+export class ItemEntity extends PrismaService {
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty({
@@ -80,4 +88,9 @@ export class ItemEntity {
 
   @IsDate()
   deletedAt!: Date | null;
+
+  @IsNumber()
+  @Max(100)
+  @Min(1)
+  available_items: number;
 }

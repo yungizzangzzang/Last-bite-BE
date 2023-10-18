@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsBoolean, IsDate, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class OrderItemEntity {
   @IsNumber()
@@ -29,6 +29,8 @@ export class OrderItemEntity {
   })
   count: number;
 
+  @IsBoolean()
+  ordered: boolean;
 
   @IsNumber()
   @IsNotEmpty()
@@ -38,7 +40,7 @@ export class OrderItemEntity {
     example: '42',
   })
   orderId: number;
- 
+
   @IsDate()
   @IsNotEmpty()
   createdAt!: Date;
