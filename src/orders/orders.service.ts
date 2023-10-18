@@ -10,8 +10,6 @@ import { Queue } from 'bull';
 import { ItemEntity } from 'src/items/entities/item.entity';
 import { ItemsRepository } from 'src/items/items.repository';
 import { CreateOrderItemDto } from 'src/order-items/dto/create-order-item.dto';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
 import { AuthService } from 'src/users/auth/auth.service';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
@@ -44,12 +42,12 @@ export class OrdersService {
         // Items.count < OrderItems.count 일때 주문 불가
         if (orderItem.count > item.count) {
           return `${item.name}의 주문 가능 수량은 ${item.count}개 입니다.`;
-        } 
+        }
       }),
     );
 
     // if 문 true 일 때 반환되는 undefined 제거
-    const filteredResults = results.filter(result => result !== undefined);
+    const filteredResults = results.filter((result) => result !== undefined);
 
     // 에러 메세지 반환
     if (filteredResults.length > 0) {
@@ -63,7 +61,7 @@ export class OrdersService {
       createOrderOrderItemDto,
       userId,
     );
-    
+
     await this.orderItemsRepository.createOrderItem(
       order.orderId,
       createOrderOrderItemDto.items,
