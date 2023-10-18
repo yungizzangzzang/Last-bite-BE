@@ -57,9 +57,7 @@ export class ItemsRepository {
         where: {
           storeId,
           deletedAt: null,
-          NOT: {
-            count: 0,
-          },
+          NOT: { count: 0 },
         },
         select: {
           itemId: true,
@@ -71,6 +69,7 @@ export class ItemsRepository {
           startTime: true,
           endTime: true,
           imgUrl: true,
+          deletedAt: true,
         },
       });
     // 진행 중인 핫딜이 없을 때 미진행 문구 리턴
@@ -149,6 +148,12 @@ export class ItemsRepository {
     const item = await this.prisma.items.findUnique({
       where: { itemId },
     });
+    if (!item) {
+      throw new HttpException(
+        { message: '핫딜 정보가 존재하지 않습니다.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
     return item;
   }
 }

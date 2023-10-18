@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   CreateOrderDto,
@@ -15,6 +15,59 @@ export class OrdersRepository {
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
   ): Promise<CreateOrderDto> {
+    const store = await this.prisma.stores.findUnique({
+      where: { storeId: createOrderOrderItemDto.storeId },
+    });
+    // storeId에 해당하는 Stores 없는 경우
+    if (!store) {
+      throw new HttpException(
+        { message: '가게 정보가 존재하지 않습니다.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    await Promise.all(
+      createOrderOrderItemDto.items.map(async (Item) => {
+        const itemId = Item.itemId;
+        const item = await this.prisma.items.findUnique({
+          where: { itemId },
+          select: { storeId: true, count: true },
+        });
+        // itemId 해당하는 Items 가 없는 경우
+        if (!item) {
+          throw new HttpException(
+            { message: '핫딜 정보가 존재하지 않습니다.' },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        // 아이템(핫딜)의 storeId(가게정보)와 입력된 storeId가 다른 경우
+        if (item.storeId !== createOrderOrderItemDto.storeId) {
+          throw new HttpException(
+            { message: '가게 정보가 올바르지 않습니다.' },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
+        // 주문 create 후 count update
+        await this.prisma.items.update({
+          where: { itemId },
+          data: { count: item.count - Item.count },
+        });
+        
+        // count === 0 일때 deletedAt 업데이트
+        const itemToUpdate = await this.prisma.items.findUnique({
+          where: { itemId, count: 0 },
+          select: { deletedAt: true, itemId: true },
+        });
+        if (itemToUpdate) {
+          await this.prisma.items.update({
+            where: { itemId: itemToUpdate.itemId },
+            data: { deletedAt: new Date() },
+          });
+        }
+      }),
+    );
+
+    // 주문 정보 생성
     const order = await this.prisma.orders.create({
       data: {
         userId,
@@ -23,6 +76,7 @@ export class OrdersRepository {
         totalPrice: createOrderOrderItemDto.totalPrice,
       },
     });
+
     return order;
   }
 
@@ -79,10 +133,6 @@ export class OrdersRepository {
         },
       },
     });
-
-    if (rawOrders.length === 0) {
-      throw new HttpException('해당 사용자의 주문이 존재하지 않습니다.', 404);
-    }
 
     const orders: UserOrdersDTO[] = rawOrders.map((rawOrder) => ({
       orderId: rawOrder.orderId,

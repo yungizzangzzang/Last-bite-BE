@@ -51,10 +51,17 @@ export class ItemsController {
     @UploadedFile() file: Express.Multer.File,
     @User() user: Users,
   ): Promise<{ message: string }> {
-    // 일반 회원(isclient===false)이 접근한 경우
-    if (user.isClient !== true) {
+    // 일반 회원(isclient===true)이 접근한 경우
+    if (user.isClient !== false) {
       throw new HttpException(
         { message: '기업 회원만 핫딜 정보 등록이 가능합니다.' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // 할인 가격이 기존 가격 이상인 경우
+    if (createItemDto.prevPrice <= createItemDto.price) {
+      throw new HttpException(
+        { message: '할인이 적용된 가격을 입력해주세요.' },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -93,10 +100,18 @@ export class ItemsController {
     @UploadedFile() file: Express.Multer.File,
     @User() user: Users,
   ): Promise<{ message: string }> {
-    // 일반 회원(isclient===false)이 접근한 경우
-    if (user.isClient !== true) {
+    // 일반 회원(isclient===true)이 접근한 경우
+    if (user.isClient !== false) {
       throw new HttpException(
-        { message: '기업 회원만 핫딜 정보 등록이 가능합니다.' },
+        { message: '기업 회원만 핫딜 정보 수정이 가능합니다.' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // 할인 가격이 기존 가격 이상인 경우
+    if (updateItemDto.prevPrice >= updateItemDto.price) {
+      throw new HttpException(
+        { message: '할인이 적용된 가격을 입력해주세요.' },
         HttpStatus.BAD_REQUEST,
       );
     }

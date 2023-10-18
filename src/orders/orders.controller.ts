@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { Users } from '@prisma/client';
 import { User } from 'src/common/decorators/user.decorator';
+import { JobsService } from 'src/jobs/jobs.service';
 import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
@@ -29,8 +30,10 @@ import { OrdersService } from './orders.service';
 @UseInterceptors()
 @Controller('orders')
 export class OrdersController {
-  private logger = new Logger('OrdersController');
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    private readonly jobsService: JobsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: '주문 생성, orderItems 생성' })
@@ -42,15 +45,27 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   async createOrder(
     @Body() createOrderOrderItemDto: CreateOrderOrderItemDto,
-    @User() user: Users,
-  ): Promise<{ message: string }> {
-    //기업 회원(isclient===true)이 접근한 경우
-    if (user.isClient !== false) {
+    @User() user: Users, //: Promise<{ message: string }>
+  ) {
+    //기업 회원(isclient===false)이 접근한 경우
+    if (user.isClient !== true) {
       throw new HttpException(
         { message: '일반 회원만 예약이 가능합니다.' },
         HttpStatus.BAD_REQUEST,
       );
     }
+
+    // 주문 수량이 0인 경우
+    await Promise.all(
+      createOrderOrderItemDto.items.map(async (item) => {
+        if (item.count === 0) {
+          throw new HttpException(
+            { message: '주문 수량이 0입니다.' },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }),
+    );
 
     return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
   }
@@ -74,6 +89,9 @@ export class OrdersController {
     const result: UserOrdersDTO[] = await this.ordersService.getUserOrders(
       userId,
     );
+
+    await this.jobsService.addJob(`${userId}번 유저의 주문 정보 조회`);
+
     return result;
   }
 

@@ -1,48 +1,70 @@
-name: Build and Deploy Node Express to AWS EC2
+name: Deploy to Amazon ECS
 
 on:
   push:
-    branches: ['dev']
-
-env:
-  PROJECT_NAME: jonghun_project
-  BUCKET_NAME: jonghun-cicd-bucket
-  CODE_DEPLOY_APP_NAME: yungizzang_cicd
-  DEPLOYMENT_GROUP_NAME: yungizzang_instance
+    branches:
+      - dev
 
 jobs:
   deploy:
+    name: Deploy
     runs-on: ubuntu-latest
+    environment: development
+
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Create backend .env.production file
-        run: |
-          echo 'PORT=${{ secrets.PORT }}' > .env.production
-          echo 'COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}' >> .env.production
-          echo 'DATABASE_URL=${{ secrets.DATABASE_URL }}' >> .env.production
-          echo 'ACCESS_SECRET_KEY=${{ secrets.ACCESS_SECRET_KEY }}' >> .env.production
-          echo 'REFRESH_SECRET_KEY=${{ secrets.REFRESH_SECRET_KEY }}' >> .env.production
-          echo 'CLIENT_URL=${{ secrets.CLIENT_URL }}' >> .env.production
-
-      - name: Make Zip File
-        run: |
-          zip -qq -r ./$GITHUB_SHA.zip .
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_PRIVATE_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      - name: Upload to S3
-        run: |
-          aws s3 cp ./$GITHUB_SHA.zip s3://$BUCKET_NAME/$PROJECT_NAME/$GITHUB_SHA.zip
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Code Deploy To EC2 instance
-        run: aws deploy create-deployment
-          --application-name $CODE_DEPLOY_APP_NAME
-          --deployment-config-name CodeDeployDefault.AllAtOnce
-          --deployment-group-name $DEPLOYMENT_GROUP_NAME
-          --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: last-bite-repository
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Replace variables in task-definition.json
+        run: |
+          sed -i 's|\${AWS_S3_REGION}|'"${{ secrets.AWS_S3_REGION }}"'|g' task-definition.json
+          sed -i 's|\${AWS_S3_SECRET_KEY}|'"${{ secrets.AWS_S3_SECRET_KEY }}"'|g' task-definition.json
+          sed -i 's|\${REDIS_HOST}|'"${{ secrets.REDIS_HOST }}"'|g' task-definition.json
+          sed -i 's|\${DATABASE_URL}|'"${{ secrets.DATABASE_URL }}"'|g' task-definition.json
+          sed -i 's|\${PORT}|'"${{ secrets.PORT }}"'|g' task-definition.json
+          sed -i 's|\${ACCESS_SECRET_KEY}|'"${{ secrets.ACCESS_SECRET_KEY }}"'|g' task-definition.json
+          sed -i 's|\${CLIENT_URL}|'"${{ secrets.CLIENT_URL }}"'|g' task-definition.json
+          sed -i 's|\${AWS_S3_BUCKET_NAME}|'"${{ secrets.AWS_S3_BUCKET_NAME }}"'|g' task-definition.json
+          sed -i 's|\${REFRESH_SECRET_KEY}|'"${{ secrets.REFRESH_SECRET_KEY }}"'|g' task-definition.json
+          sed -i 's|\${COOKIE_SECRET}|'"${{ secrets.COOKIE_SECRET }}"'|g' task-definition.json
+          sed -i 's|\${AWS_S3_ACCESS_KEY}|'"${{ secrets.AWS_S3_ACCESS_KEY }}"'|g' task-definition.json
+          sed -i 's|\${TASK_ROLE_ARN}|'"${{ secrets.TASK_ROLE_ARN }}"'|g' task-definition.json
+          sed -i 's|\${EXECUTION_ROLE_ARN}|'"${{ secrets.EXECUTION_ROLE_ARN }}"'|g' task-definition.json
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: last-bite-backend
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: last-bite-service
+          cluster: late-bite-app
+          wait-for-service-stability: false
