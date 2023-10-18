@@ -1,5 +1,8 @@
+import { BullModule } from '@nestjs/bull';
+import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -22,6 +25,13 @@ import { UserEntity } from './users/entities/user.entity';
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
+
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:
@@ -29,6 +39,8 @@ import { UserEntity } from './users/entities/user.entity';
           ? '.env.production'
           : '.env.development',
     }),
+    CacheModule.register(),
+    EventEmitterModule.forRoot(),
     PrismaModule,
     AlarmsModule,
     StoresModule,

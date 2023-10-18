@@ -4,6 +4,8 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { GetItemDto } from './dto/get-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 
+const DEFAULT_AVAILABLE_ITEMS = 5;
+
 @Injectable()
 export class ItemsRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -78,12 +80,13 @@ export class ItemsRepository {
   }
 
   async updateItem(
-    itemId: number,
-    updateItemDto: UpdateItemDto,
-    urlByS3Key: string,
-    startTime: Date,
-    endTime: Date,
-    userId: number,
+    itemId?: number,
+    updateItemDto?: UpdateItemDto,
+    urlByS3Key?: string,
+    startTime?: Date,
+    endTime?: Date,
+    userId?: number,
+    count?: number,
   ): Promise<{ message: string }> {
     // userId에 해당하는 storeId가 없을 때 업장 생성 문구 호출
     const store = await this.prisma.stores.findUnique({
@@ -102,11 +105,11 @@ export class ItemsRepository {
     await this.prisma.items.update({
       where: { itemId },
       data: {
-        name: updateItemDto.name,
-        content: updateItemDto.content,
-        prevPrice: updateItemDto.prevPrice,
-        price: updateItemDto.price,
-        count: updateItemDto.count,
+        name: updateItemDto?.name,
+        content: updateItemDto?.content,
+        prevPrice: updateItemDto?.prevPrice,
+        price: updateItemDto?.price,
+        count: updateItemDto?.count,
         startTime,
         endTime,
         imgUrl: urlByS3Key,

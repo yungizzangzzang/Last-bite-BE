@@ -174,15 +174,5 @@ export class AuthService {
       },
     });
     console.log('업데이트된 point정보', updatedUser.point);
-    // return points[point];
   }
-
-  // async updateOwnerInfo(ownerId:number, userId: number) {
-  //   // const { ownerId } = body;
-  //   // const { userId } = body2;
-  //   const updatedOwnerInfo = await this.prisma.stores.update({
-  //     where: { ownerId},
-  //     data: { userId },
-  //   });
-  // }
 }

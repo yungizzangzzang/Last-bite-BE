@@ -80,6 +80,26 @@ export class OrdersRepository {
     return order;
   }
 
+  async updateOrdered(
+    orderId: number,
+    count: number,
+    itemId: number,
+  ): Promise<void> {
+    const order = await this.prisma.orders.findFirst({
+      where: { orderId },
+    });
+
+    if (order) {
+      const decreasedOrders = await this.prisma.items.update({
+        where: { itemId },
+        data: { count },
+      });
+      {
+        count--, order?.ordered;
+      }
+    }
+  }
+
   async getUserOrders(userId: number): Promise<UserOrdersDTO[]> {
     const rawOrders = await this.prisma.orders.findMany({
       where: {
@@ -174,6 +194,7 @@ export class OrdersRepository {
         count: orderItem.count,
       })),
       storeName: rawOrder.Store.name,
+      ordered: false,
     };
 
     return order;

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsBoolean, IsDate, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class OrderEntity {
   @ApiProperty({ description: '주문 ID', example: 1 })
@@ -11,6 +11,9 @@ export class OrderEntity {
   @IsNumber()
   @IsNotEmpty()
   discount: number;
+
+  @IsBoolean()
+  ordered: boolean;
 
   @ApiProperty({ description: '총 주문 가격', example: 14000 })
   @IsNumber()

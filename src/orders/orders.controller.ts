@@ -4,9 +4,11 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Logger,
   Param,
   Post,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiOkResponse,
@@ -25,6 +27,7 @@ import { CreateOrderDtoResponse } from './dto/order-response.dto';
 import { OrdersService } from './orders.service';
 
 @ApiTags('orders')
+@UseInterceptors()
 @Controller('orders')
 export class OrdersController {
   constructor(
@@ -65,6 +68,16 @@ export class OrdersController {
     );
 
     return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
+  }
+
+  @Post('orders')
+  sendRequest(
+    @Param('itemId') itemId: number,
+    @Param('userId') userId: number,
+    @Param('orderId') orderId: number,
+  ): Promise<object> {
+    this.logger.verbose('주문 요청 신청 POST API');
+    return this.ordersService.addToOrdersQueue(userId, itemId, userId);
   }
 
   @Get()
