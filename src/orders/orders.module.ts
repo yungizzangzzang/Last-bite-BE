@@ -9,8 +9,6 @@ import { Queue } from 'bull';
 import { BullConfigProvider } from 'src/common/providers/bull-config.provider';
 import { RedisConfigProvider } from 'src/common/providers/redis-config-providers';
 import { ItemsModule } from 'src/items/items.module';
-import { Module } from '@nestjs/common';
-import { JobsModule } from 'src/jobs/jobs.module';
 import { OrderItemsModule } from 'src/order-items/order-items.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { StoreEntity } from 'src/stores/entities/stores.entity';
@@ -26,7 +24,6 @@ import { OrdersService } from './orders.service';
     PrismaModule,
     OrderItemsModule,
     ItemsModule,
-    JobsModule
     BullModule.forRootAsync('bullqueue-config', {
       useClass: BullConfigProvider,
     }),

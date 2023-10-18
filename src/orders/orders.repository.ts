@@ -52,7 +52,7 @@ export class OrdersRepository {
           where: { itemId },
           data: { count: item.count - Item.count },
         });
-        
+
         // count === 0 일때 deletedAt 업데이트
         const itemToUpdate = await this.prisma.items.findUnique({
           where: { itemId, count: 0 },
