@@ -6,7 +6,6 @@ import {
 } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
-
 @Injectable()
 export class OrdersRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -25,6 +24,8 @@ export class OrdersRepository {
         HttpStatus.NOT_FOUND,
       );
     }
+
+    const transactionOrders: any[] = [];
 
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
@@ -59,40 +60,48 @@ export class OrdersRepository {
           );
         }
 
-        // count update
-        await this.prisma.items.update({
-          where: { itemId },
-          data: { count: item.count - Item.count },
-        });
+        transactionOrders.push(
+          // count update
+          this.prisma.items.update({
+            where: { itemId },
+            data: { count: item.count - Item.count },
+          }),
 
+          this.prisma.users.update({
+            where: { userId },
+            data: { point: user.point - createOrderOrderItemDto.totalPrice },
+          }),
+        );
         // count === 0 일때 deletedAt 업데이트
-        const itemToUpdate = await this.prisma.items.findUnique({
-          where: { itemId, count: 0 },
-          select: { deletedAt: true, itemId: true },
-        });
-        if (itemToUpdate) {
-          await this.prisma.items.update({
-            where: { itemId: itemToUpdate.itemId },
-            data: { deletedAt: new Date() },
+        await this.prisma.items
+          .findUnique({
+            where: { itemId, count: 0 },
+            select: { deletedAt: true, itemId: true },
+          })
+          .then((itemToUpdate) => {
+            if (itemToUpdate) {
+              this.prisma.items.update({
+                where: { itemId: itemToUpdate.itemId },
+                data: { deletedAt: new Date() },
+              });
+            }
           });
-        }
-        // 예약자 point 차감
-        await this.prisma.users.update({
-          where: { userId },
-          data: { point: user.point - createOrderOrderItemDto.totalPrice },
-        });
       }),
     );
 
-    // 주문 정보 생성
-    const order = await this.prisma.orders.create({
-      data: {
-        userId,
-        storeId: createOrderOrderItemDto.storeId,
-        discount: createOrderOrderItemDto.discount,
-        totalPrice: createOrderOrderItemDto.totalPrice,
-      },
-    });
+    transactionOrders.push(
+      // 주문 정보 생성
+      this.prisma.orders.create({
+        data: {
+          userId,
+          storeId: createOrderOrderItemDto.storeId,
+          discount: createOrderOrderItemDto.discount,
+          totalPrice: createOrderOrderItemDto.totalPrice,
+        },
+      }),
+    );
+
+    const [_, __, order] = await this.prisma.$transaction(transactionOrders);
 
     return order;
   }
