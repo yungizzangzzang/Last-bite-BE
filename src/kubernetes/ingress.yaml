@@ -20,13 +20,3 @@ spec:
             name: last-bite-service
             port:
               number: 80
-  - host: grafana.nodezzang.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: grafana
-            port:
-              number: 80
