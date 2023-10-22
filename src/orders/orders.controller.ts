@@ -42,8 +42,8 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   async createOrder(
     @Body() createOrderOrderItemDto: CreateOrderOrderItemDto,
-    @User() user: Users, //: Promise<{ message: string }>
-  ) {
+    @User() user: Users,
+  ): Promise<{ message: string }> {
     //기업 회원(isclient===false)이 접근한 경우
     if (user.isClient !== true) {
       throw new HttpException(
