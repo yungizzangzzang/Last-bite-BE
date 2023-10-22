@@ -14,6 +14,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Get latest tag
+        id: get-latest-tag
+        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
+
+      - name: Increment version number
+        id: inc-version
+        run: echo "::set-output name=new-tag::$(echo ${{ steps.get-latest-tag.outputs.tag }} | awk -F. '{$NF = $NF + 1;} 1' OFS=.)"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -26,12 +34,16 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, tag, and push image to Amazon ECR
-        id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: last-bite-repository
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ steps.inc-version.outputs.new-tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Create new Git tag
+        run: |
+          git tag ${{ steps.inc-version.outputs.new-tag }}
+          git push origin ${{ steps.inc-version.outputs.new-tag }}
