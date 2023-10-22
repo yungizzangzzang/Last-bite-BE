@@ -12,6 +12,7 @@ export class ItemsService {
   async createItem(
     createItemDto: CreateItemDto,
     urlByS3Key: string,
+    userId: number
   ): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
@@ -31,6 +32,7 @@ export class ItemsService {
       urlByS3Key,
       endTime,
       startTime,
+      userId
     );
   }
 
@@ -38,6 +40,7 @@ export class ItemsService {
     itemId: number,
     updateItemDto: UpdateItemDto,
     urlByS3Key: string,
+    userId: number
   ): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
@@ -58,11 +61,12 @@ export class ItemsService {
       urlByS3Key,
       startTime,
       endTime,
+      userId
     );
   }
 
-  async deleteItem(itemId: number): Promise<{ message: string }> {
-    return await this.itemsRepository.deleteItem(itemId);
+  async deleteItem(itemId: number, userId:number): Promise<{ message: string }> {
+    return await this.itemsRepository.deleteItem(itemId, userId);
   }
 
   async getOneItem(itemId: number) {

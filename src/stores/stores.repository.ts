@@ -8,12 +8,13 @@ export class StoresRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // * 가게 전체 조회
-  async selectAllStores(): Promise<GetStoreResData[]> {
+  async selectAllStore(): Promise<GetStoreResData[]> {
     const stores: GetStoreResData[] = await this.prisma.stores.findMany({
       where: {
         deletedAt: null,
       },
       select: {
+        storeId: true,
         ownerId: true,
         name: true,
         longitude: true,
@@ -35,6 +36,7 @@ export class StoresRepository {
         deletedAt: null,
       },
       select: {
+        storeId: true,
         ownerId: true,
         name: true,
         longitude: true,

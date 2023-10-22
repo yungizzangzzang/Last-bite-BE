@@ -4,6 +4,7 @@ import { GetItemDto } from 'src/items/dto/get-item.dto';
 import { StoreEntity } from '../entities/stores.entity';
 
 export class GetStoreResData extends PickType(StoreEntity, [
+  'storeId',
   'ownerId',
   'name',
   'longitude',
@@ -24,4 +25,7 @@ export class GetOneStoreResDto extends CustomSuccessRes {
 
   @ApiProperty({ type: GetItemDto, isArray: true })
   items: GetItemDto[];
+
+  @ApiProperty()
+  isLiked: boolean;
 }

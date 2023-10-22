@@ -82,7 +82,8 @@ export class StoreEntity implements Stores {
   })
   @IsString()
   @IsNotEmpty()
-  managementNumber!: string;
+  @ApiProperty({ type: String, description: '사업자 번호', example: '434-343' })
+  managementNumber: string;
 
   @ApiProperty({
     type: Date,
