@@ -25,7 +25,7 @@ export class OrdersRepository {
         HttpStatus.NOT_FOUND,
       );
     }
-    
+
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
         const itemId = Item.itemId;
@@ -59,7 +59,6 @@ export class OrdersRepository {
           );
         }
 
-
         // count update
         await this.prisma.items.update({
           where: { itemId },
@@ -80,7 +79,7 @@ export class OrdersRepository {
         // 예약자 point 차감
         await this.prisma.users.update({
           where: { userId },
-          data: { point: user.point - item.price * item.count },
+          data: { point: user.point - createOrderOrderItemDto.totalPrice },
         });
       }),
     );
