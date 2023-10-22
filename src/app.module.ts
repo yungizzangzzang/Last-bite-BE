@@ -24,19 +24,14 @@ import { UserEntity } from './users/entities/user.entity';
 
 @Module({
   imports: [
-    BullModule.forRoot({
-      redis: {
-        host: 'localhost',
-        port: 6379,
-      },
-    }),
-
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'production'
-          ? '.env.production'
-          : '.env.development',
+    }),
+    BullModule.forRoot({
+      redis: {
+        host: process.env.REDIS_HOST,
+        port: 6379,
+      },
     }),
     CacheModule.register(),
     EventEmitterModule.forRoot(),
