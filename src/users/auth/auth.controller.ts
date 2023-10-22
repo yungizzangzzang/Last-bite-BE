@@ -145,6 +145,6 @@ export class AuthController {
 
   @Get()
   test() {
-    return 'hi';
+    return 'hi!';
   }
 }
