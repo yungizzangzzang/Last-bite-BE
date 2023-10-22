@@ -14,9 +14,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Get latest commit hash
+      - name: Get latest character commit hash
         id: get-latest-commit-hash
-        run: echo "::set-output name=commit-hash::$(git rev-parse --short HEAD)"
+        run: echo "::set-output name=commit-hash::$(git rev-parse --short=7 HEAD)"
+
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -39,9 +40,3 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-      - name: Create new Git tag
-        run: |
-          git config --global user.email "whdgnszz12@gmail.com"
-          git config --global user.name "whdgnszz1"
-          git tag ${{ steps.get-latest-commit-hash.outputs.commit-hash }}
-          git push origin ${{ steps.get-latest-commit-hash.outputs.commit-hash }}
