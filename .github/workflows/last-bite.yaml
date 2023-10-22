@@ -14,13 +14,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Get latest tag
-        id: get-latest-tag
-        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
-
-      - name: Increment version number
-        id: inc-version
-        run: echo "::set-output name=new-tag::$(echo ${{ steps.get-latest-tag.outputs.tag }} | awk -F. '{$NF = $NF + 1;} 1' OFS=.)"
+      - name: Get latest commit hash
+        id: get-latest-commit-hash
+        run: echo "::set-output name=commit-hash::$(git rev-parse --short HEAD)"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -37,7 +33,7 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: last-bite-repository
-          IMAGE_TAG: ${{ steps.inc-version.outputs.new-tag }}
+          IMAGE_TAG: ${{ steps.get-latest-commit-hash.outputs.commit-hash }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -45,5 +41,7 @@ jobs:
 
       - name: Create new Git tag
         run: |
-          git tag ${{ steps.inc-version.outputs.new-tag }}
-          git push origin ${{ steps.inc-version.outputs.new-tag }}
+          git config --global user.email "whdgnszz12@gmail.com"
+          git config --global user.name "whdgnszz1"
+          git tag ${{ steps.get-latest-commit-hash.outputs.commit-hash }}
+          git push origin ${{ steps.get-latest-commit-hash.outputs.commit-hash }}
