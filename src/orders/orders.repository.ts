@@ -25,6 +25,7 @@ export class OrdersRepository {
         HttpStatus.NOT_FOUND,
       );
     }
+    
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
         const itemId = Item.itemId;
@@ -57,12 +58,7 @@ export class OrdersRepository {
             HttpStatus.NOT_FOUND,
           );
         }
-        if (user.point < item.price) {
-          throw new HttpException(
-            { message: '포인트를 충전해주세요.' },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
+
 
         // count update
         await this.prisma.items.update({

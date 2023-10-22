@@ -52,6 +52,13 @@ export class OrdersController {
       );
     }
 
+    if (user.point < createOrderOrderItemDto.totalPrice) {
+      throw new HttpException(
+        { message: '포인트를 충전해주세요.' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     // 주문 수량이 0인 경우
     await Promise.all(
       createOrderOrderItemDto.items.map(async (item) => {
