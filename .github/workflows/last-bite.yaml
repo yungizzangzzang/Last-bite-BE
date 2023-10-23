@@ -23,7 +23,7 @@ jobs:
       - name: Build, tag, and push image to Docker Hub
         env:
           DOCKERHUB_REPOSITORY: whdgnszz1/last-bite-backend
-          IMAGE_TAG: ${{ steps.get-latest-commit-hash.outputs.commit-hash }}
+
         run: |
           docker build -t $DOCKERHUB_REPOSITORY:$IMAGE_TAG .
           docker push $DOCKERHUB_REPOSITORY:$IMAGE_TAG
