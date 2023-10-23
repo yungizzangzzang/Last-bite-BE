@@ -7,9 +7,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Queue } from 'bull';
-import { ItemEntity } from 'src/items/entities/item.entity';
 import { ItemsRepository } from 'src/items/items.repository';
-import { CreateOrderItemDto } from 'src/order-items/dto/create-order-item.dto';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
 import { AuthService } from 'src/users/auth/auth.service';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
@@ -62,32 +60,14 @@ export class OrdersService {
       userId,
     );
 
-    await this.orderItemsRepository.createOrderItem(
+    const orderItem = await this.orderItemsRepository.createOrderItem(
       order.orderId,
       createOrderOrderItemDto.items,
     );
-    // count === 0 일때 deletedAt 업데이트
 
-    return { message: '예약이 완료되었습니다.' };
-  }
-
-  // POST: 주문 요청 API
-  // 주문 요청을 queue에 넣는 메소드
-  async addToOrdersQueue(
-    orderId: number,
-    userId: number,
-    itemId: number,
-  ): Promise<object> {
-    // queue에 넣기 전에 orderId, userId 검증
-    const user = await this.authService.findOneUser(userId);
-    if (!user) {
-      throw new NotFoundException('로그인을 해주세요.');
-    }
-
-    const order = await this.orderItemsRepository.gelAllOrderItems(orderId);
-    if (!order) {
-      throw new NotFoundException('상품이 비어 있어요.');
-    }
+    const orderId = order.orderId;
+    // ! itemId는 배열로 받아오면 힘들 것 같아 임시로 지정함. 나중에 바꿔주기.
+    const itemId = 40;
 
     // 각 주문에 대한 unique한 eventName 생성
     const eventName = `Orders-${orderId}-${
@@ -113,7 +93,13 @@ export class OrdersService {
 
     // 대기열 큐에 job을 넣은 후, service 내에서 waitingForJobCompleted() 함수로 해당 job을 넘겨줌
     console.log(' 3. waitingForJobCompleted() 호출');
-    return this.waitingForJobCompleted(eventName, 2, user);
+    const addToOdersQueue = await this.waitingForJobCompleted(
+      eventName,
+      2,
+      order,
+    );
+
+    return { message: '예약이 완료되었습니다.' };
   }
 
   // 2. 해당 요청에 대한 비즈니스로직 (sendRequest())이 완료될 때까지 대기 후 결과를 반환하는 메소드
@@ -181,15 +167,6 @@ export class OrdersService {
         );
       }
 
-      // 주문 내역에 itemId 추가
-      await this.orderItemsRepository.createOrderItem(
-        orderId,
-        CreateOrderItemDto[itemId],
-      );
-
-      // 해당 가게의 count를 1 감소
-      await this.itemsRepository.updateItem(itemId);
-
       // 해당 주문의 ordered를 true로 변경
       await this.ordersRepository.updateOrdered(orderId, itemId, userId);
 
@@ -207,17 +184,6 @@ export class OrdersService {
       });
     }
   }
-
-  // 주문 수량과 가격에 따라 우선적으로 처리되어야 할 job에 priority를 부여하는 메소드
-  createNewOrder = (item: ItemEntity): any => {
-    this.ordersQueue.add(item, {
-      priority: this.getPriority(item),
-    });
-  };
-
-  getPriority = (item: ItemEntity): any => {
-    return item.count >= 10 && item.price > 100000 ? 1 : 2;
-  };
 
   async getUserOrders(userId: number) {
     const result: UserOrdersDTO[] = await this.ordersRepository.getUserOrders(

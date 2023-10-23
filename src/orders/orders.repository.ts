@@ -67,6 +67,7 @@ export class OrdersRepository {
             data: { count: item.count - Item.count },
           }),
 
+          // point update
           this.prisma.users.update({
             where: { userId },
             data: { point: user.point - createOrderOrderItemDto.totalPrice },
