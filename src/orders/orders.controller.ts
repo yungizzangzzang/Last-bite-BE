@@ -73,16 +73,6 @@ export class OrdersController {
     return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
   }
 
-  // @Post('orders')
-  // sendRequest(
-  //   @Param('itemId') itemId: number,
-  //   @Param('userId') userId: number,
-  //   @Param('orderId') orderId: number,
-  // ): Promise<object> {
-  //   this.logger.verbose('주문 요청 신청 POST API');
-  //   return this.ordersService.addToOrdersQueue(userId, itemId, userId);
-  // }
-
   @Get()
   @ApiOperation({ summary: '사용자의 모든 주문 조회' })
   @ApiOkResponse({ type: [UserOrdersDTO], description: '사용자의 주문 목록' })
