@@ -1,4 +1,4 @@
-name: Deploy to Amazon EKS
+name: Deploy to Amazon EKS and Docker Hub
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REGISTRY: 737460622117.dkr.ecr.ap-northeast-2.amazonaws.com
-  ECR_REPOSITORY: last-bite-repository
+  DOCKER_USERNAME: whdgnszz1
+  DOCKER_REPOSITORY: last-bite-backend
   K8S_NAMESPACE: default
   K8S_DEPLOYMENT_NAME: last-bite-deployment
 
@@ -28,16 +28,16 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
+    - name: Build and tag image
       run: |
-        docker build -t ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
-        docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-        echo "::set-output name=image::${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}"
+        docker build -t ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.sha }} .
+
+    - name: Login to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ env.DOCKER_USERNAME }} --password-stdin
+
+    - name: Push to Docker Hub
+      run: |
+        docker push ${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.sha }}
 
     - name: Install and configure kubectl
       run: |
@@ -48,4 +48,4 @@ jobs:
 
     - name: Deploy to EKS
       run: |
-        kubectl set image deployment/${{ env.K8S_DEPLOYMENT_NAME }} last-bite-api=${{ steps.build-image.outputs.image }} --namespace=${{ env.K8S_NAMESPACE }} --kubeconfig=kubeconfig.yaml
+        kubectl set image deployment/${{ env.K8S_DEPLOYMENT_NAME }} last-bite-api=${{ env.DOCKER_USERNAME }}/${{ env.DOCKER_REPOSITORY }}:${{ github.sha }} --namespace=${{ env.K8S_NAMESPACE }} --kubeconfig=kubeconfig.yaml
