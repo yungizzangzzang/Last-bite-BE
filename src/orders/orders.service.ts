@@ -60,7 +60,7 @@ export class OrdersService {
       userId,
     );
 
-    const orderItem = await this.orderItemsRepository.createOrderItem(
+    await this.orderItemsRepository.createOrderItem(
       order.orderId,
       createOrderOrderItemDto.items,
     );
@@ -91,6 +91,7 @@ export class OrdersService {
       },
     );
 
+    // 1. 주문 요청을 queue에 넣는 메서드
     // 대기열 큐에 job을 넣은 후, service 내에서 waitingForJobCompleted() 함수로 해당 job을 넘겨줌
     console.log(' 3. waitingForJobCompleted() 호출');
     const addToOdersQueue = await this.waitingForJobCompleted(
@@ -158,17 +159,6 @@ export class OrdersService {
           HttpStatus.SERVICE_UNAVAILABLE,
         );
       }
-
-      const order = await this.ordersRepository.getOneOrder(orderId);
-      if (order.ordered) {
-        throw new HttpException(
-          '이미 주문한 상품입니다. 다시 주문하시겠습니까?',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      // 해당 주문의 ordered를 true로 변경
-      await this.ordersRepository.updateOrdered(orderId, itemId, userId);
 
       // 비즈니스로직이 완료되었음을 이벤트 리스너에게 알림
       return this.eventEmitter.emit(eventName, { success: true });
