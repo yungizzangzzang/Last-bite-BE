@@ -7,9 +7,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Queue } from 'bull';
-import { ItemEntity } from 'src/items/entities/item.entity';
 import { ItemsRepository } from 'src/items/items.repository';
-import { CreateOrderItemDto } from 'src/order-items/dto/create-order-item.dto';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
 import { AuthService } from 'src/users/auth/auth.service';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
@@ -67,12 +65,12 @@ export class OrdersService {
       createOrderOrderItemDto.items,
     );
 
-    const orderId = order.orderId
+    const orderId = order.orderId;
     // ! itemId는 배열로 받아오면 힘들 것 같아 임시로 지정함. 나중에 바꿔주기.
-    const itemId =  1
+    const itemId = 40;
 
     // 각 주문에 대한 unique한 eventName 생성
-     const eventName = `Orders-${orderId}-${
+    const eventName = `Orders-${orderId}-${
       Math.floor(Math.random() * 99999) + 1
     }`;
     console.log('1. eventName: ', eventName);
@@ -95,12 +93,14 @@ export class OrdersService {
 
     // 대기열 큐에 job을 넣은 후, service 내에서 waitingForJobCompleted() 함수로 해당 job을 넘겨줌
     console.log(' 3. waitingForJobCompleted() 호출');
-    const addToOdersQueue = await this.waitingForJobCompleted(eventName, 2, order);
+    const addToOdersQueue = await this.waitingForJobCompleted(
+      eventName,
+      2,
+      order,
+    );
 
-    
     return { message: '예약이 완료되었습니다.' };
   }
-
 
   // 2. 해당 요청에 대한 비즈니스로직 (sendRequest())이 완료될 때까지 대기 후 결과를 반환하는 메소드
   async waitingForJobCompleted(
