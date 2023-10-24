@@ -9,7 +9,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Queue } from 'bull';
 import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
-import { AuthService } from 'src/users/auth/auth.service';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
@@ -21,7 +20,6 @@ export class OrdersService {
     @InjectQueue('ordersQueue') private ordersQueue: Queue, // bullqueue DI
     private readonly ordersRepository: OrdersRepository,
     private readonly orderItemsRepository: OrderItemsRepository,
-    private readonly authService: AuthService,
     private readonly eventEmitter: EventEmitter2,
     private readonly itemsRepository: ItemsRepository,
   ) {}

@@ -4,7 +4,6 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Logger,
   Param,
   Post,
   UseGuards,
@@ -29,7 +28,6 @@ import { OrdersService } from './orders.service';
 @UseInterceptors()
 @Controller('orders')
 export class OrdersController {
-  private logger = new Logger();
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
