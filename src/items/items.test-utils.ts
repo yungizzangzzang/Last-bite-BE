@@ -4,9 +4,14 @@ import { ItemsController } from './items.controller';
 import { ItemsRepository } from './items.repository';
 import { ItemsService } from './items.service';
 
+export interface ItemsMocks {
+  mockItemsRepository: any;
+  mockAwsService: any;
+}
+
 export const itemsTestingModule = async (): Promise<{
   moduleBuilder: TestingModuleBuilder;
-  mocks: any;
+  mocks: ItemsMocks;
 }> => {
   const mockItemsRepository = {};
   const mockAwsService = {};

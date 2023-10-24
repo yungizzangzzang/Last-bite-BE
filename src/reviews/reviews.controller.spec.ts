@@ -1,10 +1,10 @@
 import { TestingModule } from '@nestjs/testing';
 import { ReviewsController } from './reviews.controller';
-import { reviewsTestingModule } from './reviews.test-utils';
+import { ReviewsMocks, reviewsTestingModule } from './reviews.test-utils';
 
 describe('ReviewsController', () => {
   let controller: ReviewsController;
-  let mocks: any;
+  let mocks: ReviewsMocks;
 
   beforeEach(async () => {
     const { moduleBuilder, mocks: mockObjects } = await reviewsTestingModule();

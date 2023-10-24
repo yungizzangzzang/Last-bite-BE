@@ -6,6 +6,22 @@ import { ReviewsController } from './reviews.controller';
 import { ReviewsRepository } from './reviews.repository';
 import { ReviewsService } from './reviews.service';
 
+export interface ReviewsMocks {
+  mockReviewsRepository: {
+    createReview: jest.Mock;
+    getStoreReview: jest.Mock;
+  };
+  mockAuthService: {
+    findOneUser: jest.Mock;
+  };
+  mockOrdersRepository: {
+    getOneOrderById: jest.Mock;
+  };
+  mockStoresRepository: {
+    selectOneStore: jest.Mock;
+  };
+}
+
 export const reviewsTestingModule = async (): Promise<{
   moduleBuilder: TestingModuleBuilder;
   mocks: any;
@@ -27,6 +43,13 @@ export const reviewsTestingModule = async (): Promise<{
     selectOneStore: jest.fn(),
   };
 
+  const mocks: ReviewsMocks = {
+    mockReviewsRepository,
+    mockAuthService,
+    mockOrdersRepository,
+    mockStoresRepository,
+  };
+
   return {
     moduleBuilder: Test.createTestingModule({
       providers: [
@@ -38,11 +61,6 @@ export const reviewsTestingModule = async (): Promise<{
         { provide: StoresRepository, useValue: mockStoresRepository },
       ],
     }),
-    mocks: {
-      mockReviewsRepository,
-      mockAuthService,
-      mockOrdersRepository,
-      mockStoresRepository,
-    },
+    mocks,
   };
 };

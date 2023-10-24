@@ -1,10 +1,10 @@
 import { TestingModule } from '@nestjs/testing';
 import { ItemsController } from './items.controller';
-import { itemsTestingModule } from './items.test-utils';
+import { ItemsMocks, itemsTestingModule } from './items.test-utils';
 
 describe('ItemsController', () => {
   let controller: ItemsController;
-  let mocks: any;
+  let mocks: ItemsMocks;
 
   beforeEach(async () => {
     const { moduleBuilder, mocks: mockObjects } = await itemsTestingModule();
