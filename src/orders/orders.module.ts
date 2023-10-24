@@ -45,6 +45,7 @@ import { OrdersService } from './orders.service';
     StoreEntity,
     UserEntity,
   ],
+  exports: [OrdersRepository],
 })
 export class OrdersModule {
   // bull-board UI 연결을 위한 설정

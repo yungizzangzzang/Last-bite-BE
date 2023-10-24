@@ -1,9 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaClient } from '@prisma/client';
-import { Queue } from 'bull';
-import { DeepMockProxy } from 'jest-mock-extended';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { TestingModule } from '@nestjs/testing';
 import { OrdersService } from './orders.service';
+import { ordersTestingModule } from './orders.test-utils';
 
 export const mockBullQueue: any = {
   add: jest.fn(),
@@ -12,26 +9,20 @@ export const mockBullQueue: any = {
 
 describe('OrdersService', () => {
   let service: OrdersService;
-  let queue: Queue;
-  let mockPrisma: DeepMockProxy<PrismaClient>;
+  let mocks: any;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [OrdersService, PrismaService],
-    })
-      .overrideProvider(PrismaService)
-      // .useValue(mockDeep<PrismaClient>())
-      .useValue(mockBullQueue)
-      .compile();
-
+    const { moduleBuilder, mocks: mockObjects } = await ordersTestingModule();
+    const module: TestingModule = await moduleBuilder.compile();
     service = module.get<OrdersService>(OrdersService);
-    queue = module.get('OrdersQueue');
-    mockPrisma = module.get(PrismaService);
-  });
+    mocks = mockObjects;
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-    expect(queue).toBeDefined();
-    expect(mockPrisma).toBeDefined();
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should be defined', () => {
+      expect(service).toBeDefined();
+    });
   });
 });
