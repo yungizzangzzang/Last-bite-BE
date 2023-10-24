@@ -128,7 +128,7 @@ export class AlarmsGateway
 
   /** 3. 사장이 단골 고객에게만 보내는 알림*/
   @SubscribeMessage('alarmToFavoriteClient')
-  async AlarmToFavoriteClient(
+  async alarmToFavoriteClient(
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
   ) {
