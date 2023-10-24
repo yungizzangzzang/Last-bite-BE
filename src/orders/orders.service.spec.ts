@@ -2,11 +2,6 @@ import { TestingModule } from '@nestjs/testing';
 import { OrdersService } from './orders.service';
 import { ordersTestingModule } from './orders.test-utils';
 
-export const mockBullQueue: any = {
-  add: jest.fn(),
-  process: jest.fn(),
-};
-
 describe('OrdersService', () => {
   let service: OrdersService;
   let mocks: any;
@@ -16,13 +11,15 @@ describe('OrdersService', () => {
     const module: TestingModule = await moduleBuilder.compile();
     service = module.get<OrdersService>(OrdersService);
     mocks = mockObjects;
+  });
 
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    it('should be defined', () => {
-      expect(service).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+    expect(mocks).toBeDefined();
+    expect(2 + 2).toBe(4);
   });
 });

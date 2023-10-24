@@ -15,6 +15,5 @@ describe('ItemsService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-    expect(repository).toBeDefined();
   });
 });

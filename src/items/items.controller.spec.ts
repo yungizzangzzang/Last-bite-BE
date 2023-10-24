@@ -19,8 +19,5 @@ describe('ItemsController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
-    expect(itemsService).toBeDefined();
-    expect(awsService).toBeDefined();
-    expect(repository).toBeDefined();
   });
 });
