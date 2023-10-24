@@ -1,17 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
 import { ReviewsController } from './reviews.controller';
-import { ReviewsService } from './reviews.service';
+import { reviewsTestingModule } from './reviews.test-utils';
 
 describe('ReviewsController', () => {
   let controller: ReviewsController;
+  let mocks: any;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [ReviewsController],
-      providers: [ReviewsService],
-    }).compile();
-
+    const { moduleBuilder, mocks: mockObjects } = await reviewsTestingModule();
+    const module: TestingModule = await moduleBuilder.compile();
     controller = module.get<ReviewsController>(ReviewsController);
+    mocks = mockObjects;
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {

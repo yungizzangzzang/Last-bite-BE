@@ -206,4 +206,12 @@ export class OrdersRepository {
 
     return order;
   }
+
+  async getOneOrderById(orderId: number) {
+    const order = await this.prisma.orders.findFirst({
+      where: { orderId },
+    });
+
+    return order;
+  }
 }
