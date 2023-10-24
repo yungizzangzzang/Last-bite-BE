@@ -9,20 +9,13 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { StoreEntity } from 'src/stores/entities/stores.entity';
 import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
-import { UserEntity } from '../entities/user.entity';
 import { LoginDto } from './dtos/login.dto';
 import { GettingPointsDto } from './dtos/points.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-    private storeEntity: StoreEntity,
-    private userEntity: UserEntity,
-  ) {}
+  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
   async signUp(body: CreateUserDto) {
     try {
