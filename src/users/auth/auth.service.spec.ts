@@ -1,28 +1,16 @@
-import { JwtService } from '@nestjs/jwt';
-import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaClient } from '@prisma/client';
-import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
+import { authTestingModule } from './auth.test-utils';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let prismaService: PrismaService;
-  let jwtService: JwtService;
-  let mockPrisma: DeepMockProxy<PrismaClient>;
+  let mocks: any;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, PrismaService, JwtService],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(mockDeep<PrismaClient>())
-      .compile();
-
+    const { moduleBuilder, mocks: mockObjects } = await authTestingModule();
+    const module: TestingModule = await moduleBuilder.compile();
     service = module.get<AuthService>(AuthService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    jwtService = module.get<JwtService>(JwtService);
-    mockPrisma = module.get(PrismaService);
+    mocks = mockObjects;
   });
 
   it('should be defined', () => {
