@@ -2,10 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { CreateOrderItemDto } from './../order-items/dto/create-order-item.dto';
 import { OrderItemsRepository } from './../order-items/order-items.repository';
-import {
-  CreateOrderDto,
-  CreateOrderOrderItemDto,
-} from './dto/create-order.dto';
+import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 import { OrdersRepository } from './orders.repository';
@@ -89,18 +86,19 @@ describe('OrdersService', () => {
         point: 15000,
       };
 
-      const createOrderDto: CreateOrderDto = {
+      const createOrderDto: any = {
         userId: 1,
         discount: 22,
         storeId: 2,
         totalPrice: 12000,
         orderId: 3,
       };
+
       const createOrderItemDto: CreateOrderItemDto[] = [
         { orderId: 1, itemId: 2, count: 3 },
       ];
       const tmpOrderId = 5;
-      jest.spyOn(service, 'createOrder').mockResolvedValue({ message: '성공' });
+      jest.spyOn(service, 'createOrder').mockResolvedValue(createOrderDto);
       jest
         .spyOn(ordersRepository, 'createOrder')
         .mockResolvedValue(createOrderDto);
@@ -116,7 +114,7 @@ describe('OrdersService', () => {
         createOrderItemDto,
       );
 
-      expect(result).toEqual({ message: '성공' });
+      expect(result).toEqual(createOrderDto);
       expect(service.createOrder).toHaveBeenCalledWith(
         createOrderOrderItemDto,
         user,

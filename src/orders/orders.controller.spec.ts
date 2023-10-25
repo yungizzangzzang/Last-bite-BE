@@ -89,13 +89,18 @@ describe('OrdersController', () => {
         isClient: true, // not false
         point: 15000, // > 12000
       };
+      const createOrderDto: any = {
+        userId: 1,
+        discount: 22,
+        storeId: 2,
+        totalPrice: 10000,
+        orderId: 1,
+      };
       // 처음에 describe에서 정의한 숫자 바꿔서 예외3 통과
       createOrderOrderItemDto.items[0].count = 2;
 
-      jest
-        .spyOn(controller, 'createOrder')
-        .mockResolvedValue({ message: '성공' });
-      jest.spyOn(service, 'createOrder').mockResolvedValue({ message: '성공' });
+      jest.spyOn(controller, 'createOrder').mockResolvedValue(createOrderDto);
+      jest.spyOn(service, 'createOrder').mockResolvedValue(createOrderDto);
 
       // controller.createOrder함수 호출
       const result = await controller.createOrder(
@@ -104,7 +109,7 @@ describe('OrdersController', () => {
       );
       await service.createOrder(createOrderOrderItemDto, user);
 
-      expect(result).toEqual({ message: '성공' });
+      expect(result).toEqual(createOrderDto);
       expect(controller.createOrder).toHaveBeenCalledWith(
         createOrderOrderItemDto,
         user,
