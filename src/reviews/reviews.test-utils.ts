@@ -52,8 +52,8 @@ export const reviewsTestingModule = async (): Promise<{
 
   return {
     moduleBuilder: Test.createTestingModule({
+      controllers: [ReviewsController],
       providers: [
-        ReviewsController,
         ReviewsService,
         { provide: ReviewsRepository, useValue: mockReviewsRepository },
         { provide: AuthService, useValue: mockAuthService },
