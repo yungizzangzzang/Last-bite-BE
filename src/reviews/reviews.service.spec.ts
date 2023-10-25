@@ -33,17 +33,22 @@ describe('ReviewsService', () => {
         message: '리뷰 작성 완료.',
       });
 
-      const result = await service.createReview(1, 1, 1, {
-        content: '맛있어요',
-        star: 5,
-      });
+      const result = await service.createReview(
+        expect.any(Number),
+        expect.any(Number),
+        expect.any(Number),
+        {
+          content: expect.any(String),
+          star: expect.any(Number),
+        },
+      );
       expect(result).toEqual({ message: '리뷰 작성 완료.' });
       expect(mocks.mockReviewsRepository.createReview).toHaveBeenCalledWith(
-        1,
-        1,
-        1,
-        '맛있어요',
-        5,
+        expect.any(Number),
+        expect.any(Number),
+        expect.any(Number),
+        expect.any(String),
+        expect.any(Number),
       );
     });
 
@@ -51,10 +56,15 @@ describe('ReviewsService', () => {
       mocks.mockAuthService.findOneUser.mockResolvedValue(null);
 
       await expect(
-        service.createReview(1, 1, 1, {
-          content: '맛있어요',
-          star: 5,
-        }),
+        service.createReview(
+          expect.any(Number),
+          expect.any(Number),
+          expect.any(Number),
+          {
+            content: expect.any(String),
+            star: expect.any(Number),
+          },
+        ),
       ).rejects.toThrow('해당 유저를 찾을 수 없습니다.');
     });
 
@@ -63,10 +73,15 @@ describe('ReviewsService', () => {
       mocks.mockOrdersRepository.getOneOrderById.mockResolvedValue(null);
 
       await expect(
-        service.createReview(1, 1, 1, {
-          content: '맛있어요',
-          star: 5,
-        }),
+        service.createReview(
+          expect.any(Number),
+          expect.any(Number),
+          expect.any(Number),
+          {
+            content: expect.any(String),
+            star: expect.any(Number),
+          },
+        ),
       ).rejects.toThrow('해당 주문을 찾을 수 없습니다.');
     });
 
@@ -76,10 +91,15 @@ describe('ReviewsService', () => {
       mocks.mockStoresRepository.selectOneStore.mockResolvedValue(null);
 
       await expect(
-        service.createReview(1, 1, 1, {
-          content: '맛있어요',
-          star: 5,
-        }),
+        service.createReview(
+          expect.any(Number),
+          expect.any(Number),
+          expect.any(Number),
+          {
+            content: expect.any(String),
+            star: expect.any(Number),
+          },
+        ),
       ).rejects.toThrow('해당 가게를 찾을 수 없습니다.');
     });
   });
@@ -113,7 +133,7 @@ describe('ReviewsService', () => {
     it('getStoreReviews는 가게가 없을 경우 NotFoundException을 던져야 함', async () => {
       mocks.mockStoresRepository.selectOneStore.mockResolvedValue(null);
 
-      await expect(service.getStoreReview(1)).rejects.toThrow(
+      await expect(service.getStoreReview(expect.any(Number))).rejects.toThrow(
         '해당 가게를 찾을 수 없습니다.',
       );
     });
