@@ -1,8 +1,5 @@
-import { BullModule } from '@nestjs/bull';
-import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -12,6 +9,7 @@ import { ItemsModule } from './items/items.module';
 import { LikesModule } from './likes/likes.module';
 import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
+import { OrdersProcessor } from './orders/orders.processor';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -27,14 +25,14 @@ import { UserEntity } from './users/entities/user.entity';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    BullModule.forRoot({
-      redis: {
-        host: process.env.REDIS_HOST,
-        port: 6379,
-      },
-    }),
-    CacheModule.register(),
-    EventEmitterModule.forRoot(),
+    // BullModule.forRoot({
+    //   redis: {
+    //     host: process.env.REDIS_HOST,
+    //     port: 6379,
+    //   },
+    // }),
+    // CacheModule.register(),
+    // EventEmitterModule.forRoot(),
     PrismaModule,
     AlarmsModule,
     StoresModule,
@@ -46,7 +44,14 @@ import { UserEntity } from './users/entities/user.entity';
     LikesModule,
   ],
   controllers: [AppController, AuthController],
-  providers: [AppService, PrismaService, AuthService, StoreEntity, UserEntity],
+  providers: [
+    AppService,
+    PrismaService,
+    AuthService,
+    StoreEntity,
+    UserEntity,
+    OrdersProcessor,
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
