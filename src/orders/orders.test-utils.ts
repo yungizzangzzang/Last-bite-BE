@@ -35,7 +35,7 @@ export const ordersTestingModule = async (): Promise<{
         { provide: OrderItemsRepository, useValue: mockOrderItemsRepository },
         { provide: EventEmitter2, useValue: mockEventEmitter },
         { provide: ItemsRepository, useValue: mockItemsRepository },
-        { provide: getQueueToken('ordersQueue'), useValue: mockQueue },
+        { provide: getQueueToken('orders'), useValue: mockQueue },
       ],
     }),
     mocks: {

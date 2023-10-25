@@ -19,6 +19,5 @@ export class CreateOrderDto extends PickType(OrderEntity, [
   'discount',
   'storeId',
   'totalPrice',
-  'orderId'
-]) {
-}
+  'orderId',
+]) {}
