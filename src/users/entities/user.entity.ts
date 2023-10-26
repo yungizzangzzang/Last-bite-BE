@@ -33,7 +33,6 @@ export class UserEntity implements Users {
   })
   password: string;
 
-  
   @IsNotEmpty({ message: '이름은 필수 입력값입니다.' })
   @IsString()
   @MinLength(1, { message: '최소 1글자 이상은 입력해주세용' })

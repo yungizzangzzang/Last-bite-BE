@@ -22,11 +22,11 @@ export class AuthService {
       const { email, password, name, isClient, nickname, managementNumber } =
         body;
 
-      if (!email || !password || !name || !nickname) {
-        throw new BadRequestException({
-          errorMessage: '데이터 형식이 잘못되었습니다.',
-        });
-      }
+      // if (!email || !password || !name || !nickname) {
+      //   throw new BadRequestException({
+      //     errorMessage: '데이터 형식이 잘못되었습니다.',
+      //   });
+      // }
 
       const isExistEmail = await this.prisma.users.findUnique({
         where: { email },
@@ -77,11 +77,11 @@ export class AuthService {
   }
 
   async login(body: LoginDto) {
-    if (!body.email || !body.password) {
-      throw new BadRequestException({
-        errorMessage: '데이터 형식이 잘못되었습니다.',
-      });
-    }
+    // if (!body.email || !body.password) {
+    //   throw new BadRequestException({
+    //     errorMessage: '데이터 형식이 잘못되었습니다.',
+    //   });
+    // }
     const { email, password } = body;
 
     // 가입된 유저여야 합니다
@@ -107,7 +107,7 @@ export class AuthService {
 
     if (!user) {
       throw new ForbiddenException({
-        errorMessage: '이메일과 비밀번호를 확인해주세요',
+        message: '이메일과 비밀번호를 확인해주세요',
       });
     }
 
@@ -115,7 +115,7 @@ export class AuthService {
     const isPasswordMatched = await bcrypt.compare(password, user.password!);
     if (!isPasswordMatched) {
       throw new ForbiddenException({
-        errorMessage: '이메일과 비밀번호를 확인해주세요',
+        message: '이메일과 비밀번호를 확인해주세요',
       });
     }
     delete user.password;
@@ -129,7 +129,7 @@ export class AuthService {
       return { accessToken, user, message: '가봅시다' };
     } catch (err) {
       throw new InternalServerErrorException({
-        errorMessage: '로그인에 실패하였습니다',
+        message: '로그인에 실패하였습니다',
       });
     }
   }

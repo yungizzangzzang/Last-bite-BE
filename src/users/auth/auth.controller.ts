@@ -4,7 +4,6 @@ import {
   Get,
   Post,
   Req,
-  Request,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -42,10 +41,7 @@ export class AuthController {
     status: 500,
     description: '서버 에러',
   })
-  async signUp(
-    @Res({ passthrough: true }) response: Response,
-    @Body() body: CreateUserDto,
-  ) {
+  async signUp(@Body() body: CreateUserDto) {
     return await this.authService.signUp(body);
   }
 
@@ -66,7 +62,6 @@ export class AuthController {
     description: '서버 에러',
   })
   async login(
-    @Request() req: any,
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
