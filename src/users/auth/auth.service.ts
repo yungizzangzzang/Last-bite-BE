@@ -9,20 +9,13 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { StoreEntity } from 'src/stores/entities/stores.entity';
 import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
-import { UserEntity } from '../entities/user.entity';
 import { LoginDto } from './dtos/login.dto';
 import { GettingPointsDto } from './dtos/points.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwtService: JwtService,
-    private storeEntity: StoreEntity,
-    private userEntity: UserEntity,
-  ) {}
+  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
   async signUp(body: CreateUserDto) {
     try {
@@ -47,7 +40,6 @@ export class AuthService {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log('여기:', email, name, isClient, nickname);
 
       const user = await this.prisma.users.create({
         data: {
@@ -58,8 +50,6 @@ export class AuthService {
           nickname,
         },
       });
-      console.log('user:', user);
-      console.log('management:', managementNumber);
 
       if (isClient === false && !managementNumber) {
         // 사장인데, 관리번호 입력안하면 빠꾸
@@ -75,7 +65,6 @@ export class AuthService {
             ownerId: user.userId,
           },
         });
-        console.log(store);
       }
 
       return { message: '회원가입 성공, 가즈아!!' };
@@ -139,7 +128,6 @@ export class AuthService {
 
       return { accessToken, user, message: '가봅시다' };
     } catch (err) {
-      console.error(err);
       throw new InternalServerErrorException({
         errorMessage: '로그인에 실패하였습니다',
       });
@@ -147,12 +135,9 @@ export class AuthService {
   }
 
   async findOneUser(userId: number) {
-    console.log('dfdf', userId);
-
     const user = await this.prisma.users.findFirst({
       where: { userId },
     });
-    console.log(user);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -173,6 +158,5 @@ export class AuthService {
         },
       },
     });
-    console.log('업데이트된 point정보', updatedUser.point);
   }
 }

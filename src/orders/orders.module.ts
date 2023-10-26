@@ -1,6 +1,7 @@
 import { createBullBoard } from '@bull-board/api';
 import { BullAdapter } from '@bull-board/api/bullAdapter';
 import { ExpressAdapter } from '@bull-board/express';
+import { BullBoardModule } from '@bull-board/nestjs';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
@@ -9,7 +10,6 @@ import { Queue } from 'bull';
 import { BullConfigProvider } from 'src/common/providers/bull-config.provider';
 import { RedisConfigProvider } from 'src/common/providers/redis-config-providers';
 import { ItemsModule } from 'src/items/items.module';
-import { Module } from '@nestjs/common';
 import { JobsModule } from 'src/jobs/jobs.module';
 import { OrderItemsModule } from 'src/order-items/order-items.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
@@ -26,13 +26,17 @@ import { OrdersService } from './orders.service';
     PrismaModule,
     OrderItemsModule,
     ItemsModule,
-    JobsModule
+    JobsModule,
     BullModule.forRootAsync('bullqueue-config', {
       useClass: BullConfigProvider,
     }),
-    BullModule.registerQueue({
+    BullModule.registerQueueAsync({
       configKey: 'bullqueue-config',
       name: 'ordersQueue',
+    }),
+    BullBoardModule.forFeature({
+      name: 'ordersQueue',
+      adapter: BullAdapter,
     }),
     CacheModule.registerAsync({
       useClass: RedisConfigProvider,
@@ -55,13 +59,13 @@ export class OrdersModule {
 
   configure(consumer: MiddlewareConsumer) {
     const serverAdapter = new ExpressAdapter();
-    serverAdapter.setBasePath('/queues-board');
+    serverAdapter.setBasePath('/queues');
 
     createBullBoard({
       queues: [new BullAdapter(this.ordersQueue)],
       serverAdapter,
     });
 
-    consumer.apply(serverAdapter.getRouter()).forRoutes('/queues-board');
+    consumer.apply(serverAdapter.getRouter()).forRoutes('/queues');
   }
 }

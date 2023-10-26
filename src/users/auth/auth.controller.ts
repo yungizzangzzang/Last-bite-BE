@@ -142,9 +142,4 @@ export class AuthController {
     const currentUser = await this.authService.findOneUser(req.user.userId);
     return currentUser;
   }
-
-  @Get()
-  test() {
-    return 'hi';
-  }
 }

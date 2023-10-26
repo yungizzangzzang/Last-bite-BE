@@ -14,9 +14,9 @@ export class RedisConfigProvider implements CacheOptionsFactory {
       store: redisCachesStore,
       host: this.configService.get('REDIS_HOST'),
       port: this.configService.get('REDIS_PORT'),
-      ttl: this.configService.get('REDIS_TTL'),
-      username: this.configService.get('REDIS_USERNAME'),
-      password: this.configService.get('REDIS_PASSWORD'),
+      // ttl: this.configService.get('REDIS_TTL'),
+      // username: this.configService.get('REDIS_USERNAME'),
+      // password: this.configService.get('REDIS_PASSWORD'),
     };
   }
 }

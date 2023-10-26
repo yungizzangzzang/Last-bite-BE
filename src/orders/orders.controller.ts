@@ -18,7 +18,6 @@ import {
 } from '@nestjs/swagger';
 import { Users } from '@prisma/client';
 import { User } from 'src/common/decorators/user.decorator';
-import { JobsService } from 'src/jobs/jobs.service';
 import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
@@ -30,10 +29,8 @@ import { OrdersService } from './orders.service';
 @UseInterceptors()
 @Controller('orders')
 export class OrdersController {
-  constructor(
-    private readonly ordersService: OrdersService,
-    private readonly jobsService: JobsService,
-  ) {}
+  private logger = new Logger();
+  constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
   @ApiOperation({ summary: '주문 생성, orderItems 생성' })
@@ -45,12 +42,19 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   async createOrder(
     @Body() createOrderOrderItemDto: CreateOrderOrderItemDto,
-    @User() user: Users, //: Promise<{ message: string }>
-  ) {
+    @User() user: Users,
+  ): Promise<object> {
     //기업 회원(isclient===false)이 접근한 경우
     if (user.isClient !== true) {
       throw new HttpException(
         { message: '일반 회원만 예약이 가능합니다.' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (user.point < createOrderOrderItemDto.totalPrice) {
+      throw new HttpException(
+        { message: '포인트를 충전해주세요.' },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -66,18 +70,8 @@ export class OrdersController {
         }
       }),
     );
-
+    this.logger.verbose('주문 요청 POST API');
     return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
-  }
-
-  @Post('orders')
-  sendRequest(
-    @Param('itemId') itemId: number,
-    @Param('userId') userId: number,
-    @Param('orderId') orderId: number,
-  ): Promise<object> {
-    this.logger.verbose('주문 요청 신청 POST API');
-    return this.ordersService.addToOrdersQueue(userId, itemId, userId);
   }
 
   @Get()
@@ -89,8 +83,6 @@ export class OrdersController {
     const result: UserOrdersDTO[] = await this.ordersService.getUserOrders(
       userId,
     );
-
-    await this.jobsService.addJob(`${userId}번 유저의 주문 정보 조회`);
 
     return result;
   }

@@ -7,13 +7,8 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Queue } from 'bull';
-import { ItemEntity } from 'src/items/entities/item.entity';
-import { ItemsRepository } from 'src/items/items.repository';
-import { CreateOrderItemDto } from 'src/order-items/dto/create-order-item.dto';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
-import { AuthService } from 'src/users/auth/auth.service';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
@@ -25,17 +20,16 @@ export class OrdersService {
     @InjectQueue('ordersQueue') private ordersQueue: Queue, // bullqueue DI
     private readonly ordersRepository: OrdersRepository,
     private readonly orderItemsRepository: OrderItemsRepository,
-    private readonly authService: AuthService,
     private readonly eventEmitter: EventEmitter2,
     private readonly itemsRepository: ItemsRepository,
   ) {}
 
   // * return에서 {} 감싸도 create 혹은 완료 메세지 출력에 이상 없는지 확인!
-
+  // 1. 주문 요청을 queue에 넣는 메서드
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
-  ): Promise<{ message: string }> {
+  ): Promise<object> {
     const results: (string | undefined)[] = await Promise.all(
       createOrderOrderItemDto.items.map(async (orderItem) => {
         const itemId = orderItem.itemId;
@@ -44,12 +38,12 @@ export class OrdersService {
         // Items.count < OrderItems.count 일때 주문 불가
         if (orderItem.count > item.count) {
           return `${item.name}의 주문 가능 수량은 ${item.count}개 입니다.`;
-        } 
+        }
       }),
     );
 
     // if 문 true 일 때 반환되는 undefined 제거
-    const filteredResults = results.filter(result => result !== undefined);
+    const filteredResults = results.filter((result) => result !== undefined);
 
     // 에러 메세지 반환
     if (filteredResults.length > 0) {
@@ -63,33 +57,15 @@ export class OrdersService {
       createOrderOrderItemDto,
       userId,
     );
-    
+
     await this.orderItemsRepository.createOrderItem(
       order.orderId,
       createOrderOrderItemDto.items,
     );
-    // count === 0 일때 deletedAt 업데이트
 
-    return { message: '예약이 완료되었습니다.' };
-  }
-
-  // POST: 주문 요청 API
-  // 주문 요청을 queue에 넣는 메소드
-  async addToOrdersQueue(
-    orderId: number,
-    userId: number,
-    itemId: number,
-  ): Promise<object> {
-    // queue에 넣기 전에 orderId, userId 검증
-    const user = await this.authService.findOneUser(userId);
-    if (!user) {
-      throw new NotFoundException('로그인을 해주세요.');
-    }
-
-    const order = await this.orderItemsRepository.gelAllOrderItems(orderId);
-    if (!order) {
-      throw new NotFoundException('상품이 비어 있어요.');
-    }
+    const orderId = order.orderId;
+    // ! itemId는 배열로 받아오면 힘들 것 같아 임시로 지정함. 나중에 바꿔주기.
+    const itemId = 40;
 
     // 각 주문에 대한 unique한 eventName 생성
     const eventName = `Orders-${orderId}-${
@@ -102,9 +78,9 @@ export class OrdersService {
     await this.ordersQueue.add(
       'addToOrdersQueue',
       {
-        orderId,
+        createOrderOrderItemDto,
         userId,
-        itemId,
+        eventName,
       },
       {
         attempts: 2,
@@ -115,14 +91,16 @@ export class OrdersService {
 
     // 대기열 큐에 job을 넣은 후, service 내에서 waitingForJobCompleted() 함수로 해당 job을 넘겨줌
     console.log(' 3. waitingForJobCompleted() 호출');
-    return this.waitingForJobCompleted(eventName, 2, user);
+    return this.waitingForJobCompleted(eventName, 2, order);
+
+    // return { message: '예약이 완료되었습니다.' };
   }
 
   // 2. 해당 요청에 대한 비즈니스로직 (sendRequest())이 완료될 때까지 대기 후 결과를 반환하는 메소드
   async waitingForJobCompleted(
     eventName: string,
     time: number,
-    user: object,
+    order: object,
   ): Promise<object> {
     console.log('waitingForJobCompleted() 진입');
     return new Promise((resolve, reject) => {
@@ -148,7 +126,7 @@ export class OrdersService {
         console.log('7. listenFn 진입');
         clearTimeout(wait);
         this.eventEmitter.removeAllListeners(eventName);
-        success ? resolve({ user }) : reject(exception); // 비즈니스로직이 성공했다면 resolve, 실패했을 경우 reject
+        success ? resolve({ order }) : reject(exception); // 비즈니스로직이 성공했다면 resolve, 실패했을 경우 reject
       };
       console.log('6. this.eventEmitter.addListener 세팅');
       // sendRequest()에서 전달해준 비즈니스 로직이 성공이든, 실패든,
@@ -175,26 +153,6 @@ export class OrdersService {
         );
       }
 
-      const order = await this.ordersRepository.getOneOrder(orderId);
-      if (order.ordered) {
-        throw new HttpException(
-          '이미 주문한 상품입니다. 다시 주문하시겠습니까?',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      // 주문 내역에 itemId 추가
-      await this.orderItemsRepository.createOrderItem(
-        orderId,
-        CreateOrderItemDto[itemId],
-      );
-
-      // 해당 가게의 count를 1 감소
-      await this.itemsRepository.updateItem(itemId);
-
-      // 해당 주문의 ordered를 true로 변경
-      await this.ordersRepository.updateOrdered(orderId, itemId, userId);
-
       // 비즈니스로직이 완료되었음을 이벤트 리스너에게 알림
       return this.eventEmitter.emit(eventName, { success: true });
     } catch (error) {
@@ -209,17 +167,6 @@ export class OrdersService {
       });
     }
   }
-
-  // 주문 수량과 가격에 따라 우선적으로 처리되어야 할 job에 priority를 부여하는 메소드
-  createNewOrder = (item: ItemEntity): any => {
-    this.ordersQueue.add(item, {
-      priority: this.getPriority(item),
-    });
-  };
-
-  getPriority = (item: ItemEntity): any => {
-    return item.count >= 10 && item.price > 100000 ? 1 : 2;
-  };
 
   async getUserOrders(userId: number) {
     const result: UserOrdersDTO[] = await this.ordersRepository.getUserOrders(

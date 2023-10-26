@@ -1,8 +1,11 @@
+import { ExpressAdapter } from '@bull-board/express';
+import { BullBoardModule } from '@bull-board/nestjs';
 import { BullModule } from '@nestjs/bull';
 import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -13,6 +16,8 @@ import { JobsModule } from './jobs/jobs.module';
 import { LikesModule } from './likes/likes.module';
 import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
+import { OrdersRepository } from './orders/orders.repository';
+import { OrdersService } from './orders/orders.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -25,13 +30,18 @@ import { UserEntity } from './users/entities/user.entity';
 
 @Module({
   imports: [
-    BullModule.forRoot({
-      redis: {
-        host: 'localhost',
-        port: 6379,
-      },
+    BullModule.forRootAsync({
+      useFactory: async (configService: ConfigService) => ({
+        redis: {
+          host: configService.get('REDIS_HOST'),
+          port: Number(configService.get('RDIS_PORT')),
+        },
+      }),
+      inject: [ConfigService],
     }),
-
+    BullModule.registerQueue({
+      name: 'ordersQueue',
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath:
@@ -39,6 +49,12 @@ import { UserEntity } from './users/entities/user.entity';
           ? '.env.production'
           : '.env.development',
     }),
+    BullBoardModule.forRoot({
+      route: '/queues',
+      adapter: ExpressAdapter,
+    }),
+    ScheduleModule.forRoot(),
+
     CacheModule.register(),
     EventEmitterModule.forRoot(),
     PrismaModule,
@@ -53,7 +69,15 @@ import { UserEntity } from './users/entities/user.entity';
     JobsModule,
   ],
   controllers: [AppController, AuthController],
-  providers: [AppService, PrismaService, AuthService, StoreEntity, UserEntity],
+  providers: [
+    AppService,
+    PrismaService,
+    AuthService,
+    StoreEntity,
+    UserEntity,
+    OrdersService,
+    OrdersRepository,
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

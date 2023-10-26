@@ -6,7 +6,6 @@ import {
 } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
-
 @Injectable()
 export class OrdersRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -25,12 +24,15 @@ export class OrdersRepository {
         HttpStatus.NOT_FOUND,
       );
     }
+
+    const transactionOrders: any[] = [];
+
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
         const itemId = Item.itemId;
         const item = await this.prisma.items.findUnique({
           where: { itemId },
-          select: { storeId: true, count: true },
+          select: { storeId: true, count: true, price: true },
         });
         // itemId 해당하는 Items 가 없는 경우
         if (!item) {
@@ -47,57 +49,62 @@ export class OrdersRepository {
           );
         }
 
-        // 주문 create 후 count update
-        await this.prisma.items.update({
-          where: { itemId },
-          data: { count: item.count - Item.count },
+        const user = await this.prisma.users.findUnique({
+          where: { userId },
+          select: { point: true },
         });
-        
-        // count === 0 일때 deletedAt 업데이트
-        const itemToUpdate = await this.prisma.items.findUnique({
-          where: { itemId, count: 0 },
-          select: { deletedAt: true, itemId: true },
-        });
-        if (itemToUpdate) {
-          await this.prisma.items.update({
-            where: { itemId: itemToUpdate.itemId },
-            data: { deletedAt: new Date() },
-          });
+        if (!user) {
+          throw new HttpException(
+            { message: '사용자 정보가 존재하지 않습니다.' },
+            HttpStatus.NOT_FOUND,
+          );
         }
+
+        transactionOrders.push(
+          // count update
+          this.prisma.items.update({
+            where: { itemId },
+            data: { count: item.count - Item.count },
+          }),
+
+          // point update
+          this.prisma.users.update({
+            where: { userId },
+            data: { point: user.point - createOrderOrderItemDto.totalPrice },
+          }),
+        );
+        // count === 0 일때 deletedAt 업데이트
+        await this.prisma.items
+          .findUnique({
+            where: { itemId, count: 0 },
+            select: { deletedAt: true, itemId: true },
+          })
+          .then((itemToUpdate) => {
+            if (itemToUpdate) {
+              this.prisma.items.update({
+                where: { itemId: itemToUpdate.itemId },
+                data: { deletedAt: new Date() },
+              });
+            }
+          });
       }),
     );
 
-    // 주문 정보 생성
-    const order = await this.prisma.orders.create({
-      data: {
-        userId,
-        storeId: createOrderOrderItemDto.storeId,
-        discount: createOrderOrderItemDto.discount,
-        totalPrice: createOrderOrderItemDto.totalPrice,
-      },
-    });
+    transactionOrders.push(
+      // 주문 정보 생성
+      this.prisma.orders.create({
+        data: {
+          userId,
+          storeId: createOrderOrderItemDto.storeId,
+          discount: createOrderOrderItemDto.discount,
+          totalPrice: createOrderOrderItemDto.totalPrice,
+        },
+      }),
+    );
+
+    const [_, __, order] = await this.prisma.$transaction(transactionOrders);
 
     return order;
-  }
-
-  async updateOrdered(
-    orderId: number,
-    count: number,
-    itemId: number,
-  ): Promise<void> {
-    const order = await this.prisma.orders.findFirst({
-      where: { orderId },
-    });
-
-    if (order) {
-      const decreasedOrders = await this.prisma.items.update({
-        where: { itemId },
-        data: { count },
-      });
-      {
-        count--, order?.ordered;
-      }
-    }
   }
 
   async getUserOrders(userId: number): Promise<UserOrdersDTO[]> {

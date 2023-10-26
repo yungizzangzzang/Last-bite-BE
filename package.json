@@ -20,9 +20,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@bull-board/api": "^5.8.4",
-    "@bull-board/express": "^5.8.4",
-    "@bull-board/hapi": "^5.8.4",
+    "@bull-board/api": "^5.9.1",
+    "@bull-board/express": "^5.9.1",
+    "@bull-board/hapi": "^5.9.1",
+    "@bull-board/nestjs": "^5.9.1",
     "@nestjs/bull": "^10.0.1",
     "@nestjs/cache-manager": "^2.1.0",
     "@nestjs/common": "^10.0.0",
@@ -35,6 +36,7 @@
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.2.7",
+    "@nestjs/schedule": "^3.0.4",
     "@nestjs/swagger": "^7.1.13",
     "@nestjs/websockets": "^10.2.7",
     "@prisma/client": "^5.4.2",

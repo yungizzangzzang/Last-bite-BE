@@ -1,6 +1,6 @@
 import {
-    BullRootModuleOptions,
-    SharedBullConfigurationFactory,
+  BullRootModuleOptions,
+  SharedBullConfigurationFactory,
 } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -13,8 +13,8 @@ export class BullConfigProvider implements SharedBullConfigurationFactory {
     return {
       redis: {
         maxRetriesPerRequest: 20,
-        host: this.configService.get('REDIS_BULL_HOST'),
-        port: this.configService.get('REDIS_BULL_PORT'),
+        host: this.configService.get('REDISL_HOST'),
+        port: this.configService.get('REDISL_PORT'),
       },
     };
   }
