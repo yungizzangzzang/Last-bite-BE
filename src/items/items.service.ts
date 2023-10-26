@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
+import { GetItemDto } from './dto/get-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { ItemsRepository } from './items.repository';
 
@@ -72,7 +73,7 @@ export class ItemsService {
     return await this.itemsRepository.deleteItem(itemId, userId);
   }
 
-  async getOneItem(itemId: number) {
+  async getOneItem(itemId: number): Promise<GetItemDto> {
     const item = await this.itemsRepository.getOneItem(itemId);
     return item;
   }

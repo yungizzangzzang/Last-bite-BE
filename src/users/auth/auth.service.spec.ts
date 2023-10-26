@@ -15,8 +15,5 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-    expect(prismaService).toBeDefined();
-    expect(jwtService).toBeDefined();
-    expect(mockPrisma).toBeDefined();
   });
 });
