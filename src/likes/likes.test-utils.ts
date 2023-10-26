@@ -4,6 +4,19 @@ import { LikesController } from './likes.controller';
 import { LikesRepository } from './likes.repository';
 import { LikesService } from './likes.service';
 
+export const mockUserLikedStores = [
+  {
+    storeId: expect.any(Number),
+    ownerId: expect.any(Number),
+    name: expect.any(String),
+    longitude: expect.any(Number),
+    latitude: expect.any(Number),
+    address: expect.any(String),
+    storePhoneNumber: expect.any(String),
+    category: expect.any(String),
+  },
+];
+
 export interface LikesMocks {
   mockLikesRepository: {
     checkRelation: jest.Mock;
@@ -27,7 +40,7 @@ export const likesTestingModule = async (): Promise<{
     checkRelation: jest.fn(),
     createFavoriteStore: jest.fn(),
     deleteFavoriteStore: jest.fn(),
-    selectAllFavoriteStore: jest.fn(),
+    selectAllFavoriteStore: jest.fn().mockResolvedValue(mockUserLikedStores),
   };
 
   const mockStoresRepository = {

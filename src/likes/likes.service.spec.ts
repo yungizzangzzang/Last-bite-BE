@@ -1,6 +1,10 @@
 import { TestingModule } from '@nestjs/testing';
 import { LikesService } from './likes.service';
-import { LikesMocks, likesTestingModule } from './likes.test-utils';
+import {
+  LikesMocks,
+  likesTestingModule,
+  mockUserLikedStores,
+} from './likes.test-utils';
 
 describe('LikesService', () => {
   let service: LikesService;
@@ -74,6 +78,11 @@ describe('LikesService', () => {
   });
 
   describe('getAllFavoriteStore', () => {
-    it.todo('유저의 단골 가게 조회');
+    it('유저의 단골 가게 조회', async () => {
+      const result = await mocks.mockLikesRepository.selectAllFavoriteStore(
+        expect.any(Number),
+      );
+      expect(result).toEqual({ stores: mockUserLikedStores });
+    });
   });
 });

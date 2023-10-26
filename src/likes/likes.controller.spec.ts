@@ -1,21 +1,55 @@
 import { TestingModule } from '@nestjs/testing';
 import { LikesController } from './likes.controller';
-import { LikesMocks, likesTestingModule } from './likes.test-utils';
+import { likesTestingModule, mockUserLikedStores } from './likes.test-utils';
 
 describe('LikesController', () => {
   let controller: LikesController;
-  let mocks: LikesMocks;
+
+  const mockUser = { userId: expect.any(Number) };
 
   beforeEach(async () => {
-    const { moduleBuilder, mocks: mockObjects } = await likesTestingModule();
+    const { moduleBuilder } = await likesTestingModule();
     const module: TestingModule = await moduleBuilder.compile();
     controller = module.get<LikesController>(LikesController);
-    mocks = mockObjects;
 
     jest.clearAllMocks();
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('createOrDeleteFavoriteStore', () => {
+    it('좋아요 등록', async () => {
+      jest
+        .spyOn(controller, 'createOrDeleteFavoriteStore')
+        .mockResolvedValue({ message: '좋아요 등록 성공' });
+
+      const result = await controller.createOrDeleteFavoriteStore(
+        mockUser.userId,
+        expect.any(Number),
+      );
+
+      expect(result).toEqual({ message: '좋아요 등록 성공' });
+    });
+
+    it('좋아요 취소', async () => {
+      jest
+        .spyOn(controller, 'createOrDeleteFavoriteStore')
+        .mockResolvedValue({ message: '좋아요 취소 성공' });
+
+      const result = await controller.createOrDeleteFavoriteStore(
+        mockUser.userId,
+        expect.any(Number),
+      );
+
+      expect(result).toEqual({ message: '좋아요 취소 성공' });
+    });
+  });
+
+  describe('getAllFavoriteStore', () => {
+    jest
+      .spyOn(controller, 'getAllFavoriteStore')
+      .mockResolvedValue({ stores: mockUserLikedStores });
   });
 });

@@ -2,8 +2,6 @@ import { TestingModule } from '@nestjs/testing';
 import { ReviewsService } from './reviews.service';
 import { ReviewsMocks, reviewsTestingModule } from './reviews.test-utils';
 
-class MockReviewsRepository {}
-
 describe('ReviewsService', () => {
   let service: ReviewsService;
   let mocks: ReviewsMocks;
