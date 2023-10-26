@@ -14,6 +14,7 @@ describe('LikesController', () => {
 
     jest.clearAllMocks();
   });
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
