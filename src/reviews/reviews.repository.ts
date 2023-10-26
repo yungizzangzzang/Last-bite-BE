@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseReviewDto } from './dto/response-review.dto';
 
@@ -21,15 +21,6 @@ export class ReviewsRepository {
   }
 
   async getStoreReview(storeId: number): Promise<ResponseReviewDto[]> {
-    const storeExists = await this.prisma.stores.findUnique({
-      where: { storeId },
-      select: { storeId: true },
-    });
-
-    if (!storeExists) {
-      throw new NotFoundException('해당 상점이 존재하지 않습니다.');
-    }
-
     const rawStoreReviews = await this.prisma.reviews.findMany({
       where: { storeId },
       select: {

@@ -1,4 +1,0 @@
-persistence:
-  enabled: true
-  storageClass: "ebs-sc"
-  size: "20Gi"

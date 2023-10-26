@@ -4,7 +4,6 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Logger,
   Param,
   Post,
   UseGuards,
@@ -29,7 +28,6 @@ import { OrdersService } from './orders.service';
 @UseInterceptors()
 @Controller('orders')
 export class OrdersController {
-  private logger = new Logger();
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
@@ -42,12 +40,19 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   async createOrder(
     @Body() createOrderOrderItemDto: CreateOrderOrderItemDto,
-    @User() user: Users, //: Promise<{ message: string }>
+    @User() user: Users,
   ) {
     //기업 회원(isclient===false)이 접근한 경우
     if (user.isClient !== true) {
       throw new HttpException(
         { message: '일반 회원만 예약이 가능합니다.' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (user.point < createOrderOrderItemDto.totalPrice) {
+      throw new HttpException(
+        { message: '포인트를 충전해주세요.' },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -63,18 +68,7 @@ export class OrdersController {
         }
       }),
     );
-
     return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
-  }
-
-  @Post('orders')
-  sendRequest(
-    @Param('itemId') itemId: number,
-    @Param('userId') userId: number,
-    @Param('orderId') orderId: number,
-  ): Promise<object> {
-    this.logger.verbose('주문 요청 신청 POST API');
-    return this.ordersService.addToOrdersQueue(userId, itemId, userId);
   }
 
   @Get()

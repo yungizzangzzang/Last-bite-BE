@@ -144,7 +144,7 @@ export class ItemsRepository {
     return { message: '핫딜 삭제가 완료되었습니다.' };
   }
 
-  async getOneItem(itemId: number) {
+  async getOneItem(itemId: number): Promise<GetItemDto> {
     const item = await this.prisma.items.findUnique({
       where: { itemId },
     });
