@@ -1,5 +1,11 @@
 import { InjectQueue } from '@nestjs/bull';
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Queue } from 'bull';
 import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
@@ -11,7 +17,7 @@ import { OrdersRepository } from './orders.repository';
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectQueue('ordersQueue') private ordersQueue: Queue, // bullqueue DI
+    @InjectQueue('orders') private ordersQueue: Queue, // bullqueue DI
     private readonly ordersRepository: OrdersRepository,
     private readonly orderItemsRepository: OrderItemsRepository,
     private readonly eventEmitter: EventEmitter2,
@@ -21,12 +27,12 @@ export class OrdersService {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
-      ) {
+  ) {
     try {
-        const result = await this.ordersQueue.add('create', {
+      const result = await this.ordersQueue.add('create', {
         createOrderOrderItemDto,
         userId,
-              });
+      });
       // console.log(result);
       console.log(`${result.id}번 작업 완료`);
       return result;
@@ -152,7 +158,7 @@ export class OrdersService {
     userId: number,
     itemId: number,
     eventName: string,
-  ){
+  ) {
     console.log('*2 sendRequest 진입');
     try {
       const item = await this.itemsRepository.getOneItem(itemId);
@@ -175,10 +181,10 @@ export class OrdersService {
       return this.eventEmitter.emit(eventName, {
         success: false,
         exception: error,
-      })
+      });
     }
   }
-  
+
   async getUserOrders(userId: number) {
     const result: UserOrdersDTO[] = await this.ordersRepository.getUserOrders(
       userId,

@@ -1,5 +1,6 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BullConfigProvider } from 'src/common/providers/bull-config.provider';
 // import { RedisConfigProvider } from 'src/common/providers/redis-config-providers';
 import { ItemsModule } from 'src/items/items.module';
@@ -32,7 +33,7 @@ import { OrdersService } from './orders.service';
     OrdersService,
     OrdersRepository,
     // OrdersQueueConsumer,
-    // EventEmitter2,
+    EventEmitter2,
     AuthService,
     // StoreEntity,
     // UserEntity,
