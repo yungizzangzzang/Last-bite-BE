@@ -12,12 +12,10 @@ describe('LikesService', () => {
     service = module.get<LikesService>(LikesService);
     mocks = mockObjects;
 
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
+    jest.clearAllMocks();
+  });
 
-    it('should be defined', () => {
-      expect(service).toBeDefined();
-    });
+  it('should be defined', () => {
+    expect(service).toBeDefined();
   });
 });
