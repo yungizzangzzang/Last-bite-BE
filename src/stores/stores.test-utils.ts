@@ -15,9 +15,18 @@ export const storesTestingModule = async (): Promise<{
   moduleBuilder: TestingModuleBuilder;
   mocks: StoresMocks;
 }> => {
-  const mockStoresRepository = {};
-  const mockItemsRepository = {};
-  const mockLikesRepository = {};
+  const mockStoresRepository = {
+    selectAllStore: jest.fn(),
+    selectOneStore: jest.fn(),
+    updateStore: jest.fn(),
+    deleteStore: jest.fn(),
+  };
+  const mockItemsRepository = {
+    selectAllItems: jest.fn(),
+  };
+  const mockLikesRepository = {
+    checkRelation: jest.fn(),
+  };
 
   const mocks: StoresMocks = {
     mockStoresRepository,

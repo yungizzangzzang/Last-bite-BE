@@ -15,7 +15,9 @@ describe('LikesService', () => {
     const module: TestingModule = await moduleBuilder.compile();
     service = module.get<LikesService>(LikesService);
     mocks = mockObjects;
+  });
 
+  beforeEach(() => {
     jest.clearAllMocks();
   });
 
