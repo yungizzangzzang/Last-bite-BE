@@ -82,7 +82,7 @@ describe('LikesService', () => {
       const result = await mocks.mockLikesRepository.selectAllFavoriteStore(
         expect.any(Number),
       );
-      expect(result).toEqual({ stores: mockUserLikedStores });
+      expect(result).toEqual(mockUserLikedStores);
     });
   });
 });

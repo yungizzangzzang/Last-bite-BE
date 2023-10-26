@@ -1,6 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { LikesController } from './likes.controller';
-import { likesTestingModule, mockUserLikedStores } from './likes.test-utils';
+import { likesTestingModule } from './likes.test-utils';
 
 describe('LikesController', () => {
   let controller: LikesController;
@@ -48,8 +48,6 @@ describe('LikesController', () => {
   });
 
   describe('getAllFavoriteStore', () => {
-    jest
-      .spyOn(controller, 'getAllFavoriteStore')
-      .mockResolvedValue({ stores: mockUserLikedStores });
+    it.todo('유저가 좋아요 누른 가게 조회');
   });
 });
