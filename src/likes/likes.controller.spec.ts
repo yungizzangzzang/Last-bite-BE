@@ -12,12 +12,9 @@ describe('LikesController', () => {
     controller = module.get<LikesController>(LikesController);
     mocks = mockObjects;
 
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
-
-    it('should be defined', () => {
-      expect(controller).toBeDefined();
-    });
+    jest.clearAllMocks();
+  });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
   });
 });
