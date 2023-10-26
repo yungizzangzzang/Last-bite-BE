@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
@@ -20,6 +21,7 @@ describe('AuthController', () => {
   const TEST_NAME = 'name';
   const TEST_NICKNAME = 'nickname';
   const TEST_MANAGEMENT_NUMBER = '1234';
+  const TEST_USER_ID = 1;
 
   const defaultSignUpRequest = {
     email: TEST_EMAIL,
@@ -33,6 +35,31 @@ describe('AuthController', () => {
   const loginDto = {
     email: 'test@email.com',
     password: 'password',
+  };
+
+  const wrongLoginDto = {
+    email: 'wrong@email.com',
+    password: 'wrongPassword',
+  };
+
+  const loginResponseDto = {
+    accessToken: 'accessToken',
+    user: {
+      userId: expect.any(Number),
+      nickname: expect.any(String),
+      isClient: expect.any(Boolean),
+      email: expect.any(Number),
+    },
+    message: expect.any(String),
+  };
+
+  const userInfoDto = {
+    userId: expect.any(Number),
+    email: expect.any(String),
+    isClient: expect.any(Boolean),
+    nickname: expect.any(String),
+    name: expect.any(String),
+    point: expect.any(Number),
   };
 
   beforeEach(async () => {
@@ -92,16 +119,7 @@ describe('AuthController', () => {
 
   describe('login', () => {
     it('로그인', async () => {
-      jest.spyOn(authService, 'login').mockResolvedValue({
-        accessToken: 'accessToken',
-        user: {
-          userId: expect.any(Number),
-          nickname: expect.any(String),
-          isClient: expect.any(Boolean),
-          email: expect.any(Number),
-        },
-        message: expect.any(String),
-      });
+      jest.spyOn(authService, 'login').mockResolvedValue(loginResponseDto);
 
       const result = await controller.login(loginDto, res as Response);
       expect(res.cookie).toHaveBeenCalledWith(
@@ -109,16 +127,7 @@ describe('AuthController', () => {
         'accessToken',
         expect.any(Object),
       );
-      expect(result).toEqual({
-        accessToken: 'accessToken',
-        user: {
-          userId: expect.any(Number),
-          nickname: expect.any(String),
-          isClient: expect.any(Boolean),
-          email: expect.any(Number),
-        },
-        message: expect.any(String),
-      });
+      expect(result).toEqual(loginResponseDto);
     });
 
     it('이메일을 입력했지만 DB에서 조회되지 않을경우 에러를 반환.', async () => {
@@ -129,7 +138,7 @@ describe('AuthController', () => {
       );
 
       await expect(
-        controller.login(loginDto, res as Response),
+        controller.login(wrongLoginDto, res as Response),
       ).rejects.toThrowError('이메일과 비밀번호를 확인해주세요');
     });
 
@@ -140,17 +149,58 @@ describe('AuthController', () => {
         }),
       );
       await expect(
-        controller.login(loginDto, res as Response),
+        controller.login(wrongLoginDto, res as Response),
       ).rejects.toThrowError('이메일과 비밀번호를 확인해주세요');
     });
   });
 
-  it.todo('포인트 충전');
-  it.todo('포인트 충전 실패');
+  describe('pointAccumulation', () => {
+    const gettingPointsDto = { point: 100 };
+    const mockUser = {
+      userId: TEST_USER_ID,
+      point: 0,
+    };
 
-  it.todo('로그아웃');
-  it.todo('로그아웃 실패');
+    it('포인트 충전 성공', async () => {
+      jest
+        .spyOn(authService, 'pointAccumulation')
+        .mockResolvedValue({ message: '포인트 충전에 성공하였습니다.' });
 
-  it.todo('회원 정보 조회');
-  it.todo('회원 정보 조회 실패');
+      const result = await controller.pointAccumulation(
+        gettingPointsDto,
+        mockUser,
+      );
+
+      expect(result).toEqual({ message: '포인트 충전에 성공하였습니다.' });
+    });
+  });
+
+  describe('logout', () => {
+    it('로그아웃', async () => {
+      const response: Partial<Response> = {
+        clearCookie: jest.fn(),
+      };
+      await controller.logOut(response as Response);
+      expect(response.clearCookie).toHaveBeenCalledWith('jwt');
+    });
+  });
+
+  describe('whoAmI', () => {
+    it('회원 정보 조회 성공', async () => {
+      jest.spyOn(authService, 'findOneUser').mockResolvedValue(userInfoDto);
+
+      const result = await controller.whoAmI({ userId: TEST_USER_ID });
+      expect(result).toEqual(userInfoDto);
+    });
+
+    it('회원 정보 조회 실패', async () => {
+      jest
+        .spyOn(authService, 'findOneUser')
+        .mockRejectedValue(new NotFoundException('User not found'));
+
+      await expect(
+        controller.whoAmI({ userId: TEST_USER_ID }),
+      ).rejects.toThrowError('User not found');
+    });
+  });
 });

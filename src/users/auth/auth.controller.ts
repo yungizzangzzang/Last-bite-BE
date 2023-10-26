@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -14,7 +6,6 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Users } from '@prisma/client';
 import { Response } from 'express';
 import { User } from 'src/common/decorators/user.decorator';
 import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
@@ -94,7 +85,7 @@ export class AuthController {
   async pointAccumulation(
     // @Res({ passthrough: true }) res: Response,
     @Body() body: GettingPointsDto,
-    @User() user: Users,
+    @User() user: { userId: number },
   ) {
     // console.log('point', body.point);
     // console.log('user', user);
@@ -131,10 +122,8 @@ export class AuthController {
     status: 500,
     description: '서버 에러',
   })
-  async whoAmI(@Req() req) {
-    console.log(req);
-
-    const currentUser = await this.authService.findOneUser(req.user.userId);
+  async whoAmI(@User() user: { userId: number }) {
+    const currentUser = await this.authService.findOneUser(user.userId);
     return currentUser;
   }
 

@@ -137,6 +137,14 @@ export class AuthService {
   async findOneUser(userId: number) {
     const user = await this.prisma.users.findFirst({
       where: { userId },
+      select: {
+        userId: true,
+        email: true,
+        isClient: true,
+        nickname: true,
+        name: true,
+        point: true,
+      },
     });
 
     if (!user) {
@@ -145,12 +153,12 @@ export class AuthService {
     return user;
   }
 
-  async pointAccumulation(user: any, body: GettingPointsDto) {
-    const beforeUser: any = await this.prisma.users.findUnique({
+  async pointAccumulation(user: { userId: number }, body: GettingPointsDto) {
+    await this.prisma.users.findUnique({
       where: { userId: user.userId },
     });
-    console.log('beforePoint: ', beforeUser.point);
-    const updatedUser = await this.prisma.users.update({
+
+    await this.prisma.users.update({
       where: { userId: user.userId },
       data: {
         point: {
@@ -158,5 +166,6 @@ export class AuthService {
         },
       },
     });
+    return { message: '포인트 충전에 성공하였습니다.' };
   }
 }
