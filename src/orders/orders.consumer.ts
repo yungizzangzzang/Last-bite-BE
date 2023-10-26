@@ -21,14 +21,4 @@ export class OrdersQueueConsumer {
       job.data.userId,
     );
   }
-
-  // @OnQueueEvent('completed')
-  // onCompleted(job: Job): void {
-  //   console.log(`${job.id}번 작업: ${job.name} 완료`);
-  // }
-
-  // @OnQueueEvent('failed')
-  // onFailed(job: Job): void {
-  //   console.log(`${job.id}번 작업: ${job.name} 실패`);
-  // }
 }
