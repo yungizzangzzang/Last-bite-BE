@@ -11,7 +11,9 @@ describe('LikesController', () => {
     const { moduleBuilder } = await likesTestingModule();
     const module: TestingModule = await moduleBuilder.compile();
     controller = module.get<LikesController>(LikesController);
+  });
 
+  beforeEach(() => {
     jest.clearAllMocks();
   });
 
