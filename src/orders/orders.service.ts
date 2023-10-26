@@ -1,11 +1,5 @@
 import { InjectQueue } from '@nestjs/bull';
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Injectable } from '@nestjs/common';
 import { Queue } from 'bull';
 import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
@@ -24,9 +18,26 @@ export class OrdersService {
     private readonly itemsRepository: ItemsRepository,
   ) {}
 
+  async createOrder(
+    createOrderOrderItemDto: CreateOrderOrderItemDto,
+    userId: number,
+      ) {
+    try {
+        const result = await this.ordersQueue.add('create', {
+        createOrderOrderItemDto,
+        userId,
+              });
+      // console.log(result);
+      console.log(`${result.id}번 작업 완료`);
+      return result;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   // * return에서 {} 감싸도 create 혹은 완료 메세지 출력에 이상 없는지 확인!
   // 1. 주문 요청을 queue에 넣는 메서드
-  async createOrder(
+  async createOrder2(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
   ): Promise<object> {
@@ -141,7 +152,7 @@ export class OrdersService {
     userId: number,
     itemId: number,
     eventName: string,
-  ) {
+  ){
     console.log('*2 sendRequest 진입');
     try {
       const item = await this.itemsRepository.getOneItem(itemId);
@@ -164,10 +175,10 @@ export class OrdersService {
       return this.eventEmitter.emit(eventName, {
         success: false,
         exception: error,
-      });
+      })
     }
   }
-
+  
   async getUserOrders(userId: number) {
     const result: UserOrdersDTO[] = await this.ordersRepository.getUserOrders(
       userId,

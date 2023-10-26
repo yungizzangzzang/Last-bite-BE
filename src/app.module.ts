@@ -1,23 +1,15 @@
-import { ExpressAdapter } from '@bull-board/express';
-import { BullBoardModule } from '@bull-board/nestjs';
-import { BullModule } from '@nestjs/bull';
-import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ScheduleModule } from '@nestjs/schedule';
+import { ConfigModule } from '@nestjs/config';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { UserCheckerMiddleware } from './common/middlewares/user-checker.middleware';
 import { ItemsModule } from './items/items.module';
-import { JobsModule } from './jobs/jobs.module';
 import { LikesModule } from './likes/likes.module';
 import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
-import { OrdersRepository } from './orders/orders.repository';
-import { OrdersService } from './orders/orders.service';
+import { OrdersProcessor } from './orders/orders.processor';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -30,33 +22,17 @@ import { UserEntity } from './users/entities/user.entity';
 
 @Module({
   imports: [
-    BullModule.forRootAsync({
-      useFactory: async (configService: ConfigService) => ({
-        redis: {
-          host: configService.get('REDIS_HOST'),
-          port: Number(configService.get('RDIS_PORT')),
-        },
-      }),
-      inject: [ConfigService],
-    }),
-    BullModule.registerQueue({
-      name: 'ordersQueue',
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'production'
-          ? '.env.production'
-          : '.env.development',
     }),
-    BullBoardModule.forRoot({
-      route: '/queues',
-      adapter: ExpressAdapter,
-    }),
-    ScheduleModule.forRoot(),
-
-    CacheModule.register(),
-    EventEmitterModule.forRoot(),
+    // BullModule.forRoot({
+    //   redis: {
+    //     host: process.env.REDIS_HOST,
+    //     port: 6379,
+    //   },
+    // }),
+    // CacheModule.register(),
+    // EventEmitterModule.forRoot(),
     PrismaModule,
     AlarmsModule,
     StoresModule,
@@ -66,7 +42,6 @@ import { UserEntity } from './users/entities/user.entity';
     OrdersModule,
     OrderItemsModule,
     LikesModule,
-    JobsModule,
   ],
   controllers: [AppController, AuthController],
   providers: [
@@ -75,8 +50,7 @@ import { UserEntity } from './users/entities/user.entity';
     AuthService,
     StoreEntity,
     UserEntity,
-    OrdersService,
-    OrdersRepository,
+    OrdersProcessor,
   ],
 })
 export class AppModule {

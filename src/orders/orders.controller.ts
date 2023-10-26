@@ -4,7 +4,6 @@ import {
   Get,
   HttpException,
   HttpStatus,
-  Logger,
   Param,
   Post,
   UseGuards,
@@ -29,7 +28,6 @@ import { OrdersService } from './orders.service';
 @UseInterceptors()
 @Controller('orders')
 export class OrdersController {
-  private logger = new Logger();
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
@@ -43,7 +41,7 @@ export class OrdersController {
   async createOrder(
     @Body() createOrderOrderItemDto: CreateOrderOrderItemDto,
     @User() user: Users,
-  ): Promise<object> {
+  ) {
     //기업 회원(isclient===false)이 접근한 경우
     if (user.isClient !== true) {
       throw new HttpException(
@@ -70,7 +68,6 @@ export class OrdersController {
         }
       }),
     );
-    this.logger.verbose('주문 요청 POST API');
     return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
   }
 
