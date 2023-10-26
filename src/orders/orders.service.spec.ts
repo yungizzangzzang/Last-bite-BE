@@ -69,8 +69,7 @@ describe('OrdersService', () => {
 
       try {
         await service.createOrder(createOrderOrderItemDto, user.userId);
-        // 예외가 발생하지 않으면 실패
-        fail('Expected an exception to be thrown');
+        fail('에러가 발생하지 않으면 실패입니다');
       } catch (err) {
         expect(mockError.response.message).toStrictEqual([
           'Item2의 주문 가능 수량은 5개 입니다',

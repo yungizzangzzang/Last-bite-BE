@@ -24,7 +24,9 @@ export const ordersTestingModule = async (): Promise<{
     // getOneItem: jest.fn().mockResolvedValue({ count: 1 }),
     getOneItem: jest.fn(),
   };
-  const mockQueue = {};
+  const mockQueue = {
+    add: jest.fn(),
+  };
 
   return {
     moduleBuilder: Test.createTestingModule({

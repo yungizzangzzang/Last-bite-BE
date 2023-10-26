@@ -58,10 +58,9 @@ export class AlarmsGateway
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log('여기냐', data, socket.id); // 체크용
+    // console.log('여기냐', data, socket.id); // 체크용
 
     // (1-0)잔금 체크 & 재고 체크 -> 업데이트 (by트랜잭션)
-    // *deadlock문제도 생각해보기
     const changedItemCnt = await this.alarmsRepository.checkAndUpdate(
       data.userId,
       data.totalPrice,
@@ -86,7 +85,7 @@ export class AlarmsGateway
     const findOwnerId: any = await this.alarmsRepository.findOwnerId(
       data.storeId,
     );
-    console.log(findOwnerId);
+    // console.log(findOwnerId);
     const ownerSocketId = this.clients[findOwnerId];
     socket.to(ownerSocketId).emit('orderAlarmToOwner', createdBothOrder[1]); // [1]가 OrdersItems테이블, [0]는 Orders
   }
@@ -97,7 +96,7 @@ export class AlarmsGateway
     @MessageBody() item: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log(item, socket.id);
+    // console.log(item, socket.id);
     const createdItem = await this.alarmsRepository.createItem(
       item.name,
       item.storeId,
@@ -115,7 +114,7 @@ export class AlarmsGateway
     const favoriteUsers = await this.alarmsRepository.findFavoriteUsers(
       item.storeId,
     );
-    console.log(favoriteUsers);
+    // console.log(favoriteUsers);
     for (const favoriteUser of favoriteUsers) {
       socket
         .to(this.clients[favoriteUser])
@@ -132,7 +131,7 @@ export class AlarmsGateway
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log(data, socket.id);
+    // console.log(data, socket.id);
     // (1)
     const createdAlarm = await this.alarmsRepository.createAlarm(
       data.title,

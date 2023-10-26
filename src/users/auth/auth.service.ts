@@ -40,7 +40,6 @@ export class AuthService {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log('여기:', email, name, isClient, nickname);
 
       const user = await this.prisma.users.create({
         data: {
@@ -51,8 +50,6 @@ export class AuthService {
           nickname,
         },
       });
-      console.log('user:', user);
-      console.log('management:', managementNumber);
 
       if (isClient === false && !managementNumber) {
         // 사장인데, 관리번호 입력안하면 빠꾸
@@ -68,7 +65,6 @@ export class AuthService {
             ownerId: user.userId,
           },
         });
-        console.log(store);
       }
 
       return { message: '회원가입 성공, 가즈아!!' };
@@ -132,7 +128,6 @@ export class AuthService {
 
       return { accessToken, user, message: '가봅시다' };
     } catch (err) {
-      console.error(err);
       throw new InternalServerErrorException({
         errorMessage: '로그인에 실패하였습니다',
       });
@@ -140,12 +135,9 @@ export class AuthService {
   }
 
   async findOneUser(userId: number) {
-    console.log('dfdf', userId);
-
     const user = await this.prisma.users.findFirst({
       where: { userId },
     });
-    console.log(user);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -166,6 +158,5 @@ export class AuthService {
         },
       },
     });
-    console.log('업데이트된 point정보', updatedUser.point);
   }
 }

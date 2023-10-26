@@ -13,7 +13,12 @@ export const itemsTestingModule = async (): Promise<{
   moduleBuilder: TestingModuleBuilder;
   mocks: ItemsMocks;
 }> => {
-  const mockItemsRepository = {};
+  const mockItemsRepository = {
+    createItem: jest.fn(),
+    updateItem: jest.fn(),
+    deleteItem: jest.fn(),
+    getOneItem: jest.fn(),
+  };
   const mockAwsService = {};
 
   return {
