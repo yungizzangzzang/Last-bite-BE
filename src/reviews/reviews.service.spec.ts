@@ -2,8 +2,6 @@ import { TestingModule } from '@nestjs/testing';
 import { ReviewsService } from './reviews.service';
 import { ReviewsMocks, reviewsTestingModule } from './reviews.test-utils';
 
-class MockReviewsRepository {}
-
 describe('ReviewsService', () => {
   let service: ReviewsService;
   let mocks: ReviewsMocks;
@@ -119,7 +117,7 @@ describe('ReviewsService', () => {
     });
 
     it('storeId로 가게의 리뷰를 가져와야 함', async () => {
-      const result = await service.getStoreReview(1);
+      const result = await service.getStoreReview(expect.any(Number));
       expect(result).toEqual([
         expect.objectContaining({
           content: expect.any(String),
