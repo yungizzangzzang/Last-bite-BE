@@ -16,7 +16,7 @@ kind: Deployment
 metadata:
   name: last-bite-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: last-bite
@@ -31,6 +31,10 @@ spec:
       containers:
         - name: last-bite-api
           image: whdgnszz1/last-bite-backend:latest
+          resources:
+            requests:
+              memory: 700Mi
+              cpu: 100m
           env:
             - name: PORT
               valueFrom:

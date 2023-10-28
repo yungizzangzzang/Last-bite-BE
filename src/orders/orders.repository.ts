@@ -30,6 +30,11 @@ export class OrdersRepository {
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
         const itemId = Item.itemId;
+
+        // Item에 대한 락
+        await this.prisma
+          .$executeRaw`SELECT * FROM items WHERE itemId = ${itemId} FOR UPDATE`;
+
         const item = await this.prisma.items.findUnique({
           where: { itemId },
           select: { storeId: true, count: true, price: true },
@@ -48,6 +53,10 @@ export class OrdersRepository {
             HttpStatus.BAD_REQUEST,
           );
         }
+
+        // User에 대한 락
+        await this.prisma
+          .$executeRaw`SELECT * FROM users WHERE userId = ${userId} FOR UPDATE`;
 
         const user = await this.prisma.users.findUnique({
           where: { userId },
