@@ -19,6 +19,7 @@ import { AuthController } from './users/auth/auth.controller';
 import { AuthModule } from './users/auth/auth.module';
 import { AuthService } from './users/auth/auth.service';
 import { UserEntity } from './users/entities/user.entity';
+import { MetricsController } from './metrics/metrics.controller';
 
 @Module({
   imports: [
@@ -43,7 +44,7 @@ import { UserEntity } from './users/entities/user.entity';
     OrderItemsModule,
     LikesModule,
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController, AuthController, MetricsController],
   providers: [
     AppService,
     PrismaService,
