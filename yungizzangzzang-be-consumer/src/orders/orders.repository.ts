@@ -28,16 +28,13 @@ export class OrdersRepository {
     const transactionOrders: any[] = [];
 
     await Promise.all(
-      
       createOrderOrderItemDto.items.map(async (Item) => {
-        
         const itemId = Item.itemId;
         const item = await this.prisma.items.findUnique({
-        
           where: { itemId },
           select: { storeId: true, count: true, price: true },
         });
-        
+
         // itemId 해당하는 Items 가 없는 경우
         if (!item) {
           throw new HttpException(
@@ -63,15 +60,14 @@ export class OrdersRepository {
             HttpStatus.NOT_FOUND,
           );
         }
-        
+
         transactionOrders.push(
           // count update
           this.prisma.items.update({
             where: { itemId },
             data: { count: item.count - Item.count },
           }),
-        
-         
+
           // point update
           this.prisma.users.update({
             where: { userId },
@@ -94,9 +90,8 @@ export class OrdersRepository {
             }
           });
       }),
-      
     );
- 
+
     transactionOrders.push(
       // 주문 정보 생성
       this.prisma.orders.create({
@@ -212,7 +207,6 @@ export class OrdersRepository {
     };
 
     return order;
-    
   }
 
   async getOneOrderById(orderId: number) {

@@ -7,6 +7,7 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { UserCheckerMiddleware } from './common/middlewares/user-checker.middleware';
 import { ItemsModule } from './items/items.module';
 import { LikesModule } from './likes/likes.module';
+import { MetricsController } from './metrics/metrics.controller';
 import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
 import { OrdersProcessor } from './orders/orders.processor';
@@ -19,7 +20,6 @@ import { AuthController } from './users/auth/auth.controller';
 import { AuthModule } from './users/auth/auth.module';
 import { AuthService } from './users/auth/auth.service';
 import { UserEntity } from './users/entities/user.entity';
-import { MetricsController } from './metrics/metrics.controller';
 
 @Module({
   imports: [

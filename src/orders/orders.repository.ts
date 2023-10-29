@@ -32,8 +32,8 @@ export class OrdersRepository {
         const itemId = Item.itemId;
 
         // Item에 대한 락
-        await this.prisma
-          .$executeRaw`SELECT * FROM items WHERE itemId = ${itemId} FOR UPDATE`;
+        // await this.prisma
+        //   .$executeRaw`SELECT * FROM items WHERE itemId = ${itemId} FOR UPDATE`;
 
         const item = await this.prisma.items.findUnique({
           where: { itemId },
@@ -55,8 +55,8 @@ export class OrdersRepository {
         }
 
         // User에 대한 락
-        await this.prisma
-          .$executeRaw`SELECT * FROM users WHERE userId = ${userId} FOR UPDATE`;
+        // await this.prisma
+        //   .$executeRaw`SELECT * FROM users WHERE userId = ${userId} FOR UPDATE`;
 
         const user = await this.prisma.users.findUnique({
           where: { userId },

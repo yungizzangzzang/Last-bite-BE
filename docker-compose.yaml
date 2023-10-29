@@ -19,5 +19,17 @@ services:
     depends_on:
       - redis
 
+  consumer:
+    build: ./yungizzangzzang-be-consumer
+    ports:
+      - '8001:8001'
+    volumes:
+      - ./yungizzangzzang-be-consumer:/app
+      - /app/node_modules
+    env_file:
+      - ./.env.development
+    depends_on:
+      - redis
+
 volumes:
   redis_data:
