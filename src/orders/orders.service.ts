@@ -34,7 +34,7 @@ export class OrdersService {
         userId,
       });
       // console.log(result);
-      console.log(`${result.id}번 작업 완료`);
+      console.log(`${result.id}번 작업 등록`);
       return result;
     } catch (error) {
       console.error(error);

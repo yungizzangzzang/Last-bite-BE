@@ -20,7 +20,7 @@ export class OrdersProcessor {
       createOrderOrderItemDto.items.map(async (orderItem) => {
         const itemId = orderItem.itemId;
         const item = await this.itemsRepository.getOneItem(itemId);
-        
+
         // Items.count < OrderItems.count 일때 주문 불가
         if (orderItem.count > item.count) {
           return `${item.name}의 주문 가능 수량은 ${item.count}개 입니다.`;
@@ -60,15 +60,12 @@ export class OrdersProcessor {
   @OnQueueEvent('completed')
   onCompleted(job: Job<any>) {
     console.log(`${job.id}번 작업 완료`);
-    
   }
-  
+
   @OnQueueEvent('error')
   onError(job: Job<any>, error: any) {
     console.error(error);
     console.log(job);
     console.log(`${job.id}번 작업이 실패했습니다. ${error}`);
   }
-
-  
 }
