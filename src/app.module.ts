@@ -10,7 +10,7 @@ import { LikesModule } from './likes/likes.module';
 import { MetricsController } from './metrics/metrics.controller';
 import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
-import { OrdersProcessor } from './orders/orders.processor';
+// import { OrdersProcessor } from './orders/orders.processor';
 import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -51,7 +51,7 @@ import { UserEntity } from './users/entities/user.entity';
     AuthService,
     StoreEntity,
     UserEntity,
-    OrdersProcessor,
+    // OrdersProcessor,
   ],
 })
 export class AppModule {
