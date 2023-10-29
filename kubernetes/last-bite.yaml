@@ -31,6 +31,10 @@ spec:
       containers:
         - name: last-bite-api
           image: whdgnszz1/last-bite-backend:latest
+          readinessProbe:
+            httpGet: 
+              path: /
+              port: 8000
           resources:
             requests:
               memory: 700Mi
