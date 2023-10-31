@@ -45,7 +45,6 @@ export class ItemsRepository {
         storeId: store.storeId,
       },
     });
-    console.log(createdItem);
     return { message: '핫딜 생성이 완료되었습니다.' };
   }
 
