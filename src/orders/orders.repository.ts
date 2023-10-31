@@ -13,6 +13,7 @@ export class OrdersRepository {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
+    userPoint: number,
   ): Promise<CreateOrderDto> {
     const store = await this.prisma.stores.findUnique({
       where: { storeId: createOrderOrderItemDto.storeId },
@@ -58,28 +59,11 @@ export class OrdersRepository {
         // await this.prisma
         //   .$executeRaw`SELECT * FROM users WHERE userId = ${userId} FOR UPDATE`;
 
-        const user = await this.prisma.users.findUnique({
-          where: { userId },
-          select: { point: true },
-        });
-        if (!user) {
-          throw new HttpException(
-            { message: '사용자 정보가 존재하지 않습니다.' },
-            HttpStatus.NOT_FOUND,
-          );
-        }
-
         transactionOrders.push(
           // count update
           this.prisma.items.update({
             where: { itemId },
             data: { count: item.count - Item.count },
-          }),
-
-          // point update
-          this.prisma.users.update({
-            where: { userId },
-            data: { point: user.point - createOrderOrderItemDto.totalPrice },
           }),
         );
         // count === 0 일때 deletedAt 업데이트
@@ -98,6 +82,12 @@ export class OrdersRepository {
           });
       }),
     );
+
+    // point update
+    await this.prisma.users.update({
+      where: { userId },
+      data: { point: userPoint - createOrderOrderItemDto.totalPrice },
+    });
 
     transactionOrders.push(
       // 주문 정보 생성

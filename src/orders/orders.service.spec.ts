@@ -68,7 +68,11 @@ describe('OrdersService', () => {
       }
 
       try {
-        await service.createOrder(createOrderOrderItemDto, user.userId);
+        await service.createOrder(
+          createOrderOrderItemDto,
+          user.userId,
+          user.point,
+        );
         fail('에러가 발생하지 않으면 실패입니다');
       } catch (err) {
         expect(mockError.response.message).toStrictEqual([
@@ -106,8 +110,16 @@ describe('OrdersService', () => {
         .mockResolvedValue(createOrderItemDto);
 
       // service.createOrder함수 호출
-      const result = await service.createOrder(createOrderOrderItemDto, user);
-      await ordersRepository.createOrder(createOrderOrderItemDto, user);
+      const result = await service.createOrder(
+        createOrderOrderItemDto,
+        user,
+        user.point,
+      );
+      await ordersRepository.createOrder(
+        createOrderOrderItemDto,
+        user,
+        user.point,
+      );
       await orderItemsRepository.createOrderItem(
         tmpOrderId,
         createOrderItemDto,
@@ -117,6 +129,7 @@ describe('OrdersService', () => {
       expect(service.createOrder).toHaveBeenCalledWith(
         createOrderOrderItemDto,
         user,
+        user.point,
       );
       expect(ordersRepository.createOrder).toBeCalledTimes(1);
       expect(orderItemsRepository.createOrderItem).toBeCalledTimes(1);
