@@ -61,6 +61,13 @@ export class OrdersRepository {
           );
         }
 
+        if (user.point < createOrderOrderItemDto.totalPrice) {
+          throw new HttpException(
+            { message: '포인트를 충전해주세요.' },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+
         transactionOrders.push(
           // count update
           this.prisma.items.update({
