@@ -27,11 +27,13 @@ export class OrdersService {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
+    userPoint: number,
   ) {
     try {
       const result = await this.ordersQueue.add('create', {
         createOrderOrderItemDto,
         userId,
+        userPoint
       });
       // console.log(result);
       console.log(`${result.id}번 작업 등록`);
@@ -41,11 +43,11 @@ export class OrdersService {
     }
   }
 
-  // * return에서 {} 감싸도 create 혹은 완료 메세지 출력에 이상 없는지 확인!
   // 1. 주문 요청을 queue에 넣는 메서드
   async createOrder2(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
+    userPoint: number,
   ): Promise<object> {
     const results: (string | undefined)[] = await Promise.all(
       createOrderOrderItemDto.items.map(async (orderItem) => {
@@ -73,6 +75,7 @@ export class OrdersService {
     const order = await this.ordersRepository.createOrder(
       createOrderOrderItemDto,
       userId,
+      userPoint
     );
 
     await this.orderItemsRepository.createOrderItem(

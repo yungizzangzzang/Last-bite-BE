@@ -13,6 +13,7 @@ export class OrdersRepository {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
+    userPoint: number,
   ): Promise<CreateOrderDto> {
     const store = await this.prisma.stores.findUnique({
       where: { storeId: createOrderOrderItemDto.storeId },
@@ -50,35 +51,11 @@ export class OrdersRepository {
           );
         }
 
-        const user = await this.prisma.users.findUnique({
-          where: { userId },
-          select: { point: true },
-        });
-        if (!user) {
-          throw new HttpException(
-            { message: '사용자 정보가 존재하지 않습니다.' },
-            HttpStatus.NOT_FOUND,
-          );
-        }
-
-        if (user.point < createOrderOrderItemDto.totalPrice) {
-          throw new HttpException(
-            { message: '포인트를 충전해주세요.' },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-
         transactionOrders.push(
           // count update
           this.prisma.items.update({
             where: { itemId },
             data: { count: item.count - Item.count },
-          }),
-
-          // point update
-          this.prisma.users.update({
-            where: { userId },
-            data: { point: user.point - createOrderOrderItemDto.totalPrice },
           }),
         );
 
@@ -96,6 +73,21 @@ export class OrdersRepository {
               });
             }
           });
+      }),
+    );
+    
+    if (userPoint < createOrderOrderItemDto.totalPrice) {
+      throw new HttpException(
+        { message: '포인트를 충전해주세요.' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // point update
+    transactionOrders.push(
+      this.prisma.users.update({
+        where: { userId },
+        data: { point: userPoint - createOrderOrderItemDto.totalPrice },
       }),
     );
 
