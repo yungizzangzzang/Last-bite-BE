@@ -83,12 +83,9 @@ export class AuthController {
     description: '서버 에러',
   })
   async pointAccumulation(
-    // @Res({ passthrough: true }) res: Response,
     @Body() body: GettingPointsDto,
     @User() user: { userId: number },
   ) {
-    // console.log('point', body.point);
-    // console.log('user', user);
     const points = await this.authService.pointAccumulation(user, body);
 
     return points;

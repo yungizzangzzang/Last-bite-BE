@@ -103,8 +103,6 @@ export class AuthService {
       },
     });
 
-    console.log(user);
-
     if (!user) {
       throw new ForbiddenException({
         message: '이메일과 비밀번호를 확인해주세요',
