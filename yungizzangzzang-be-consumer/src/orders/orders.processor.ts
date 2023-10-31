@@ -54,12 +54,12 @@ export class OrdersProcessor {
 
   @OnQueueActive()
   onActive(job: Job) {
-    console.log(`${job.id} 번 작업 시작`);
+    console.log(`${job.id}`);
   }
 
   @OnQueueEvent('completed')
   onCompleted(job: Job<any>) {
-    console.log(`${job.id}번 작업 완료`);
+    console.log(`${job.id}`);
   }
 
   @OnQueueEvent('error')
