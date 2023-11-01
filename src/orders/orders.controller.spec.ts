@@ -107,11 +107,7 @@ describe('OrdersController', () => {
         createOrderOrderItemDto,
         user,
       );
-      await service.createOrder(
-        createOrderOrderItemDto,
-        user.userId,
-        user.point,
-      );
+      await service.createOrder(createOrderOrderItemDto, user.userId);
 
       expect(result).toEqual(createOrderDto);
       expect(controller.createOrder).toHaveBeenCalledWith(
