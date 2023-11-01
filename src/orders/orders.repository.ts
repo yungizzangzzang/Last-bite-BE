@@ -169,6 +169,7 @@ export class OrdersRepository {
             Item: {
               select: {
                 name: true,
+                price: true,
               },
             },
             count: true,
@@ -198,6 +199,7 @@ export class OrdersRepository {
       items: rawOrder.OrdersItems.map((orderItem) => ({
         name: orderItem.Item.name,
         count: orderItem.count,
+        price: orderItem.Item.price,
       })),
       storeName: rawOrder.Store.name,
       ordered: false,
