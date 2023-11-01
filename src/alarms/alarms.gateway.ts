@@ -74,8 +74,7 @@ export class AlarmsGateway
       data.storeId,
     );
 
-    const offset = 1000 * 60 * 60 * 9;
-    const koreaNow = new Date(new Date().getTime() + offset);
+    const koreaNow = new Date(new Date().getTime() + 1000 * 60 * 60 * 9);
     const result = {
       nickname: data.nickname,
       totalPrice: data.totalPrice,

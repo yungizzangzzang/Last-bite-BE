@@ -41,7 +41,7 @@ describe('AlarmsGateway', () => {
         },
       ],
 
-      createdAt: new Date(new Date().getTime() + 1000 * 60 * 60 * 9),
+      createdAt: expect.any(Date),
     };
     // const orderItemsList = [
     //   { ordersitemsId: '1', orderId: '1', itemId: '2', count: '5' },
@@ -102,7 +102,7 @@ describe('AlarmsGateway', () => {
     expect(mockSocket.emit).toHaveBeenCalledWith(
       'orderAlarmToOwner',
       expect.objectContaining({
-        createdAt: expect.any(Date),
+        createdAt: data.createdAt,
         nickname: data.nickname,
         items: data.itemList,
         totalPrice: data.totalPrice,
