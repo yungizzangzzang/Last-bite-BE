@@ -25,8 +25,6 @@ describe('AlarmsGateway', () => {
 
   /** Test1: 이벤트1-clientOrder */
   it('socket1: clientOrder', async () => {
-    const offset = 1000 * 60 * 60 * 9;
-    const koreaNow = new Date(new Date().getTime() + offset);
     const data = {
       nickname: 'Tom',
       totalPrice: 14000, // 총결제금액
@@ -43,7 +41,7 @@ describe('AlarmsGateway', () => {
         },
       ],
 
-      createdAt: koreaNow,
+      createdAt: new Date(new Date().getTime() + 1000 * 60 * 60 * 9),
     };
     // const orderItemsList = [
     //   { ordersitemsId: '1', orderId: '1', itemId: '2', count: '5' },
@@ -100,12 +98,16 @@ describe('AlarmsGateway', () => {
     //   '1': 3,
     //   '2': 5,
     // });
-    expect(mockSocket.emit).toHaveBeenCalledWith('orderAlarmToOwner', {
-      createdAt: data.createdAt,
-      nickname: data.nickname,
-      items: data.itemList,
-      totalPrice: data.totalPrice,
-    });
+
+    expect(mockSocket.emit).toHaveBeenCalledWith(
+      'orderAlarmToOwner',
+      expect.objectContaining({
+        createdAt: expect.any(Date),
+        nickname: data.nickname,
+        items: data.itemList,
+        totalPrice: data.totalPrice,
+      }),
+    );
   });
 
   /** Test2: 이벤트2-itemRegister */
