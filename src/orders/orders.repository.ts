@@ -13,7 +13,6 @@ export class OrdersRepository {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
-    userPoint: number,
   ): Promise<CreateOrderDto> {
     const store = await this.prisma.stores.findUnique({
       where: { storeId: createOrderOrderItemDto.storeId },
@@ -82,11 +81,15 @@ export class OrdersRepository {
           });
       }),
     );
+    const user: any = await this.prisma.users.findUnique({
+      where: { userId },
+      select: { point: true },
+    });
 
     // point update
     await this.prisma.users.update({
       where: { userId },
-      data: { point: userPoint - createOrderOrderItemDto.totalPrice },
+      data: { point: user.point - createOrderOrderItemDto.totalPrice },
     });
 
     transactionOrders.push(
