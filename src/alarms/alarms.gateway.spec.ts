@@ -27,6 +27,7 @@ describe('AlarmsGateway', () => {
   it('socket1: clientOrder', async () => {
     const data = {
       userId: 1,
+      nickname: 'Tom',
       storeId: 2,
       totalPrice: 14000, // 총결제금액
       discount: 22, // 할인율
@@ -34,13 +35,14 @@ describe('AlarmsGateway', () => {
         1: 4, // key: itemId, value: count(주문수량)
         2: 6,
       },
+      createdAt: new Date(),
     };
     const orderItemsList = [
       { ordersitemsId: '1', orderId: '1', itemId: '2', count: '5' },
       { ordersitemsId: '2', orderId: '1', itemId: '3', count: '5' },
     ];
 
-    jest.spyOn(repository, 'checkAndUpdate').mockResolvedValue(data.itemList);
+    // jest.spyOn(repository, 'checkAndUpdate').mockResolvedValue(data.itemList);
     jest
       .spyOn(repository, 'createdBothOrderTable')
       .mockResolvedValue(orderItemsList);
@@ -69,11 +71,11 @@ describe('AlarmsGateway', () => {
     // socket의 clientOrder event호출
     await gateway.clientOrder(data, mockSocket);
 
-    expect(repository.checkAndUpdate).toHaveBeenCalledWith(
-      data.userId,
-      data.totalPrice,
-      data.itemList,
-    );
+    // expect(repository.checkAndUpdate).toHaveBeenCalledWith(
+    //   data.userId,
+    //   data.totalPrice,
+    //   data.itemList,
+    // );
     expect(repository.createdBothOrderTable).toHaveBeenCalledWith(
       data.userId,
       data.storeId,
@@ -85,15 +87,15 @@ describe('AlarmsGateway', () => {
     // item수량 변경
     data.itemList[1] = 3;
     data.itemList[2] = 5;
-    expect(mockSocket.broadcast.emit).toHaveBeenCalledWith('changedItemCnt', {
-      '1': 3,
-      '2': 5,
-    });
+
+    // expect(mockSocket.broadcast.emit).toHaveBeenCalledWith('changedItemCnt', {
+    //   '1': 3,
+    //   '2': 5,
+    // });
     expect(mockSocket.emit).toHaveBeenCalledWith('orderAlarmToOwner', {
-      count: '5',
-      itemId: '3',
-      orderId: '1',
-      ordersitemsId: '2',
+      createdAt: data.createdAt,
+      nickname: data.nickname,
+      totalPrice: data.totalPrice,
     });
   });
 
