@@ -43,10 +43,6 @@ describe('AlarmsGateway', () => {
 
       createdAt: expect.any(Date),
     };
-    // const orderItemsList = [
-    //   { ordersitemsId: '1', orderId: '1', itemId: '2', count: '5' },
-    //   { ordersitemsId: '2', orderId: '1', itemId: '3', count: '5' },
-    // ];
 
     // jest.spyOn(repository, 'checkAndUpdate').mockResolvedValue(data.itemList);
     // jest

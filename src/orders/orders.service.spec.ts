@@ -3,7 +3,7 @@ import { TestingModule } from '@nestjs/testing';
 import { CreateOrderItemDto } from './../order-items/dto/create-order-item.dto';
 import { OrderItemsRepository } from './../order-items/order-items.repository';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
-import { OneOrderDTO, OrderItemDetailDTO } from './dto/get-one-order.dto';
+import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 import { OrdersRepository } from './orders.repository';
 import { OrdersService } from './orders.service';
@@ -171,14 +171,16 @@ describe('OrdersService', () => {
   /** Test3: 특정 주문 정보 확인(GET) */
   describe('getOneOrder with orderId', () => {
     it('test3', async () => {
-      const mockItems: OrderItemDetailDTO[] = [
+      const mockItems: any = [
         {
           name: '떡볶이',
           count: 3,
+          price: 7000,
         },
         {
           name: '오징어튀김',
           count: 5,
+          price: 7000,
         },
       ];
       const mockOrder: OneOrderDTO = {

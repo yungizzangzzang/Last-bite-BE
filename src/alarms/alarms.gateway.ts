@@ -82,7 +82,6 @@ export class AlarmsGateway
       createdAt: koreaNow,
     };
 
-    // console.log(findOwnerId);
     const ownerSocketId = this.clients[findOwnerId];
     socket.to(ownerSocketId).emit('orderAlarmToOwner', result);
   }
