@@ -15,9 +15,13 @@ export class OrdersRepository {
     userId: number,
     userPoint: number,
   ): Promise<CreateOrderDto> {
-    const store = await this.prisma.stores.findUnique({
-      where: { storeId: createOrderOrderItemDto.storeId },
-    });
+    // const store = await this.prisma.stores.findUnique({
+    //   where: { storeId: createOrderOrderItemDto.storeId },
+    // });
+    const store = await this.prisma.$queryRaw`
+      SELECT * FROM Stores
+      WHERE id = ${createOrderOrderItemDto.storeId}
+    `;
     // storeId에 해당하는 Stores 없는 경우
     if (!store) {
       throw new HttpException(
@@ -31,10 +35,12 @@ export class OrdersRepository {
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
         const itemId = Item.itemId;
-        const item = await this.prisma.items.findUnique({
-          where: { itemId },
-          select: { storeId: true, count: true, price: true },
-        });
+        // const item = await this.prisma.items.findUnique({
+        //   where: { itemId },
+        //   select: { storeId: true, count: true, price: true },
+        // });
+        const item: any = await this.prisma
+          .$queryRaw`SELECT storeId, count, price FROM Items WHERE id = ${itemId}`;
 
         // itemId 해당하는 Items 가 없는 경우
         if (!item) {
@@ -44,7 +50,7 @@ export class OrdersRepository {
           );
         }
         // 아이템(핫딜)의 storeId(가게정보)와 입력된 storeId가 다른 경우
-        if (item.storeId !== createOrderOrderItemDto.storeId) {
+        if (item[0].storeId !== createOrderOrderItemDto.storeId) {
           throw new HttpException(
             { message: '가게 정보가 올바르지 않습니다.' },
             HttpStatus.BAD_REQUEST,
@@ -53,10 +59,14 @@ export class OrdersRepository {
 
         transactionOrders.push(
           // count update
-          this.prisma.items.update({
-            where: { itemId },
-            data: { count: item.count - Item.count },
-          }),
+          // this.prisma.items.update({
+          //   where: { itemId },
+          //   data: { count: item[0].count - Item.count },
+          // }),
+          this.prisma.$queryRaw`UPDATE Items SET count = ${
+            item[0].count - Item.count
+          } WHERE id = ${itemId}
+            `,
         );
 
         // count === 0 일때 deletedAt 업데이트
@@ -75,7 +85,7 @@ export class OrdersRepository {
           });
       }),
     );
-    
+
     if (userPoint < createOrderOrderItemDto.totalPrice) {
       throw new HttpException(
         { message: '포인트를 충전해주세요.' },
@@ -85,10 +95,14 @@ export class OrdersRepository {
 
     // point update
     transactionOrders.push(
-      this.prisma.users.update({
-        where: { userId },
-        data: { point: userPoint - createOrderOrderItemDto.totalPrice },
-      }),
+      // this.prisma.users.update({
+      //   where: { userId },
+      //   data: { point: userPoint - createOrderOrderItemDto.totalPrice },
+      // }),
+      this.prisma.$queryRaw`
+        UPDATE Users
+        SET point = ${userPoint - createOrderOrderItemDto.totalPrice}
+        WHERE id = ${userId}`,
     );
 
     transactionOrders.push(
