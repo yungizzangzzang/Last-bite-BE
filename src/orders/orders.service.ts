@@ -28,7 +28,7 @@ export class OrdersService {
       const result = await this.ordersQueue.add('create', {
         createOrderOrderItemDto,
         userId,
-        userPoint
+        userPoint,
       });
       return result;
     } catch (error) {
