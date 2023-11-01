@@ -22,13 +22,11 @@ export class OrdersService {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
-    userPoint: number,
   ) {
     try {
       const result = await this.ordersQueue.add('create', {
         createOrderOrderItemDto,
         userId,
-        userPoint,
       });
       return result;
     } catch (error) {

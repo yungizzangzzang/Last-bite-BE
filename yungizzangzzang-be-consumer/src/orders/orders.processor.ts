@@ -15,7 +15,7 @@ export class OrdersProcessor {
 
   @Process('create')
   async handleCreateOrder(job: Job<any>) {
-    const { createOrderOrderItemDto, userId, userPoint } = job.data;
+    const { createOrderOrderItemDto, userId } = job.data;
     const results: (string | undefined)[] = await Promise.all(
       createOrderOrderItemDto.items.map(async (orderItem) => {
         const itemId = orderItem.itemId;
@@ -42,7 +42,6 @@ export class OrdersProcessor {
     const order = await this.ordersRepository.createOrder(
       createOrderOrderItemDto,
       userId,
-      userPoint
     );
 
     await this.orderItemsRepository.createOrderItem(

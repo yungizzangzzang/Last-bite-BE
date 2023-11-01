@@ -13,7 +13,6 @@ export class OrdersRepository {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
-    userPoint: number,
   ): Promise<CreateOrderDto> {
     // const store = await this.prisma.stores.findUnique({
     //   where: { storeId: createOrderOrderItemDto.storeId },
@@ -56,6 +55,24 @@ export class OrdersRepository {
             HttpStatus.BAD_REQUEST,
           );
         }
+        const user = await this.prisma.users.findUnique({
+          where: { userId },
+          select: { point: true },
+        });
+
+        if (!user) {
+          throw new HttpException(
+            { message: '사용자 정보가 존재하지 않습니다.' },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        if (user.point < createOrderOrderItemDto.totalPrice) {
+          throw new HttpException(
+            { message: '포인트를 충전해주세요.' },
+            HttpStatus.BAD_REQUEST,
+          );
+        }
 
         transactionOrders.push(
           // count update
@@ -67,6 +84,16 @@ export class OrdersRepository {
             item[0].count - Item.count
           } WHERE id = ${itemId}
             `,
+
+          // point update
+          // this.prisma.users.update({
+          //   where: { userId },
+          //   data: { point: user.point - createOrderOrderItemDto.totalPrice },
+          // }),
+          this.prisma.$queryRaw`
+          UPDATE Users
+          SET point = ${user.point - createOrderOrderItemDto.totalPrice}
+          WHERE id = ${userId}`,
         );
 
         // count === 0 일때 deletedAt 업데이트
@@ -84,25 +111,6 @@ export class OrdersRepository {
             }
           });
       }),
-    );
-
-    if (userPoint < createOrderOrderItemDto.totalPrice) {
-      throw new HttpException(
-        { message: '포인트를 충전해주세요.' },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    // point update
-    transactionOrders.push(
-      // this.prisma.users.update({
-      //   where: { userId },
-      //   data: { point: userPoint - createOrderOrderItemDto.totalPrice },
-      // }),
-      this.prisma.$queryRaw`
-        UPDATE Users
-        SET point = ${userPoint - createOrderOrderItemDto.totalPrice}
-        WHERE id = ${userId}`,
     );
 
     transactionOrders.push(
