@@ -111,6 +111,10 @@ export class OrdersRepository {
       where: {
         userId: userId,
       },
+      take: 20,
+      orderBy: {
+        createdAt: 'desc',
+      },
       select: {
         orderId: true,
         discount: true,
