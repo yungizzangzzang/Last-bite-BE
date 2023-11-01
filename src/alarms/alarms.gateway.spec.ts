@@ -26,26 +26,28 @@ describe('AlarmsGateway', () => {
   /** Test1: 이벤트1-clientOrder */
   it('socket1: clientOrder', async () => {
     const data = {
-      userId: 1,
       nickname: 'Tom',
-      storeId: 2,
       totalPrice: 14000, // 총결제금액
-      discount: 22, // 할인율
-      itemList: {
-        1: 4, // key: itemId, value: count(주문수량)
-        2: 6,
-      },
-      createdAt: new Date(),
+      storeId: 2,
+      userId: 1,
+      itemList: [
+        {
+          name: '떡',
+          price: 7000,
+        },
+        {
+          name: '마라탕',
+          price: 7000,
+        },
+      ],
+
+      createdAt: expect.any(Date),
     };
-    const orderItemsList = [
-      { ordersitemsId: '1', orderId: '1', itemId: '2', count: '5' },
-      { ordersitemsId: '2', orderId: '1', itemId: '3', count: '5' },
-    ];
 
     // jest.spyOn(repository, 'checkAndUpdate').mockResolvedValue(data.itemList);
-    jest
-      .spyOn(repository, 'createdBothOrderTable')
-      .mockResolvedValue(orderItemsList);
+    // jest
+    //   .spyOn(repository, 'createdBothOrderTable')
+    //   .mockResolvedValue(orderItemsList);
 
     const mockSocket: any = {
       id: 'socketId',
@@ -76,27 +78,32 @@ describe('AlarmsGateway', () => {
     //   data.totalPrice,
     //   data.itemList,
     // );
-    expect(repository.createdBothOrderTable).toHaveBeenCalledWith(
-      data.userId,
-      data.storeId,
-      data.totalPrice,
-      data.discount,
-      data.itemList,
-    );
+    // expect(repository.createdBothOrderTable).toHaveBeenCalledWith(
+    //   data.userId,
+    //   data.storeId,
+    //   data.totalPrice,
+    //   data.discount,
+    //   data.itemList,
+    // );
 
     // item수량 변경
-    data.itemList[1] = 3;
-    data.itemList[2] = 5;
+    // data.itemList[1] = 3;
+    // data.itemList[2] = 5;
 
     // expect(mockSocket.broadcast.emit).toHaveBeenCalledWith('changedItemCnt', {
     //   '1': 3,
     //   '2': 5,
     // });
-    expect(mockSocket.emit).toHaveBeenCalledWith('orderAlarmToOwner', {
-      createdAt: data.createdAt,
-      nickname: data.nickname,
-      totalPrice: data.totalPrice,
-    });
+
+    expect(mockSocket.emit).toHaveBeenCalledWith(
+      'orderAlarmToOwner',
+      expect.objectContaining({
+        createdAt: data.createdAt,
+        nickname: data.nickname,
+        items: data.itemList,
+        totalPrice: data.totalPrice,
+      }),
+    );
   });
 
   /** Test2: 이벤트2-itemRegister */

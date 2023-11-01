@@ -54,34 +54,36 @@ export class AlarmsGateway
   /** 1. 고객이 주문 */
   @SubscribeMessage('clientOrder') // 이벤트명 - 프론트에서emit한 것을 on받는 것과 같음(=socket.on)
   async clientOrder(
-    @MessageBody() data: any,
+    @MessageBody()
+    data: {
+      nickname: string;
+      totalPrice: number;
+      storeId: number;
+      userId: number;
+      itemList: {
+        name: string;
+        price: number;
+      }[];
+    },
     @ConnectedSocket() socket: Socket,
   ) {
     // console.log(data, socket.id); // 체크용
-
-    // (1-1)Orders, OrdersItems 테이블 생성
-    await this.alarmsRepository.createdBothOrderTable(
-      data.userId,
-      data.storeId,
-      data.totalPrice,
-      data.discount,
-      data.itemList, // {itemId:count, 1:3, 2:5, ...}
-    );
 
     // (2-2)해당 사장에게'만' 주문 알람 emit
     const findOwnerId: any = await this.alarmsRepository.findOwnerId(
       data.storeId,
     );
 
+    const koreaNow = new Date(new Date().getTime() + 1000 * 60 * 60 * 9);
     const result = {
       nickname: data.nickname,
       totalPrice: data.totalPrice,
-      createdAt: new Date(),
+      items: data.itemList,
+      createdAt: koreaNow,
     };
 
-    // console.log(findOwnerId);
     const ownerSocketId = this.clients[findOwnerId];
-    socket.to(ownerSocketId).emit('orderAlarmToOwner', result); // [1]가 OrdersItems테이블, [0]는 Orders
+    socket.to(ownerSocketId).emit('orderAlarmToOwner', result);
   }
 
   /** 2. 사장이 핫딜상품 등록 */
@@ -158,6 +160,15 @@ const changedItemCnt = await this.alarmsRepository.checkAndUpdate(
   data.userId,
   data.totalPrice,
   data.itemList,
+);
+
+// (1-1)Orders, OrdersItems 테이블 생성
+await this.alarmsRepository.createdBothOrderTable(
+  data.userId,
+  data.storeId,
+  data.totalPrice,
+  data.discount,
+  data.itemList, // {itemId:count, 1:3, 2:5, ...}
 );
 
 // (2-1)바뀐 재고량 모두에게 emit
