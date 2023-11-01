@@ -3,7 +3,7 @@ import { TestingModule } from '@nestjs/testing';
 import { CreateOrderItemDto } from './../order-items/dto/create-order-item.dto';
 import { OrderItemsRepository } from './../order-items/order-items.repository';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
-import { OneOrderDTO } from './dto/get-one-order.dto';
+import { OneOrderDTO, OrderItemDetailDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 import { OrdersRepository } from './orders.repository';
 import { OrdersService } from './orders.service';
@@ -171,24 +171,34 @@ describe('OrdersService', () => {
   /** Test3: 특정 주문 정보 확인(GET) */
   describe('getOneOrder with orderId', () => {
     it('test3', async () => {
-      const order: OneOrderDTO = {
+      const mockItems: OrderItemDetailDTO[] = [
+        {
+          name: '떡볶이',
+          count: 3,
+        },
+        {
+          name: '오징어튀김',
+          count: 5,
+        },
+      ];
+      const mockOrder: OneOrderDTO = {
         orderId: 1,
         totalPrice: 15000,
         discount: 22,
         createdAt: new Date(),
-        items: [],
+        items: mockItems,
         storeName: '분식',
         ordered: true,
       };
 
-      jest.spyOn(service, 'getOneOrder').mockResolvedValue(order);
-      jest.spyOn(ordersRepository, 'getOneOrder').mockResolvedValue(order);
+      jest.spyOn(service, 'getOneOrder').mockResolvedValue(mockOrder);
+      jest.spyOn(ordersRepository, 'getOneOrder').mockResolvedValue(mockOrder);
 
-      const result = await service.getOneOrder(order.orderId);
-      await ordersRepository.getOneOrder(order.orderId);
+      const result = await service.getOneOrder(mockOrder.orderId);
+      await ordersRepository.getOneOrder(mockOrder.orderId);
 
-      expect(result).toEqual(order);
-      expect(service.getOneOrder).toHaveBeenCalledWith(order.orderId);
+      expect(result).toEqual(mockOrder);
+      expect(service.getOneOrder).toHaveBeenCalledWith(mockOrder.orderId);
       expect(ordersRepository.getOneOrder).toBeCalledTimes(1);
     });
   });
