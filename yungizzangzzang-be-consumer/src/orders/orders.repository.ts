@@ -57,6 +57,8 @@ export class OrdersRepository {
             where: { itemId },
             data: { count: item.count - Item.count },
           }),
+
+          
         );
 
         // count === 0 일때 deletedAt 업데이트
@@ -75,21 +77,19 @@ export class OrdersRepository {
           });
       }),
     );
-    
     if (userPoint < createOrderOrderItemDto.totalPrice) {
       throw new HttpException(
         { message: '포인트를 충전해주세요.' },
         HttpStatus.BAD_REQUEST,
       );
     }
-
     // point update
     transactionOrders.push(
-      this.prisma.users.update({
-        where: { userId },
-        data: { point: userPoint - createOrderOrderItemDto.totalPrice },
-      }),
-    );
+    this.prisma.users.update({
+      where: { userId },
+      data: { point: userPoint - createOrderOrderItemDto.totalPrice },
+    }),
+    )
 
     transactionOrders.push(
       // 주문 정보 생성
