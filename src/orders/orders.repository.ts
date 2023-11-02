@@ -6,7 +6,6 @@ import {
 } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
-
 @Injectable()
 export class OrdersRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -25,12 +24,20 @@ export class OrdersRepository {
         HttpStatus.NOT_FOUND,
       );
     }
+
+    const transactionOrders: any[] = [];
+
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
         const itemId = Item.itemId;
+
+        // Item에 대한 락
+        // await this.prisma
+        //   .$executeRaw`SELECT * FROM items WHERE itemId = ${itemId} FOR UPDATE`;
+
         const item = await this.prisma.items.findUnique({
           where: { itemId },
-          select: { storeId: true, count: true },
+          select: { storeId: true, count: true, price: true },
         });
         // itemId 해당하는 Items 가 없는 경우
         if (!item) {
@@ -47,35 +54,57 @@ export class OrdersRepository {
           );
         }
 
-        // 주문 create 후 count update
-        await this.prisma.items.update({
-          where: { itemId },
-          data: { count: item.count - Item.count },
-        });
-        
+        // User에 대한 락
+        // await this.prisma
+        //   .$executeRaw`SELECT * FROM users WHERE userId = ${userId} FOR UPDATE`;
+
+        transactionOrders.push(
+          // count update
+          this.prisma.items.update({
+            where: { itemId },
+            data: { count: item.count - Item.count },
+          }),
+        );
         // count === 0 일때 deletedAt 업데이트
-        const itemToUpdate = await this.prisma.items.findUnique({
-          where: { itemId, count: 0 },
-          select: { deletedAt: true, itemId: true },
-        });
-        if (itemToUpdate) {
-          await this.prisma.items.update({
-            where: { itemId: itemToUpdate.itemId },
-            data: { deletedAt: new Date() },
+        await this.prisma.items
+          .findUnique({
+            where: { itemId, count: 0 },
+            select: { deletedAt: true, itemId: true },
+          })
+          .then((itemToUpdate) => {
+            if (itemToUpdate) {
+              this.prisma.items.update({
+                where: { itemId: itemToUpdate.itemId },
+                data: { deletedAt: new Date() },
+              });
+            }
           });
-        }
+      }),
+    );
+    const user: any = await this.prisma.users.findUnique({
+      where: { userId },
+      select: { point: true },
+    });
+
+    // point update
+    await this.prisma.users.update({
+      where: { userId },
+      data: { point: user.point - createOrderOrderItemDto.totalPrice },
+    });
+
+    transactionOrders.push(
+      // 주문 정보 생성
+      this.prisma.orders.create({
+        data: {
+          userId,
+          storeId: createOrderOrderItemDto.storeId,
+          discount: createOrderOrderItemDto.discount,
+          totalPrice: createOrderOrderItemDto.totalPrice,
+        },
       }),
     );
 
-    // 주문 정보 생성
-    const order = await this.prisma.orders.create({
-      data: {
-        userId,
-        storeId: createOrderOrderItemDto.storeId,
-        discount: createOrderOrderItemDto.discount,
-        totalPrice: createOrderOrderItemDto.totalPrice,
-      },
-    });
+    const [_, __, order] = await this.prisma.$transaction(transactionOrders);
 
     return order;
   }
@@ -84,6 +113,10 @@ export class OrdersRepository {
     const rawOrders = await this.prisma.orders.findMany({
       where: {
         userId: userId,
+      },
+      take: 20,
+      orderBy: {
+        createdAt: 'desc',
       },
       select: {
         orderId: true,
@@ -143,6 +176,7 @@ export class OrdersRepository {
             Item: {
               select: {
                 name: true,
+                price: true,
               },
             },
             count: true,
@@ -172,9 +206,19 @@ export class OrdersRepository {
       items: rawOrder.OrdersItems.map((orderItem) => ({
         name: orderItem.Item.name,
         count: orderItem.count,
+        price: orderItem.Item.price,
       })),
       storeName: rawOrder.Store.name,
+      ordered: false,
     };
+
+    return order;
+  }
+
+  async getOneOrderById(orderId: number) {
+    const order = await this.prisma.orders.findFirst({
+      where: { orderId },
+    });
 
     return order;
   }

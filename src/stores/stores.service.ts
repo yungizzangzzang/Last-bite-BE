@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Likes, Users } from '@prisma/client';
 import { GetItemDto } from 'src/items/dto/get-item.dto';
 import { ItemsRepository } from 'src/items/items.repository';
@@ -35,11 +40,13 @@ export class StoresService {
     items: GetItemDto[] | { message: string };
     isLiked: boolean;
   }> {
-    const store: GetStoreResData = await this.storesRepository.selectOneStore(
-      storeId,
-    );
+    const store: GetStoreResData | null =
+      await this.storesRepository.selectOneStore(storeId);
     const items: GetItemDto[] | { message: string } =
       await this.itemsRepository.selectAllItems(storeId);
+    if (!store) {
+      throw new NotFoundException('해당 가게를 찾을 수 없습니다.');
+    }
 
     let isLiked;
     if (user) {
@@ -61,9 +68,12 @@ export class StoresService {
     storeId: number,
     updateStoreDto: UpdateStoreReqDto,
   ): Promise<void> {
-    const store: GetStoreResData = await this.storesRepository.selectOneStore(
-      storeId,
-    );
+    const store: GetStoreResData | null =
+      await this.storesRepository.selectOneStore(storeId);
+    if (!store) {
+      throw new NotFoundException('해당 가게를 찾을 수 없습니다.');
+    }
+
     // ! 수정 권한이 없는 경우
     if (userId !== store.ownerId) {
       throw new HttpException(
@@ -77,9 +87,12 @@ export class StoresService {
 
   // * 가게 삭제
   async deleteStore(userId: number, storeId: number): Promise<void> {
-    const store: GetStoreResData = await this.storesRepository.selectOneStore(
-      storeId,
-    );
+    const store: GetStoreResData | null =
+      await this.storesRepository.selectOneStore(storeId);
+    if (!store) {
+      throw new NotFoundException('해당 가게를 찾을 수 없습니다.');
+    }
+
     // ! 삭제 권한이 없는 경우
     if (userId !== store.ownerId) {
       throw new HttpException(

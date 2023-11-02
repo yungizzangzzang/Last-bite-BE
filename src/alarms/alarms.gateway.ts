@@ -12,7 +12,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AlarmsRepository } from './alarms.repository';
 
-// Todo: socket에서 타입 any 전부 치우기
 @WebSocketGateway({
   cors: {
     origin: '*', // or "http://localhost:xxxx"
@@ -43,8 +42,8 @@ export class AlarmsGateway
     console.log('삭제 후: ', this.clients);
   }
 
-  clients: any = {}; // key: userId, value: socket.id
   /** 0. 로그인 - 유저정보를 clients에 저장 */
+  clients: any = {}; // key: userId, value: socket.id
   @SubscribeMessage('join')
   async join(@MessageBody() data: any, @ConnectedSocket() socket: Socket) {
     console.log('로그인 할때: ', data, socket.id);
@@ -55,40 +54,36 @@ export class AlarmsGateway
   /** 1. 고객이 주문 */
   @SubscribeMessage('clientOrder') // 이벤트명 - 프론트에서emit한 것을 on받는 것과 같음(=socket.on)
   async clientOrder(
-    @MessageBody() data: any,
+    @MessageBody()
+    data: {
+      nickname: string;
+      totalPrice: number;
+      storeId: number;
+      userId: number;
+      itemList: {
+        name: string;
+        price: number;
+      }[];
+    },
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log('여기냐', data, socket.id); // 체크용
+    // console.log(data, socket.id); // 체크용
 
-    // (1-0)잔금 체크 & 재고 체크 -> 업데이트 (by트랜잭션)
-    // *deadlock문제도 생각해보기
-    const changedItemCnt = await this.alarmsRepository.checkAndUpdate(
-      data.userId,
-      data.totalPrice,
-      data.itemList,
-    );
-
-    // (1-1)Orders, OrdersItems 테이블 생성
-    const createdBothOrder = await this.alarmsRepository.createdBothOrderTable(
-      data.userId,
-      data.storeId,
-      data.totalPrice,
-      data.discount,
-      data.itemList, // {itemId:count, 1:3, 2:5, ...}
-    );
-
-    // (2-1)바뀐 재고량 모두에게 emit
-    socket.broadcast.emit(
-      'changedItemCnt',
-      changedItemCnt, // itemId가 key, 변화한 재고량이 value를 요소로 가진 객체
-    );
     // (2-2)해당 사장에게'만' 주문 알람 emit
     const findOwnerId: any = await this.alarmsRepository.findOwnerId(
       data.storeId,
     );
-    console.log(findOwnerId);
+
+    const koreaNow = new Date(new Date().getTime() + 1000 * 60 * 60 * 9);
+    const result = {
+      nickname: data.nickname,
+      totalPrice: data.totalPrice,
+      items: data.itemList,
+      createdAt: koreaNow,
+    };
+
     const ownerSocketId = this.clients[findOwnerId];
-    socket.to(ownerSocketId).emit('orderAlarmToOwner', createdBothOrder[1]); // [1]가 OrdersItems테이블, [0]는 Orders
+    socket.to(ownerSocketId).emit('orderAlarmToOwner', result);
   }
 
   /** 2. 사장이 핫딜상품 등록 */
@@ -97,7 +92,7 @@ export class AlarmsGateway
     @MessageBody() item: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log(item, socket.id);
+    // console.log(item, socket.id);
     const createdItem = await this.alarmsRepository.createItem(
       item.name,
       item.storeId,
@@ -115,7 +110,7 @@ export class AlarmsGateway
     const favoriteUsers = await this.alarmsRepository.findFavoriteUsers(
       item.storeId,
     );
-    console.log(favoriteUsers);
+    // console.log(favoriteUsers);
     for (const favoriteUser of favoriteUsers) {
       socket
         .to(this.clients[favoriteUser])
@@ -128,11 +123,11 @@ export class AlarmsGateway
 
   /** 3. 사장이 단골 고객에게만 보내는 알림*/
   @SubscribeMessage('alarmToFavoriteClient')
-  async AlarmToFavoriteClient(
+  async alarmToFavoriteClient(
     @MessageBody() data: any,
     @ConnectedSocket() socket: Socket,
   ) {
-    console.log(data, socket.id);
+    // console.log(data, socket.id);
     // (1)
     const createdAlarm = await this.alarmsRepository.createAlarm(
       data.title,
@@ -159,4 +154,28 @@ if (result) {
   const io = req.app.get('io');
   io.of('/board').emit('addColumn', result.column); // .column추가 api
 }
+
+// (1-0)잔금 체크 & 재고 체크 -> 업데이트 (by트랜잭션)
+const changedItemCnt = await this.alarmsRepository.checkAndUpdate(
+  data.userId,
+  data.totalPrice,
+  data.itemList,
+);
+
+// (1-1)Orders, OrdersItems 테이블 생성
+await this.alarmsRepository.createdBothOrderTable(
+  data.userId,
+  data.storeId,
+  data.totalPrice,
+  data.discount,
+  data.itemList, // {itemId:count, 1:3, 2:5, ...}
+);
+
+// (2-1)바뀐 재고량 모두에게 emit
+socket.broadcast.emit(
+  'changedItemCnt',
+  changedItemCnt, // itemId가 key, 변화한 재고량이 value를 요소로 가진 객체
+);
+
+
 */

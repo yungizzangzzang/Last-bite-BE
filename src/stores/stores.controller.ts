@@ -77,6 +77,7 @@ export class StoresController {
     type: CustomSuccessRes,
     description: '특정 가게의 데이터를 일부 변경합니다.',
   })
+  @UseGuards(JwtAuthGuard)
   @Put(':storeId')
   async updateStore(
     @User() user: Users,
