@@ -40,16 +40,26 @@ export class OrdersProcessor {
       );
     }
 
-    await this.prisma.$transaction(async () => {
-      const createOrder = await this.ordersRepository.createOrder(
-        createOrderOrderItemDto,
-        userId,
-      );
-      await this.orderItemsRepository.createOrderItem(
-        createOrder.orderId,
-        createOrderOrderItemDto.items,
-      );
-    });
+    const createOrder = await this.ordersRepository.createOrder(
+      createOrderOrderItemDto,
+      userId,
+    );
+    await this.orderItemsRepository.createOrderItem(
+      createOrder.orderId,
+      createOrderOrderItemDto.items,
+    );
+
+    // 트랜잭션 코드
+    // await this.prisma.$transaction(async () => {
+    //   const createOrder = await this.ordersRepository.createOrder(
+    //     createOrderOrderItemDto,
+    //     userId,
+    //   );
+    //   await this.orderItemsRepository.createOrderItem(
+    //     createOrder.orderId,
+    //     createOrderOrderItemDto.items,
+    //   );
+    // });
 
     return {};
   }
