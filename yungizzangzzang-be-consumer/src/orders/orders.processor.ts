@@ -3,6 +3,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { Job } from 'bull';
 import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { OrdersRepository } from './orders.repository';
 
 @Processor('orders')
@@ -11,6 +12,7 @@ export class OrdersProcessor {
     private readonly ordersRepository: OrdersRepository,
     private readonly orderItemsRepository: OrderItemsRepository,
     private readonly itemsRepository: ItemsRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Process('create')
@@ -30,7 +32,6 @@ export class OrdersProcessor {
 
     // if 문 true 일 때 반환되는 undefined 제거
     const filteredResults = results.filter((result) => result !== undefined);
-
     // 에러 메세지 반환
     if (filteredResults.length > 0) {
       throw new HttpException(
@@ -39,15 +40,16 @@ export class OrdersProcessor {
       );
     }
 
-    const order = await this.ordersRepository.createOrder(
-      createOrderOrderItemDto,
-      userId,
-    );
-
-    await this.orderItemsRepository.createOrderItem(
-      order.orderId,
-      createOrderOrderItemDto.items,
-    );
+    await this.prisma.$transaction(async () => {
+      const createOrder = await this.ordersRepository.createOrder(
+        createOrderOrderItemDto,
+        userId,
+      );
+      await this.orderItemsRepository.createOrderItem(
+        createOrder.orderId,
+        createOrderOrderItemDto.items,
+      );
+    });
 
     return {};
   }
