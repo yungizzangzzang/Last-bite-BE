@@ -15,6 +15,7 @@ model Users {
   password  String
   name      String
   point     Int       @default(0)
+  version   Int       @default(0)
   nickname  String    @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -121,6 +122,7 @@ model Items {
   endTime   DateTime
   imgUrl    String?
   content   String
+  version   Int       @default(0)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?

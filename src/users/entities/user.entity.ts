@@ -56,6 +56,10 @@ export class UserEntity implements Users {
   @ApiProperty({ type: Number, description: '포인트', example: 5000 })
   point: number;
 
+  @IsNotEmpty()
+  @IsNumber()
+  version: number;
+
   userId: number;
   createdAt: Date;
   updatedAt: Date;
