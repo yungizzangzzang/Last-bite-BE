@@ -78,6 +78,10 @@ export class ItemEntity extends PrismaService {
   @IsNotEmpty()
   storeId!: number;
 
+  @IsNumber()
+  @IsNotEmpty()
+  version!: number;
+
   @IsDate()
   @IsNotEmpty()
   createdAt!: Date;

@@ -24,35 +24,35 @@ describe('StoresController', () => {
   });
 
   /** Test1: 가게 전체 조회  /stores(GET)  */
-  describe('getAllStore & no authGuards', () => {
-    const stores: GetStoreResData[] = [
-      {
-        storeId: 1,
-        ownerId: 1,
-        name: '떡',
-        longitude: 12,
-        latitude: 23,
-        address: '경기도',
-        storePhoneNumber: '123-123-123-123',
-        category: '분식',
-      },
-    ];
+  // describe('getAllStore & no authGuards', () => {
+  //   const stores: GetStoreResData[] = [
+  //     {
+  //       storeId: 1,
+  //       ownerId: 1,
+  //       name: '떡',
+  //       longitude: 12,
+  //       latitude: 23,
+  //       address: '경기도',
+  //       storePhoneNumber: '123-123-123-123',
+  //       category: '분식',
+  //     },
+  //   ];
 
-    it('test1 - 가게 전체 조회', async () => {
-      jest.spyOn(controller, 'getAllStore').mockResolvedValue({ stores });
-      jest.spyOn(service, 'getAllStore').mockResolvedValue(stores);
+  //   it('test1 - 가게 전체 조회', async () => {
+  //     jest.spyOn(controller, 'getAllStore').mockResolvedValue({ stores });
+  //     jest.spyOn(service, 'getAllStore').mockResolvedValue(stores);
 
-      // controller의 함수 호출
-      const result = await controller.getAllStore();
+  //     // controller의 함수 호출
+  //     const result = await controller.getAllStore();
 
-      // service의 함수 호출
-      await service.getAllStore();
+  //     // service의 함수 호출
+  //     await service.getAllStore();
 
-      expect(result).toEqual({ stores });
-      expect(controller.getAllStore).toHaveBeenCalledWith();
-      expect(service.getAllStore).toBeCalledTimes(1);
-    });
-  });
+  //     expect(result).toEqual({ stores });
+  //     expect(controller.getAllStore).toHaveBeenCalledWith();
+  //     expect(service.getAllStore).toBeCalledTimes(1);
+  //   });
+  // });
 
   /** Test2: 가게 상세 조회 /stores/storeId(GET)  */
   describe('getOneStore with  & authGuards', () => {

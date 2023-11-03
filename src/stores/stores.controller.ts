@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -26,16 +27,20 @@ import { StoresService } from './stores.service';
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 
-  // * 가게 전체 조회
-  @ApiOperation({ summary: '가게 전체 조회' })
+  // * 반경 10km 이내 가게 조회
+  @ApiOperation({ summary: '반경 10km 이내 가게 조회' })
   @ApiResponse({
     status: 200,
     type: GetAllStoresResDto,
-    description: '모든 가게를 조회합니다.',
+    description: '반경 10km 이내 가게를 조회합니다.',
   })
   @Get()
-  async getAllStore(): Promise<{ stores: GetStoreResData[] }> {
-    return { stores: await this.storesService.getAllStore() };
+  async getAllStoreWithInRadius(
+    @Query() reqInfo,
+  ): Promise<{ stores: GetStoreResData[] }> {
+    return {
+      stores: await this.storesService.getAllStoreWithInRadius(reqInfo),
+    };
   }
 
   // * 가게 상세 조회
