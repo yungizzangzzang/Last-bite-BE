@@ -50,6 +50,15 @@ export class StoresRepository {
     return store;
   }
 
+    // * 가게 정보 확인
+    async getOneStoreById(storeId: number) {
+      const store = await this.prisma.stores.findUnique({
+        where: { storeId },
+        select: { storeId: true },
+      });
+      return store
+    }
+
   // * 가게 수정
   async updateStore(
     storeId: number,

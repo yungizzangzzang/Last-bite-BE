@@ -153,6 +153,7 @@ export class ItemsRepository {
         HttpStatus.NOT_FOUND,
       );
     }
+
     return item;
   }
 }
