@@ -11,19 +11,17 @@ export class OrderItemsRepository {
   async createOrderItem(
     orderId: number,
     createOrderItem: CreateOrderItemDto[],
-  ): Promise<CreateOrderItemDto[]> {
+  ) {
     // createOrderItem 배열 내 각 요소마다  create 실행 ([떡볶이 2인분, 순대 1인분])
-    const orderItems = await Promise.all(
-      createOrderItem.map(async (Item) => {
-        const orderItem = await this.prisma.ordersItems.create({
-          data: {
-            ...Item,
-            orderId,
-          },
-        });
-        return orderItem;
-      }),
-    );
+
+    const data: CreateOrderItemDto[] = [];
+    for (let i = 0; i < createOrderItem.length; i++) {
+      data.push({ ...createOrderItem[i], orderId });
+    }
+
+    const orderItems = await this.prisma.ordersItems.createMany({
+      data: data,
+    });
 
     return orderItems;
   }
