@@ -91,6 +91,9 @@ export class AuthService {
       password?: string | undefined;
       isClient: boolean;
       email: string;
+      Store: {
+        storeId: number;
+      } | null;
     } | null = await this.prisma.users.findUnique({
       where: { email },
       select: {
@@ -100,6 +103,11 @@ export class AuthService {
         isClient: true,
         name: true,
         email: true,
+        Store: {
+          select: {
+            storeId: true,
+          },
+        },
       },
     });
 

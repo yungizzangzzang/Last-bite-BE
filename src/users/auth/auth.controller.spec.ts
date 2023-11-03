@@ -49,6 +49,9 @@ describe('AuthController', () => {
       nickname: expect.any(String),
       isClient: expect.any(Boolean),
       email: expect.any(Number),
+      Store: {
+        storeId: expect.any(Number),
+      },
     },
     message: expect.any(String),
   };
