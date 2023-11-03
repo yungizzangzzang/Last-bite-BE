@@ -22,11 +22,11 @@ export class AuthService {
       const { email, password, name, isClient, nickname, managementNumber } =
         body;
 
-      if (!email || !password || !name || !nickname) {
-        throw new BadRequestException({
-          errorMessage: '데이터 형식이 잘못되었습니다.',
-        });
-      }
+      // if (!email || !password || !name || !nickname) {
+      //   throw new BadRequestException({
+      //     errorMessage: '데이터 형식이 잘못되었습니다.',
+      //   });
+      // }
 
       const isExistEmail = await this.prisma.users.findUnique({
         where: { email },
@@ -40,7 +40,6 @@ export class AuthService {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log('여기:', email, name, isClient, nickname);
 
       const user = await this.prisma.users.create({
         data: {
@@ -51,8 +50,6 @@ export class AuthService {
           nickname,
         },
       });
-      console.log('user:', user);
-      console.log('management:', managementNumber);
 
       if (isClient === false && !managementNumber) {
         // 사장인데, 관리번호 입력안하면 빠꾸
@@ -68,7 +65,6 @@ export class AuthService {
             ownerId: user.userId,
           },
         });
-        console.log(store);
       }
 
       return { message: '회원가입 성공, 가즈아!!' };
@@ -81,11 +77,11 @@ export class AuthService {
   }
 
   async login(body: LoginDto) {
-    if (!body.email || !body.password) {
-      throw new BadRequestException({
-        errorMessage: '데이터 형식이 잘못되었습니다.',
-      });
-    }
+    // if (!body.email || !body.password) {
+    //   throw new BadRequestException({
+    //     errorMessage: '데이터 형식이 잘못되었습니다.',
+    //   });
+    // }
     const { email, password } = body;
 
     // 가입된 유저여야 합니다
@@ -95,6 +91,9 @@ export class AuthService {
       password?: string | undefined;
       isClient: boolean;
       email: string;
+      Store: {
+        storeId: number;
+      } | null;
     } | null = await this.prisma.users.findUnique({
       where: { email },
       select: {
@@ -104,14 +103,17 @@ export class AuthService {
         isClient: true,
         name: true,
         email: true,
+        Store: {
+          select: {
+            storeId: true,
+          },
+        },
       },
     });
 
-    console.log(user);
-
     if (!user) {
       throw new ForbiddenException({
-        errorMessage: '이메일과 비밀번호를 확인해주세요',
+        message: '이메일과 비밀번호를 확인해주세요',
       });
     }
 
@@ -119,7 +121,7 @@ export class AuthService {
     const isPasswordMatched = await bcrypt.compare(password, user.password!);
     if (!isPasswordMatched) {
       throw new ForbiddenException({
-        errorMessage: '이메일과 비밀번호를 확인해주세요',
+        message: '이메일과 비밀번호를 확인해주세요',
       });
     }
     delete user.password;
@@ -132,20 +134,24 @@ export class AuthService {
 
       return { accessToken, user, message: '가봅시다' };
     } catch (err) {
-      console.error(err);
       throw new InternalServerErrorException({
-        errorMessage: '로그인에 실패하였습니다',
+        message: '로그인에 실패하였습니다',
       });
     }
   }
 
   async findOneUser(userId: number) {
-    console.log('dfdf', userId);
-
     const user = await this.prisma.users.findFirst({
       where: { userId },
+      select: {
+        userId: true,
+        email: true,
+        isClient: true,
+        nickname: true,
+        name: true,
+        point: true,
+      },
     });
-    console.log(user);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -153,12 +159,12 @@ export class AuthService {
     return user;
   }
 
-  async pointAccumulation(user: any, body: GettingPointsDto) {
-    const beforeUser: any = await this.prisma.users.findUnique({
+  async pointAccumulation(user: { userId: number }, body: GettingPointsDto) {
+    await this.prisma.users.findUnique({
       where: { userId: user.userId },
     });
-    console.log('beforePoint: ', beforeUser.point);
-    const updatedUser = await this.prisma.users.update({
+
+    await this.prisma.users.update({
       where: { userId: user.userId },
       data: {
         point: {
@@ -166,6 +172,6 @@ export class AuthService {
         },
       },
     });
-    console.log('업데이트된 point정보', updatedUser.point);
+    return { message: '포인트 충전에 성공하였습니다.' };
   }
 }

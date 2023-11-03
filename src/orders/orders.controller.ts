@@ -50,24 +50,6 @@ export class OrdersController {
       );
     }
 
-    if (user.point < createOrderOrderItemDto.totalPrice) {
-      throw new HttpException(
-        { message: '포인트를 충전해주세요.' },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    // 주문 수량이 0인 경우
-    await Promise.all(
-      createOrderOrderItemDto.items.map(async (item) => {
-        if (item.count === 0) {
-          throw new HttpException(
-            { message: '주문 수량이 0입니다.' },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-      }),
-    );
     return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
   }
 
@@ -93,3 +75,5 @@ export class OrdersController {
     return result;
   }
 }
+
+//

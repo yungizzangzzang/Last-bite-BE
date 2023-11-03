@@ -25,18 +25,23 @@ export class LikesRepository {
   }
 
   // * 단골가게 등록
-  async createFavoriteStore(userId: number, storeId: number): Promise<void> {
+  async createFavoriteStore(
+    userId: number,
+    storeId: number,
+  ): Promise<{ message: string }> {
     await this.prisma.likes.create({
       data: {
         userId,
         storeId,
       },
     });
+    return { message: '좋아요 등록 성공' };
   }
 
   // * 단골가게 삭제
-  async deleteFavoriteStore(likeId: number): Promise<void> {
+  async deleteFavoriteStore(likeId: number): Promise<{ message: string }> {
     await this.prisma.likes.delete({ where: { likeId } });
+    return { message: '좋아요 취소 성공' };
   }
 
   // * 단골가게 조회

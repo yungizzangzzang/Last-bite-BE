@@ -30,6 +30,11 @@ export class OrdersRepository {
     await Promise.all(
       createOrderOrderItemDto.items.map(async (Item) => {
         const itemId = Item.itemId;
+
+        // Item에 대한 락
+        // await this.prisma
+        //   .$executeRaw`SELECT * FROM items WHERE itemId = ${itemId} FOR UPDATE`;
+
         const item = await this.prisma.items.findUnique({
           where: { itemId },
           select: { storeId: true, count: true, price: true },
@@ -49,28 +54,15 @@ export class OrdersRepository {
           );
         }
 
-        const user = await this.prisma.users.findUnique({
-          where: { userId },
-          select: { point: true },
-        });
-        if (!user) {
-          throw new HttpException(
-            { message: '사용자 정보가 존재하지 않습니다.' },
-            HttpStatus.NOT_FOUND,
-          );
-        }
+        // User에 대한 락
+        // await this.prisma
+        //   .$executeRaw`SELECT * FROM users WHERE userId = ${userId} FOR UPDATE`;
 
         transactionOrders.push(
           // count update
           this.prisma.items.update({
             where: { itemId },
             data: { count: item.count - Item.count },
-          }),
-
-          // point update
-          this.prisma.users.update({
-            where: { userId },
-            data: { point: user.point - createOrderOrderItemDto.totalPrice },
           }),
         );
         // count === 0 일때 deletedAt 업데이트
@@ -89,6 +81,16 @@ export class OrdersRepository {
           });
       }),
     );
+    const user: any = await this.prisma.users.findUnique({
+      where: { userId },
+      select: { point: true },
+    });
+
+    // point update
+    await this.prisma.users.update({
+      where: { userId },
+      data: { point: user.point - createOrderOrderItemDto.totalPrice },
+    });
 
     transactionOrders.push(
       // 주문 정보 생성
@@ -111,6 +113,10 @@ export class OrdersRepository {
     const rawOrders = await this.prisma.orders.findMany({
       where: {
         userId: userId,
+      },
+      take: 20,
+      orderBy: {
+        createdAt: 'desc',
       },
       select: {
         orderId: true,
@@ -170,6 +176,7 @@ export class OrdersRepository {
             Item: {
               select: {
                 name: true,
+                price: true,
               },
             },
             count: true,
@@ -199,6 +206,7 @@ export class OrdersRepository {
       items: rawOrder.OrdersItems.map((orderItem) => ({
         name: orderItem.Item.name,
         count: orderItem.count,
+        price: orderItem.Item.price,
       })),
       storeName: rawOrder.Store.name,
       ordered: false,

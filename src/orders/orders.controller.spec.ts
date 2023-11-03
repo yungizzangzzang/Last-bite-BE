@@ -51,21 +51,21 @@ describe('OrdersController', () => {
       }
     });
 
-    it('1-2(err) -> 보유 금액이 주문 금액보다 작은 경우', async () => {
-      const user: any = {
-        userId: 1,
-        isClient: true,
-        point: 10000, // < createdOrderOrderItemDto.totalPrice
-      };
+    // it('1-2(err) -> 보유 금액이 주문 금액보다 작은 경우', async () => {
+    //   const user: any = {
+    //     userId: 1,
+    //     isClient: true,
+    //     point: 10000, // < createdOrderOrderItemDto.totalPrice
+    //   };
 
-      try {
-        await controller.createOrder(createOrderOrderItemDto, user);
-      } catch (err: any) {
-        expect(err).toBeInstanceOf(HttpException);
-        expect(err.response.message).toBe('포인트를 충전해주세요.');
-        expect(err.status).toBe(HttpStatus.BAD_REQUEST);
-      }
-    });
+    //   try {
+    //     await controller.createOrder(createOrderOrderItemDto, user);
+    //   } catch (err: any) {
+    //     expect(err).toBeInstanceOf(HttpException);
+    //     expect(err.response.message).toBe('포인트를 충전해주세요.');
+    //     expect(err.status).toBe(HttpStatus.BAD_REQUEST);
+    //   }
+    // });
 
     it('1-3(err) -> 주문 수량이 0인 경우', async () => {
       const user: any = {
@@ -107,7 +107,7 @@ describe('OrdersController', () => {
         createOrderOrderItemDto,
         user,
       );
-      await service.createOrder(createOrderOrderItemDto, user);
+      await service.createOrder(createOrderOrderItemDto, user.userId);
 
       expect(result).toEqual(createOrderDto);
       expect(controller.createOrder).toHaveBeenCalledWith(

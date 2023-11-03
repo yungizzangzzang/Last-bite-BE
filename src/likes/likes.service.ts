@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Likes } from '@prisma/client';
 import { GetStoreResData } from 'src/stores/dto/store.response.dto';
 import { StoresRepository } from 'src/stores/stores.repository';
@@ -15,10 +15,14 @@ export class LikesService {
   async createOrDeleteFavoriteStore(
     userId: number,
     storeId: number,
-  ): Promise<void> {
+  ): Promise<{ message: string }> {
     // * 존재하는 가게인지 확인
-    await this.storesRepository.selectOneStore(storeId);
-
+    const store = await this.storesRepository.selectOneStore(storeId);
+    if (!store) {
+      throw new NotFoundException({
+        message: '해당하는 가게가 존재하지 않습니다.',
+      });
+    }
     // * 이미 단골가게로 등록되어 있는지 확인
     const like: Likes[] = await this.likesRepository.checkRelation(
       userId,
@@ -26,10 +30,17 @@ export class LikesService {
     );
     if (like.length === 0) {
       // * 단골가게로 등록되어 있지 않은 경우
-      await this.likesRepository.createFavoriteStore(userId, storeId);
+      const result = await this.likesRepository.createFavoriteStore(
+        userId,
+        storeId,
+      );
+      return result;
     } else {
       // * 단골가게로 등록되어 있는 경우
-      await this.likesRepository.deleteFavoriteStore(like[0].likeId);
+      const result = await this.likesRepository.deleteFavoriteStore(
+        like[0].likeId,
+      );
+      return result;
     }
   }
 

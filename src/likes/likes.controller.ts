@@ -27,7 +27,7 @@ export class LikesController {
   async createOrDeleteFavoriteStore(
     @User() user: Users,
     @Param('storeId') storeId: number,
-  ): Promise<void> {
+  ): Promise<{ message: string }> {
     return await this.likesService.createOrDeleteFavoriteStore(
       user.userId,
       storeId,

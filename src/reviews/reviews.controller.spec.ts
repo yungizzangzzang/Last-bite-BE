@@ -1,12 +1,10 @@
 import { TestingModule } from '@nestjs/testing';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewsController } from './reviews.controller';
-import { ReviewsService } from './reviews.service';
 import { reviewsTestingModule } from './reviews.test-utils';
 
 describe('ReviewsController', () => {
   let controller: ReviewsController;
-  let service: ReviewsService;
 
   const mockUser = { userId: expect.any(Number) };
   const mockCreateReviewDto: CreateReviewDto = {
@@ -26,7 +24,8 @@ describe('ReviewsController', () => {
     const module: TestingModule = await moduleBuilder.compile();
 
     controller = module.get<ReviewsController>(ReviewsController);
-    service = module.get<ReviewsService>(ReviewsService);
+
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
