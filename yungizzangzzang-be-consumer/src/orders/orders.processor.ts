@@ -3,6 +3,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { Job } from 'bull';
 import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { OrdersRepository } from './orders.repository';
 
 @Processor('orders')
@@ -11,27 +12,41 @@ export class OrdersProcessor {
     private readonly ordersRepository: OrdersRepository,
     private readonly orderItemsRepository: OrderItemsRepository,
     private readonly itemsRepository: ItemsRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Process('create')
   async handleCreateOrder(job: Job<any>) {
-    const { createOrderOrderItemDto, userId, userPoint } = job.data;
-    const results: (string | undefined)[] = await Promise.all(
-      createOrderOrderItemDto.items.map(async (orderItem) => {
-        const itemId = orderItem.itemId;
-        const item = await this.itemsRepository.getOneItem(itemId);
+    const { createOrderOrderItemDto, userId } = job.data;
 
-        // Items.count < OrderItems.count 일때 주문 불가
-        if (orderItem.count > item.count) {
-          return `${item.name}의 주문 가능 수량은 ${item.count}개 입니다.`;
-        }
-      }),
+    const orderItems = createOrderOrderItemDto.items;
+
+    const findItem = orderItems.map((orderItems) =>
+      this.itemsRepository.getOneItemByOrder(orderItems.itemId),
     );
 
-    // if 문 true 일 때 반환되는 undefined 제거
-    const filteredResults = results.filter((result) => result !== undefined);
+    const items = await Promise.all(findItem);
 
-    // 에러 메세지 반환
+    // 아이템(핫딜)의 storeId(가게정보)와 입력된 storeId가 다른 경우
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].storeId !== createOrderOrderItemDto.storeId) {
+        throw new HttpException(
+          { message: '가게 정보가 올바르지 않습니다.' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
+    const filteredResults: string[] | undefined = [];
+
+    for (let i = 0; i < items.length; i++) {
+      if (orderItems[i].count > items[i].count) {
+        filteredResults.push(
+          `${items[i].name}의 주문 가능 수량은 ${items[i].count}개 입니다.`,
+        );
+      }
+    }
+
     if (filteredResults.length > 0) {
       throw new HttpException(
         { message: filteredResults },
@@ -39,14 +54,14 @@ export class OrdersProcessor {
       );
     }
 
-    const order = await this.ordersRepository.createOrder(
+    const createOrder = await this.ordersRepository.createOrder(
       createOrderOrderItemDto,
       userId,
-      userPoint
+      items,
     );
-
+    
     await this.orderItemsRepository.createOrderItem(
-      order.orderId,
+      createOrder.orderId,
       createOrderOrderItemDto.items,
     );
 
@@ -70,3 +85,5 @@ export class OrdersProcessor {
     console.log(`${job.id}번 작업이 실패했습니다. ${error}`);
   }
 }
+
+//

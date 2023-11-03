@@ -50,7 +50,7 @@ export class OrdersController {
       );
     }
 
-    return this.ordersService.createOrder(createOrderOrderItemDto, user.userId,user.point);
+    return this.ordersService.createOrder(createOrderOrderItemDto, user.userId);
   }
 
   @Get()
@@ -75,3 +75,5 @@ export class OrdersController {
     return result;
   }
 }
+
+//

@@ -68,11 +68,7 @@ describe('OrdersService', () => {
       }
 
       try {
-        await service.createOrder(
-          createOrderOrderItemDto,
-          user.userId,
-          user.point,
-        );
+        await service.createOrder(createOrderOrderItemDto, user.userId);
         fail('에러가 발생하지 않으면 실패입니다');
       } catch (err) {
         expect(mockError.response.message).toStrictEqual([
@@ -86,7 +82,6 @@ describe('OrdersService', () => {
       const user: any = {
         userId: 1,
         isClient: true,
-        point: 15000,
       };
 
       const createOrderDto: any = {
@@ -110,16 +105,8 @@ describe('OrdersService', () => {
         .mockResolvedValue(createOrderItemDto);
 
       // service.createOrder함수 호출
-      const result = await service.createOrder(
-        createOrderOrderItemDto,
-        user,
-        user.point,
-      );
-      await ordersRepository.createOrder(
-        createOrderOrderItemDto,
-        user,
-        user.point,
-      );
+      const result = await service.createOrder(createOrderOrderItemDto, user);
+      await ordersRepository.createOrder(createOrderOrderItemDto, user);
       await orderItemsRepository.createOrderItem(
         tmpOrderId,
         createOrderItemDto,
@@ -129,7 +116,6 @@ describe('OrdersService', () => {
       expect(service.createOrder).toHaveBeenCalledWith(
         createOrderOrderItemDto,
         user,
-        user.point,
       );
       expect(ordersRepository.createOrder).toBeCalledTimes(1);
       expect(orderItemsRepository.createOrderItem).toBeCalledTimes(1);
@@ -171,24 +157,36 @@ describe('OrdersService', () => {
   /** Test3: 특정 주문 정보 확인(GET) */
   describe('getOneOrder with orderId', () => {
     it('test3', async () => {
-      const order: OneOrderDTO = {
+      const mockItems: any = [
+        {
+          name: '떡볶이',
+          count: 3,
+          price: 7000,
+        },
+        {
+          name: '오징어튀김',
+          count: 5,
+          price: 7000,
+        },
+      ];
+      const mockOrder: OneOrderDTO = {
         orderId: 1,
         totalPrice: 15000,
         discount: 22,
         createdAt: new Date(),
-        items: [],
+        items: mockItems,
         storeName: '분식',
         ordered: true,
       };
 
-      jest.spyOn(service, 'getOneOrder').mockResolvedValue(order);
-      jest.spyOn(ordersRepository, 'getOneOrder').mockResolvedValue(order);
+      jest.spyOn(service, 'getOneOrder').mockResolvedValue(mockOrder);
+      jest.spyOn(ordersRepository, 'getOneOrder').mockResolvedValue(mockOrder);
 
-      const result = await service.getOneOrder(order.orderId);
-      await ordersRepository.getOneOrder(order.orderId);
+      const result = await service.getOneOrder(mockOrder.orderId);
+      await ordersRepository.getOneOrder(mockOrder.orderId);
 
-      expect(result).toEqual(order);
-      expect(service.getOneOrder).toHaveBeenCalledWith(order.orderId);
+      expect(result).toEqual(mockOrder);
+      expect(service.getOneOrder).toHaveBeenCalledWith(mockOrder.orderId);
       expect(ordersRepository.getOneOrder).toBeCalledTimes(1);
     });
   });

@@ -20,9 +20,27 @@ export class StoresService {
     private readonly likesRepository: LikesRepository,
   ) {}
 
-  // * 가게 전체 조회
-  async getAllStore(): Promise<GetStoreResData[]> {
-    return await this.storesRepository.selectAllStore();
+  // * 반경 10km 이내 가게 조회
+  async getAllStoreWithInRadius(requestInfo): Promise<GetStoreResData[]> {
+    let { longitude, latitude } = requestInfo;
+
+    if (!longitude) {
+      longitude = 129.7444851;
+      latitude = 35.24452483;
+    }
+
+    const stores = await this.storesRepository.selectAllStoreWithInRadius(
+      longitude,
+      latitude,
+    );
+
+    const { category } = requestInfo;
+
+    if (category) {
+      return stores.filter((store) => store.category == category);
+    } else {
+      return stores;
+    }
   }
 
   // * 가게 상세 조회
