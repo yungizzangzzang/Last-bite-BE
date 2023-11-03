@@ -21,14 +21,26 @@ export class StoresService {
   ) {}
 
   // * 반경 10km 이내 가게 조회
-  async getAllStoreWithInRadius(
-    userLongitude: number,
-    userLatitude: number,
-  ): Promise<GetStoreResData[]> {
-    return await this.storesRepository.selectAllStoreWithInRadius(
-      userLongitude,
-      userLatitude,
+  async getAllStoreWithInRadius(requestInfo): Promise<GetStoreResData[]> {
+    let { longitude, latitude } = requestInfo;
+
+    if (!longitude) {
+      longitude = 129.7444851;
+      latitude = 35.24452483;
+    }
+
+    const stores = await this.storesRepository.selectAllStoreWithInRadius(
+      longitude,
+      latitude,
     );
+
+    const { category } = requestInfo;
+
+    if (category) {
+      return stores.filter((store) => store.category == category);
+    } else {
+      return stores;
+    }
   }
 
   // * 가게 상세 조회

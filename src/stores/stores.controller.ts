@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -13,10 +14,7 @@ import { User } from 'src/common/decorators/user.decorator';
 import { CustomSuccessRes } from 'src/common/dto/response.dto';
 import { GetItemDto } from 'src/items/dto/get-item.dto';
 import { JwtAuthGuard } from 'src/users/guards/jwt.guard';
-import {
-  GetAllStoreWithInRadiusReqDto,
-  UpdateStoreReqDto,
-} from './dto/store.request.dto';
+import { UpdateStoreReqDto } from './dto/store.request.dto';
 import {
   GetAllStoresResDto,
   GetOneStoreResDto,
@@ -38,16 +36,10 @@ export class StoresController {
   })
   @Get()
   async getAllStoreWithInRadius(
-    @Body() getAllStoreWithInRadiusReqDto: GetAllStoreWithInRadiusReqDto,
+    @Query() reqInfo,
   ): Promise<{ stores: GetStoreResData[] }> {
-    const userLongitude = getAllStoreWithInRadiusReqDto.longitude;
-    const userLatitude = getAllStoreWithInRadiusReqDto.latitude;
-
-    return await {
-      stores: await this.storesService.getAllStoreWithInRadius(
-        userLongitude,
-        userLatitude,
-      ),
+    return {
+      stores: await this.storesService.getAllStoreWithInRadius(reqInfo),
     };
   }
 
