@@ -1,36 +1,37 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
-import { CreateOrderItemDto } from 'src/order-items/dto/create-order-item.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Queue } from 'bull';
+import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { OneOrderDTO, OrderItemDetailDTO } from './dto/get-one-order.dto';
+import { CreateOrderOrderItemDto } from './dto/create-order.dto';
+import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 import { OrdersRepository } from './orders.repository';
 
 @Injectable()
 export class OrdersService {
   constructor(
+    @InjectQueue('orders') private ordersQueue: Queue, // bullqueue DI
     private readonly ordersRepository: OrdersRepository,
     private readonly orderItemsRepository: OrderItemsRepository,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly itemsRepository: ItemsRepository,
   ) {}
 
-  // * return에서 {} 감싸도 create 혹은 완료 메세지 출력에 이상 없는지 확인!
-  // * userId 로그인 정보에서 받아오기
-
   async createOrder(
-    createOrderDto: CreateOrderDto,
-  ): Promise<{ message: string }> {
-    const userId: number = 1;
-    console.log(createOrderDto)
-    console.log(createOrderDto.items)
-    const order = await this.ordersRepository.createOrder(
-      userId,
-      createOrderDto,
-    );
-    await this.orderItemsRepository.createOrderItem(
-      order.orderId,
-      createOrderDto.items,
-    );
-        return { message: "주문이 완료되었습니다."};
+    createOrderOrderItemDto: CreateOrderOrderItemDto,
+    userId: number,
+  ) {
+    try {
+      const result = await this.ordersQueue.add('create', {
+        createOrderOrderItemDto,
+        userId,
+      });
+      return result;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async getUserOrders(userId: number) {
@@ -46,4 +47,10 @@ export class OrdersService {
     );
     return result;
   }
+  // bullqueue UI dashboard를 위한 메소드
+  getRequestQueueForBoard(): Queue {
+    return this.ordersQueue;
+  }
 }
+
+//

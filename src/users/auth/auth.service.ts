@@ -11,35 +11,34 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from 'src/users/auth/dtos/create-user.dto';
 import { LoginDto } from './dtos/login.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
+import { GettingPointsDto } from './dtos/points.dto';
 
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService, private jwtService: JwtService) {}
 
-  async signUp(body: CreateUserDto): Promise<void> {
-    const { email, password, name, isClient, nickname } = body;
-    if (!email || !password || !name || !isClient || !nickname) {
-      throw new BadRequestException({
-        errorMessage: '데이터 형식이 잘못되었습니다.',
-      });
-    }
-
-    const isExistEmailOrNickname = await this.prisma.users.findUnique({
-      where: { email: email, nickname: nickname },
-    });
-
-    if (isExistEmailOrNickname) {
-      if (isExistEmailOrNickname.email === email) {
-        throw new ConflictException('이미 존재하는 이메일 입니다');
-      }
-      if (isExistEmailOrNickname.nickname === nickname) {
-        throw new ConflictException('이미 존재하는 닉네임 입니다');
-      }
-    }
-
+  async signUp(body: CreateUserDto) {
     try {
-      // const salt = await bcrypt.genSalt();
+      const { email, password, name, isClient, nickname, managementNumber } =
+        body;
+
+      // if (!email || !password || !name || !nickname) {
+      //   throw new BadRequestException({
+      //     errorMessage: '데이터 형식이 잘못되었습니다.',
+      //   });
+      // }
+
+      const isExistEmail = await this.prisma.users.findUnique({
+        where: { email },
+      });
+      const isExistNickname = await this.prisma.users.findUnique({
+        where: { nickname },
+      });
+
+      if (isExistEmail || isExistNickname) {
+        throw new ConflictException('이미 존재하는 이메일 or 닉네임 입니다');
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const user = await this.prisma.users.create({
@@ -52,10 +51,25 @@ export class AuthService {
         },
       });
 
-      // return { message: '회원가입 성공' };
+      if (isClient === false && !managementNumber) {
+        // 사장인데, 관리번호 입력안하면 빠꾸
+        throw new BadRequestException({
+          errorMessage: '관리자 번호를 입력해주세요',
+        });
+      }
+      if (isClient === false && managementNumber) {
+        // 사장인데, 관리번호 입력안하면 빠꾸
+        const store = await this.prisma.stores.update({
+          where: { managementNumber },
+          data: {
+            ownerId: user.userId,
+          },
+        });
+      }
+
+      return { message: '회원가입 성공, 가즈아!!' };
     } catch (err) {
       console.error(err);
-
       throw new InternalServerErrorException({
         errorMessage: '회원가입에 실패하였습니다',
       });
@@ -63,11 +77,11 @@ export class AuthService {
   }
 
   async login(body: LoginDto) {
-    if (!body.email || !body.password) {
-      throw new BadRequestException({
-        errorMessage: '데이터 형식이 잘못되었습니다.',
-      });
-    }
+    // if (!body.email || !body.password) {
+    //   throw new BadRequestException({
+    //     errorMessage: '데이터 형식이 잘못되었습니다.',
+    //   });
+    // }
     const { email, password } = body;
 
     // 가입된 유저여야 합니다
@@ -89,11 +103,9 @@ export class AuthService {
       },
     });
 
-    console.log(user);
-
     if (!user) {
       throw new ForbiddenException({
-        errorMessage: '이메일과 비밀번호를 확인해주세요',
+        message: '이메일과 비밀번호를 확인해주세요',
       });
     }
 
@@ -101,33 +113,37 @@ export class AuthService {
     const isPasswordMatched = await bcrypt.compare(password, user.password!);
     if (!isPasswordMatched) {
       throw new ForbiddenException({
-        errorMessage: '이메일과 비밀번호를 확인해주세요',
+        message: '이메일과 비밀번호를 확인해주세요',
       });
     }
     delete user.password;
     try {
       const payload = { user };
       const accessToken = this.jwtService.sign(payload, {
-        expiresIn: '5m',
+        expiresIn: '24h',
         secret: process.env.ACCESS_SECRET_KEY,
       });
 
-      return { accessToken, user };
+      return { accessToken, user, message: '가봅시다' };
     } catch (err) {
-      console.error(err);
       throw new InternalServerErrorException({
-        errorMessage: '로그인에 실패하였습니다',
+        message: '로그인에 실패하였습니다',
       });
     }
   }
 
   async findOneUser(userId: number) {
-    console.log(userId);
-
     const user = await this.prisma.users.findFirst({
       where: { userId },
+      select: {
+        userId: true,
+        email: true,
+        isClient: true,
+        nickname: true,
+        name: true,
+        point: true,
+      },
     });
-    console.log(user);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -135,28 +151,19 @@ export class AuthService {
     return user;
   }
 
-  async updateUser(id: number, password: string, updateUserDto: UpdateUserDto) {
-    if (password) {
-      password = await bcrypt.hash(password, 10);
-    }
+  async pointAccumulation(user: { userId: number }, body: GettingPointsDto) {
+    await this.prisma.users.findUnique({
+      where: { userId: user.userId },
+    });
 
-    const user = await this.prisma.users.findFirst({ where: { userId: id } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return this.prisma.users.update({
-      where: { userId: id },
+    await this.prisma.users.update({
+      where: { userId: user.userId },
       data: {
-        password: updateUserDto.password,
-        nickname: updateUserDto.nickname,
+        point: {
+          increment: body.point,
+        },
       },
     });
-  }
-  async removeUser(id: number) {
-    const user = await this.prisma.users.findUnique({ where: { userId: id } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return this.prisma.users.delete({ where: { userId: id } });
+    return { message: '포인트 충전에 성공하였습니다.' };
   }
 }

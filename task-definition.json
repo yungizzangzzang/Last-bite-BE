@@ -1,0 +1,140 @@
+{
+  "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:737460622117:task-definition/last-bite:7",
+  "containerDefinitions": [
+    {
+      "name": "last-bite-backend",
+      "image": "whdgnszz1/last-bite",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "entryPoint": [],
+      "command": [],
+      "environment": [
+        {
+          "name": "AWS_S3_REGION",
+          "value": "${AWS_S3_REGION}"
+        },
+        {
+          "name": "AWS_S3_SECRET_KEY",
+          "value": "${AWS_S3_SECRET_KEY}"
+        },
+        {
+          "name": "REDIS_HOST",
+          "value": "${REDIS_HOST}"
+        },
+        {
+          "name": "DATABASE_URL",
+          "value": "${DATABASE_URL}"
+        },
+        {
+          "name": "PORT",
+          "value": "${PORT}"
+        },
+        {
+          "name": "ACCESS_SECRET_KEY",
+          "value": "${ACCESS_SECRET_KEY}"
+        },
+        {
+          "name": "CLIENT_URL",
+          "value": "${CLIENT_URL}"
+        },
+        {
+          "name": "AWS_S3_BUCKET_NAME",
+          "value": "${AWS_S3_BUCKET_NAME}"
+        },
+        {
+          "name": "REFRESH_SECRET_KEY",
+          "value": "${REFRESH_SECRET_KEY}"
+        },
+        {
+          "name": "COOKIE_SECRET",
+          "value": "${COOKIE_SECRET}"
+        },
+        {
+          "name": "AWS_S3_ACCESS_KEY",
+          "value": "${AWS_S3_ACCESS_KEY}"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/last-bite",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    },
+    {
+      "name": "redis",
+      "image": "redis",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 6379,
+          "hostPort": 6379,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "entryPoint": [],
+      "command": [],
+      "environment": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/last-bite",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ],
+  "family": "last-bite",
+  "taskRoleArn": "${TASK_ROLE_ARN}",
+  "executionRoleArn": "${EXECUTION_ROLE_ARN}",
+  "networkMode": "awsvpc",
+  "revision": 7,
+  "volumes": [],
+  "status": "ACTIVE",
+  "requiresAttributes": [
+    {
+      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+    },
+    {
+      "name": "ecs.capability.execution-role-awslogs"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.task-iam-role"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+    },
+    {
+      "name": "ecs.capability.task-eni"
+    }
+  ],
+  "placementConstraints": [],
+  "compatibilities": ["EC2", "FARGATE"],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "2048",
+  "runtimePlatform": {
+    "operatingSystemFamily": "LINUX"
+  },
+  "registeredAt": "2023-10-16T13:33:56.263Z",
+  "registeredBy": "arn:aws:iam::737460622117:root",
+  "tags": []
+}

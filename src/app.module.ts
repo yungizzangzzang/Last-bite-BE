@@ -1,12 +1,11 @@
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AlarmsModule } from './alarms/alarms.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LoggerMiddleware } from './common/middlewares/logger.middleware';
-import { UserCheckerMiddleware } from './common/middlewares/user-checker.middleware';
 import { ItemsModule } from './items/items.module';
 import { LikesModule } from './likes/likes.module';
+import { MetricsController } from './metrics/metrics.controller';
 import { OrderItemsModule } from './order-items/order-items.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -21,10 +20,6 @@ import { AuthService } from './users/auth/auth.service';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'production'
-          ? '.env.production'
-          : '.env.development',
     }),
     PrismaModule,
     AlarmsModule,
@@ -36,14 +31,14 @@ import { AuthService } from './users/auth/auth.service';
     OrderItemsModule,
     LikesModule,
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController, AuthController, MetricsController],
   providers: [AppService, PrismaService, AuthService],
 })
 export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
-    consumer
-      .apply(UserCheckerMiddleware)
-      .forRoutes({ path: 'stores/:storeId', method: RequestMethod.GET });
-  }
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer.apply(LoggerMiddleware).forRoutes('*');
+  //   consumer
+  //     .apply(UserCheckerMiddleware)
+  //     .forRoutes({ path: 'stores/:storeId', method: RequestMethod.GET });
+  // }
 }

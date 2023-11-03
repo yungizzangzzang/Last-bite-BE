@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsString,
   Matches,
   MaxLength,
@@ -50,12 +51,14 @@ export class UserEntity implements Users {
   @ApiProperty({ type: String, description: '닉네임', example: 'nickname' })
   nickname: string;
 
-  userId: number;
+  @IsNotEmpty({ message: '정확하게 입력해주세요' })
+  @IsNumber()
+  @ApiProperty({ type: Number, description: '포인트', example: 5000 })
   point: number;
+
+  userId: number;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-
-  @ApiProperty()
   accessToken: string;
 }

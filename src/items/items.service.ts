@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
+import { GetItemDto } from './dto/get-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { ItemsRepository } from './items.repository';
 
@@ -12,6 +13,7 @@ export class ItemsService {
   async createItem(
     createItemDto: CreateItemDto,
     urlByS3Key: string,
+    userId: number,
   ): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
@@ -31,6 +33,7 @@ export class ItemsService {
       urlByS3Key,
       endTime,
       startTime,
+      userId,
     );
   }
 
@@ -38,6 +41,7 @@ export class ItemsService {
     itemId: number,
     updateItemDto: UpdateItemDto,
     urlByS3Key: string,
+    userId: number,
   ): Promise<{ message: string }> {
     const now = new Date();
     const startTime = new Date(
@@ -58,14 +62,18 @@ export class ItemsService {
       urlByS3Key,
       startTime,
       endTime,
+      userId,
     );
   }
 
-  async deleteItem(itemId: number): Promise<{ message: string }> {
-    return await this.itemsRepository.deleteItem(itemId);
+  async deleteItem(
+    itemId: number,
+    userId: number,
+  ): Promise<{ message: string }> {
+    return await this.itemsRepository.deleteItem(itemId, userId);
   }
 
-  async getOneItem(itemId: number) {
+  async getOneItem(itemId: number): Promise<GetItemDto> {
     const item = await this.itemsRepository.getOneItem(itemId);
     return item;
   }

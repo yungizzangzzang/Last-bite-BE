@@ -12,12 +12,12 @@ export class AlarmsRepository {
   /** 1. checkAndUpdate  */
   // (1)잔금체크 -> (ok) -> (2)재고 체크 -> (ok) -> (3)잔금차감 및 재고차감 업데이트
   // transaction안에서는 this.prisma x -> prisma.tables
-  // *재고가 없는 경우? -> 각 모든 상품의 경우 재고를 일일이 비교 해야 한다 -> 한개라도 x면 주문 통째로 취소
+  // 재고가 없는 경우? -> 각 모든 상품의 경우 재고를 일일이 비교 해야 한다 -> 한개라도 x면 주문 통째로 취소
   async checkAndUpdate(userId: number, totalPrice: number, itemList: any) {
     try {
-      const result = await this.prisma.$transaction(async (prisma) => {
+      const result = await this.prisma.$transaction(async (tx) => {
         // a. 잔금체크
-        const user: any = await prisma.users.findUnique({
+        const user: any = await tx.users.findUnique({
           where: { userId },
         });
         const remainedPoint = user.point - totalPrice;
@@ -28,7 +28,7 @@ export class AlarmsRepository {
         const cntList: any = []; // 아래 c에서 쓸 것
         for (const key in itemList) {
           // b-1: 각 아이템 찾고,
-          const item: any = await prisma.items.findUnique({
+          const item: any = await tx.items.findUnique({
             where: { itemId: Number(key) },
           });
           cntList.push(item.count);
@@ -42,12 +42,12 @@ export class AlarmsRepository {
         cntList.reverse(); // shift <<< pop
         // c. 여기까지 통과했다면, user포인트 & item재고(count) 업데이트하기
         const changedItemCnt: any = {};
-        await prisma.users.update({
+        await tx.users.update({
           where: { userId },
           data: { point: remainedPoint },
         });
         for (const key in itemList) {
-          await prisma.items.update({
+          await tx.items.update({
             where: { itemId: Number(key) },
             data: { count: cntList.at(-1) - itemList[key] },
           });
@@ -122,7 +122,7 @@ export class AlarmsRepository {
   // 4. 사장님의 핫딜 상품 등록
   async createItem(
     name: string,
-    storeId: number, // 대문자 - 스키마확인
+    storeId: number,
     prevPrice: number,
     price: number,
     count: number,
@@ -134,7 +134,7 @@ export class AlarmsRepository {
       const createdItem = await this.prisma.items.create({
         data: {
           name,
-          storeId, // 대문자 - 스키마확인, StoreId: storeId..
+          storeId,
           prevPrice,
           price,
           count,
