@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateStoreReqDto } from './dto/store.request.dto';
 import { GetStoreResData } from './dto/store.response.dto';
@@ -48,6 +48,15 @@ export class StoresRepository {
     });
 
     return store;
+  }
+
+  // * 가게 정보 확인
+  async getOneStoreById(storeId: number) {
+    const store = await this.prisma.stores.findUnique({
+      where: { storeId },
+      select: { storeId: true },
+    });
+    return store
   }
 
   // * 가게 수정

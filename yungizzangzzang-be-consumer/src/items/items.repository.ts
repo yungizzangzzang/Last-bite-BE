@@ -32,7 +32,7 @@ export class ItemsRepository {
       );
     }
 
-    const createdItem = await this.prisma.items.create({
+    await this.prisma.items.create({
       data: {
         name: createItemDto.name,
         content: createItemDto.content,
@@ -146,6 +146,20 @@ export class ItemsRepository {
   async getOneItem(itemId: number): Promise<GetItemDto> {
     const item = await this.prisma.items.findUnique({
       where: { itemId },
+    });
+    if (!item) {
+      throw new HttpException(
+        { message: '핫딜 정보가 존재하지 않습니다.' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return item;
+  }
+
+  async getOneItemByOrder(itemId: number) {
+    const item = await this.prisma.items.findUnique({
+      where: { itemId },
+      select: { storeId: true, count: true, price: true, name: true },
     });
     if (!item) {
       throw new HttpException(
