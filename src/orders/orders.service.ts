@@ -93,54 +93,31 @@ export class OrdersService {
     return redisPoint - totalPrice;
   }
 
-  // 옵티미스틱 락을 이용한 아이템 수량 감소 처리 함수
+  // 아이템 수량 감소 처리 함수
   async updateItemCount(itemId: number, countToDeduct: number): Promise<void> {
-    let retryCount = 0;
-    let itemCount: string | null;
-    let result: any;
+    let itemCount = await this.itemRedis.get(itemId.toString());
 
-    while (retryCount < 3) {
-      await this.itemRedis.watch(itemId.toString());
-      itemCount = await this.itemRedis.get(itemId.toString());
+    if (itemCount === null) {
+      // Redis에서 값을 찾을 수 없다면, 데이터베이스에서 조회
+      const itemRecord = await this.prisma.items.findUnique({
+        where: { itemId },
+        select: { count: true },
+      });
 
-      if (itemCount === null) {
-        // Redis에서 값을 찾을 수 없다면, 데이터베이스에서 조회하여 Redis에 저장
-        const itemRecord = await this.prisma.items.findUnique({
-          where: { itemId },
-          select: { count: true },
-        });
-        console.log(itemRecord);
-        if (!itemRecord || itemRecord.count === null) {
-          await this.itemRedis.unwatch();
-          throw new BadRequestException(
-            '아이템의 수량 정보를 찾을 수 없습니다.',
-          );
-        }
-
-        itemCount = itemRecord.count.toString();
-        await this.itemRedis.set(itemId.toString(), itemCount);
+      if (!itemRecord || itemRecord.count === null) {
+        throw new BadRequestException('아이템의 수량 정보를 찾을 수 없습니다.');
       }
 
-      if (parseInt(itemCount) < countToDeduct) {
-        await this.itemRedis.unwatch();
-        throw new BadRequestException('아이템의 수량이 부족합니다.');
-      }
-
-      const pipeline = this.itemRedis.multi();
-      pipeline.decrby(itemId.toString(), countToDeduct);
-      result = await pipeline.exec();
-
-      if (result) {
-        break;
-      }
-
-      retryCount += 1;
-      if (retryCount >= 3) {
-        throw new BadRequestException(
-          '아이템 수량 업데이트 도중 충돌이 발생했습니다. 최대 재시도 횟수를 초과하였습니다.',
-        );
-      }
+      itemCount = itemRecord.count.toString();
+      await this.itemRedis.set(itemId.toString(), itemCount);
     }
+
+    if (parseInt(itemCount) < countToDeduct) {
+      throw new BadRequestException('아이템의 수량이 부족합니다.');
+    }
+
+    // 감소된 수량으로 Redis 값을 업데이트
+    await this.itemRedis.decrby(itemId.toString(), countToDeduct);
   }
 
   async validateStoreExistence(storeId: number): Promise<void> {
@@ -174,6 +151,12 @@ export class OrdersService {
         createOrderOrderItemDto.totalPrice,
       );
 
+      // 아이템 수량 감소 처리 결과를 큐에 job으로 추가
+      await this.ordersQueue.add('updateUserPoint', {
+        userId: userId,
+        remainUserPoint: redisUserPoint,
+      });
+
       // 아이템 수량 감소 처리
       const updateItemsResults: any[] = [];
       for (const item of createOrderOrderItemDto.items) {
@@ -189,7 +172,6 @@ export class OrdersService {
       const result = await this.ordersQueue.add('create', {
         createOrderOrderItemDto,
         userId,
-        redisUserPoint,
       });
 
       return { result };

@@ -11,7 +11,6 @@ export class OrdersRepository {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
-    redisUserPoint,
   ): Promise<CreateOrderDto> {
     const {
       storeId,
@@ -92,12 +91,12 @@ export class OrdersRepository {
     // }
 
     // users.point 업데이트
-    transactionOrders.push(
-      this.prisma.users.update({
-        where: { userId },
-        data: { point: redisUserPoint },
-      }),
-    );
+    // transactionOrders.push(
+    //   this.prisma.users.update({
+    //     where: { userId },
+    //     data: { point: redisUserPoint },
+    //   }),
+    // );
 
     transactionOrders.push(
       // 주문 정보 생성
