@@ -11,6 +11,7 @@ export class OrdersRepository {
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
+    redisUserPoint,
   ): Promise<CreateOrderDto> {
     const {
       storeId,
@@ -90,26 +91,11 @@ export class OrdersRepository {
       );
     }
 
-    // users.point 업데이트 - 유저 잔여 포인트 검증
-    if (!user) {
-      throw new HttpException(
-        { message: '사용자 정보를 확인해주세요.' },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    if (user.point < totalPrice) {
-      throw new HttpException(
-        { message: '포인트를 충전해주세요.' },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
     // users.point 업데이트
     transactionOrders.push(
       this.prisma.users.update({
         where: { userId },
-        data: { point: user.point - totalPrice },
+        data: { point: redisUserPoint },
       }),
     );
 
