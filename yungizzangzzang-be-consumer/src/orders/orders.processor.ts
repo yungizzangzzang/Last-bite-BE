@@ -1,4 +1,4 @@
-import { OnQueueActive, OnQueueEvent, Process, Processor } from '@nestjs/bull';
+import { Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -12,14 +12,13 @@ export class OrdersProcessor {
     private readonly prisma: PrismaService,
   ) {}
 
-  @Process('create')
+  @Process({ name: 'create', concurrency: 5 })
   async handleCreateOrder(job: Job<any>) {
-    const { createOrderOrderItemDto, userId, redisUserPoint } = job.data;
+    const { createOrderOrderItemDto, userId } = job.data;
 
     const order = await this.ordersRepository.createOrder(
       createOrderOrderItemDto,
       userId,
-      redisUserPoint,
     );
 
     await this.orderItemsRepository.createOrderItem(
@@ -30,7 +29,7 @@ export class OrdersProcessor {
     return {};
   }
 
-  @Process('updateItemCount')
+  @Process({ name: 'updateItemCount', concurrency: 5 })
   async handleUpdateItemCount(
     job: Job<{ items: { itemId: number; count: number }[] }>,
   ) {
@@ -48,20 +47,34 @@ export class OrdersProcessor {
     await Promise.all(updatePromises);
   }
 
-  @OnQueueActive()
-  onActive(job: Job) {
-    console.log(`${job.id}`);
+  @Process({ name: 'updateUserPoint', concurrency: 5 })
+  async handleUpdateUserPoint(
+    job: Job<{ userId: number; remainUserPoint: number }>,
+  ): Promise<void> {
+    const { userId, remainUserPoint } = job.data;
+
+    await this.prisma.users.update({
+      where: { userId },
+      data: {
+        point: remainUserPoint,
+      },
+    });
   }
 
-  @OnQueueEvent('completed')
-  onCompleted(job: Job<any>) {
-    console.log(`${job.id}`);
-  }
+  // @OnQueueActive()
+  // onActive(job: Job) {
+  //   console.log(`${job.id}`);
+  // }
 
-  @OnQueueEvent('error')
-  onError(job: Job<any>, error: any) {
-    console.error(error);
-    console.log(job);
-    console.log(`${job.id}번 작업이 실패했습니다. ${error}`);
-  }
+  // @OnQueueEvent('completed')
+  // onCompleted(job: Job<any>) {
+  //   console.log(`${job.id}`);
+  // }
+
+  // @OnQueueEvent('error')
+  // onError(job: Job<any>, error: any) {
+  //   console.error(error);
+  //   console.log(job);
+  //   console.log(`${job.id}번 작업이 실패했습니다. ${error}`);
+  // }
 }
