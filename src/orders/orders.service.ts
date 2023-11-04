@@ -1,5 +1,11 @@
 import { InjectQueue } from '@nestjs/bull';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Queue } from 'bull';
 import { Redis } from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -11,14 +17,35 @@ import { OrdersRepository } from './orders.repository';
 @Injectable()
 export class OrdersService {
   private readonly userRedis: Redis;
+  private readonly itemRedis: Redis;
+  private readonly storeRedis: Redis;
+
   constructor(
-    @InjectQueue('orders') private ordersQueue: Queue, // bullqueue DI
+    @InjectQueue('orders') private ordersQueue: Queue,
     private readonly ordersRepository: OrdersRepository,
     private readonly prisma: PrismaService,
   ) {
     this.userRedis = new Redis({
       port: 7001,
-      host: 'localhost',
+      host: process.env.REDIS_HOST,
+    });
+    this.itemRedis = new Redis({
+      port: 7002,
+      host: process.env.REDIS_HOST,
+    });
+    this.storeRedis = new Redis({
+      port: 7003,
+      host: process.env.REDIS_HOST,
+    });
+
+    this.userRedis.on('error', (err) => {
+      console.error('Redis error:', err);
+    });
+    this.itemRedis.on('error', (err) => {
+      console.error('Redis error:', err);
+    });
+    this.storeRedis.on('error', (err) => {
+      console.error('Redis error:', err);
     });
   }
 
@@ -66,15 +93,98 @@ export class OrdersService {
     return redisPoint - totalPrice;
   }
 
+  // 옵티미스틱 락을 이용한 아이템 수량 감소 처리 함수
+  async updateItemCount(itemId: number, countToDeduct: number): Promise<void> {
+    let retryCount = 0;
+    let itemCount: string | null;
+    let result: any;
+
+    while (retryCount < 3) {
+      await this.itemRedis.watch(itemId.toString());
+      itemCount = await this.itemRedis.get(itemId.toString());
+
+      if (itemCount === null) {
+        // Redis에서 값을 찾을 수 없다면, 데이터베이스에서 조회하여 Redis에 저장
+        const itemRecord = await this.prisma.items.findUnique({
+          where: { itemId },
+          select: { count: true },
+        });
+        console.log(itemRecord);
+        if (!itemRecord || itemRecord.count === null) {
+          await this.itemRedis.unwatch();
+          throw new BadRequestException(
+            '아이템의 수량 정보를 찾을 수 없습니다.',
+          );
+        }
+
+        itemCount = itemRecord.count.toString();
+        await this.itemRedis.set(itemId.toString(), itemCount);
+      }
+
+      if (parseInt(itemCount) < countToDeduct) {
+        await this.itemRedis.unwatch();
+        throw new BadRequestException('아이템의 수량이 부족합니다.');
+      }
+
+      const pipeline = this.itemRedis.multi();
+      pipeline.decrby(itemId.toString(), countToDeduct);
+      result = await pipeline.exec();
+
+      if (result) {
+        break;
+      }
+
+      retryCount += 1;
+      if (retryCount >= 3) {
+        throw new BadRequestException(
+          '아이템 수량 업데이트 도중 충돌이 발생했습니다. 최대 재시도 횟수를 초과하였습니다.',
+        );
+      }
+    }
+  }
+
+  async validateStoreExistence(storeId: number): Promise<void> {
+    let storeExists = await this.storeRedis.get(storeId.toString());
+
+    if (storeExists === null) {
+      const storeRecord = await this.prisma.stores.findUnique({
+        where: { storeId },
+        select: { storeId: true },
+      });
+
+      storeExists = storeRecord ? '1' : '0';
+      await this.storeRedis.set(storeId.toString(), storeExists);
+    }
+
+    if (storeExists === '0') {
+      throw new NotFoundException('해당 가게를 찾을 수 없습니다.');
+    }
+  }
+
   async createOrder(
     createOrderOrderItemDto: CreateOrderOrderItemDto,
     userId: number,
   ) {
     try {
+      // 스토어 존재 여부 검증
+      await this.validateStoreExistence(createOrderOrderItemDto.storeId);
+
       const redisUserPoint = await this.updateRedisUserPoint(
         userId,
         createOrderOrderItemDto.totalPrice,
       );
+
+      // 아이템 수량 감소 처리
+      const updateItemsResults: any[] = [];
+      for (const item of createOrderOrderItemDto.items) {
+        await this.updateItemCount(item.itemId, item.count);
+        updateItemsResults.push({ itemId: item.itemId, count: item.count });
+      }
+
+      // 아이템 수량 감소 처리 결과를 큐에 job으로 추가
+      await this.ordersQueue.add('updateItemCount', {
+        items: updateItemsResults,
+      });
 
       const result = await this.ordersQueue.add('create', {
         createOrderOrderItemDto,
@@ -101,10 +211,4 @@ export class OrdersService {
     );
     return result;
   }
-  // bullqueue UI dashboard를 위한 메소드
-  getRequestQueueForBoard(): Queue {
-    return this.ordersQueue;
-  }
 }
-
-//
