@@ -1,6 +1,7 @@
 import { OnQueueActive, OnQueueEvent, Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { OrdersRepository } from './orders.repository';
 
 @Processor('orders')
@@ -8,6 +9,7 @@ export class OrdersProcessor {
   constructor(
     private readonly ordersRepository: OrdersRepository,
     private readonly orderItemsRepository: OrderItemsRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Process('create')
@@ -26,6 +28,24 @@ export class OrdersProcessor {
     );
 
     return {};
+  }
+
+  @Process('updateItemCount')
+  async handleUpdateItemCount(
+    job: Job<{ items: { itemId: number; count: number }[] }>,
+  ) {
+    const updatePromises = job.data.items.map((item) =>
+      this.prisma.items.update({
+        where: { itemId: item.itemId },
+        data: {
+          count: {
+            decrement: item.count,
+          },
+        },
+      }),
+    );
+
+    await Promise.all(updatePromises);
   }
 
   @OnQueueActive()
