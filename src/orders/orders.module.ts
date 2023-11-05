@@ -1,6 +1,5 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BullConfigProvider } from 'src/common/providers/bull-config.provider';
 import { ItemsModule } from 'src/items/items.module';
 import { OrderItemsModule } from 'src/order-items/order-items.module';
@@ -24,7 +23,7 @@ import { OrdersService } from './orders.service';
     }),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService, OrdersRepository, EventEmitter2, AuthService],
+  providers: [OrdersService, OrdersRepository, AuthService],
   exports: [OrdersRepository, OrdersService],
 })
 export class OrdersModule {}

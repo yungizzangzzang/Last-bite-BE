@@ -60,21 +60,4 @@ export class OrdersProcessor {
       },
     });
   }
-
-  // @OnQueueActive()
-  // onActive(job: Job) {
-  //   console.log(`${job.id}`);
-  // }
-
-  // @OnQueueEvent('completed')
-  // onCompleted(job: Job<any>) {
-  //   console.log(`${job.id}`);
-  // }
-
-  // @OnQueueEvent('error')
-  // onError(job: Job<any>, error: any) {
-  //   console.error(error);
-  //   console.log(job);
-  //   console.log(`${job.id}번 작업이 실패했습니다. ${error}`);
-  // }
 }

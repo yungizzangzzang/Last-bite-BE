@@ -54,7 +54,7 @@ export class OrdersService {
     totalPrice: number,
   ): Promise<number> {
     // userId로 redis에서 포인트 조회
-    let getRedisPoint = await this.userRedis.get(userId.toString());
+    const getRedisPoint = await this.userRedis.get(userId.toString());
 
     let redisPoint = getRedisPoint ? +getRedisPoint : -1;
     // redis에 user 정보 없을 때 DB 조회
@@ -151,14 +151,14 @@ export class OrdersService {
         createOrderOrderItemDto.totalPrice,
       );
 
-      // 아이템 수량 감소 처리 결과를 큐에 job으로 추가
+      // 포인트 감소 처리 결과를 큐에 job으로 추가
       await this.ordersQueue.add('updateUserPoint', {
         userId: userId,
         remainUserPoint: redisUserPoint,
       });
 
       // 아이템 수량 감소 처리
-      const updateItemsResults: any[] = [];
+      const updateItemsResults: { itemId: number; count: number }[] = [];
       for (const item of createOrderOrderItemDto.items) {
         await this.updateItemCount(item.itemId, item.count);
         updateItemsResults.push({ itemId: item.itemId, count: item.count });
@@ -169,12 +169,13 @@ export class OrdersService {
         items: updateItemsResults,
       });
 
-      const result = await this.ordersQueue.add('create', {
+      // Order, OrderItem 생성하는 job을 큐에 추가
+      await this.ordersQueue.add('create', {
         createOrderOrderItemDto,
         userId,
       });
 
-      return { result };
+      return;
     } catch (error) {
       console.error(error);
     }

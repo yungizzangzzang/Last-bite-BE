@@ -13,9 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { PrismaService } from './prisma/prisma.service';
 import { ReviewsModule } from './reviews/reviews.module';
 import { StoresModule } from './stores/stores.module';
-import { AuthController } from './users/auth/auth.controller';
 import { AuthModule } from './users/auth/auth.module';
-import { AuthService } from './users/auth/auth.service';
 
 @Module({
   imports: [
@@ -32,8 +30,8 @@ import { AuthService } from './users/auth/auth.service';
     OrderItemsModule,
     LikesModule,
   ],
-  controllers: [AppController, AuthController, MetricsController],
-  providers: [AppService, PrismaService, AuthService],
+  controllers: [AppController, MetricsController],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {
   configure(consumer) {
