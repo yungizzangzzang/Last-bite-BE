@@ -15,15 +15,15 @@ export class UpdateItemCountStreamConsumer {
   }
 
   onModuleInit() {
-    this.consumeItemCountsStream();
+    this.consumeItemCountStream();
   }
 
   constructor(private readonly prisma: PrismaService) {
     this.updateItemCountStream = this.createRedisClient(7005);
   }
 
-  async consumeItemCountsStream() {
-    const streamName = 'itemCountsStream';
+  async consumeItemCountStream() {
+    const streamName = 'itemCountStream';
     let lastId = '$';
 
     while (true) {

@@ -3,8 +3,8 @@ import { Redis } from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
-export class UpdateUserPointsStreamConsumer {
-  private readonly updateUserPointsStream: Redis;
+export class UpdateUserPointStreamConsumer {
+  private readonly updateUserPointStream: Redis;
   private createRedisClient(port: number): Redis {
     const client = new Redis({ port, host: process.env.REDIS_HOST });
     client.on('error', (err) => {
@@ -14,19 +14,19 @@ export class UpdateUserPointsStreamConsumer {
   }
 
   onModuleInit() {
-    this.consumeUserPointsStream();
+    this.consumeUserPointStream();
   }
 
   constructor(private readonly prisma: PrismaService) {
-    this.updateUserPointsStream = this.createRedisClient(7006);
+    this.updateUserPointStream = this.createRedisClient(7006);
   }
 
-  async consumeUserPointsStream() {
-    const streamName = 'updateUserPointsStream';
+  async consumeUserPointStream() {
+    const streamName = 'updateUserPointStream';
     let lastId = '$';
     try {
       while (true) {
-        const messages = await this.updateUserPointsStream.xread(
+        const messages = await this.updateUserPointStream.xread(
           'BLOCK',
           0,
           'STREAMS',

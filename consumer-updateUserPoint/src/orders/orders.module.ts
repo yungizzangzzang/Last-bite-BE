@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { UpdateUserPointsStreamConsumer } from './orders.consumer';
+import { UpdateUserPointStreamConsumer } from './orders.consumer';
 
 @Module({
   imports: [PrismaModule],
-  providers: [UpdateUserPointsStreamConsumer],
+  providers: [UpdateUserPointStreamConsumer],
   exports: [],
 })
 export class OrdersModule {}
