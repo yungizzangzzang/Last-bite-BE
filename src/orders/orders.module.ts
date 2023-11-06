@@ -1,6 +1,4 @@
-import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
-import { BullConfigProvider } from 'src/common/providers/bull-config.provider';
 import { ItemsModule } from 'src/items/items.module';
 import { OrderItemsModule } from 'src/order-items/order-items.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
@@ -10,18 +8,7 @@ import { OrdersRepository } from './orders.repository';
 import { OrdersService } from './orders.service';
 
 @Module({
-  imports: [
-    PrismaModule,
-    OrderItemsModule,
-    ItemsModule,
-    BullModule.forRootAsync('bullqueue-config', {
-      useClass: BullConfigProvider,
-    }),
-    BullModule.registerQueue({
-      configKey: 'bullqueue-config',
-      name: 'orders',
-    }),
-  ],
+  imports: [PrismaModule, OrderItemsModule, ItemsModule],
   controllers: [OrdersController],
   providers: [OrdersService, OrdersRepository, AuthService],
   exports: [OrdersRepository, OrdersService],

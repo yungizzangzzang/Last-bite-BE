@@ -43,8 +43,6 @@ export class CreateOrderStreamConsumer {
 
         for (const [, streamMessages] of messages) {
           for (const [messageId, messageFields] of streamMessages) {
-            console.log(messageFields);
-
             const userIdIndex = messageFields.indexOf('userId');
             const detailsIndex = messageFields.indexOf('details');
 
