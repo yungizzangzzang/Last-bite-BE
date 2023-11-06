@@ -38,7 +38,7 @@ export class UpdateUserPointsStreamConsumer {
           await new Promise((resolve) => setTimeout(resolve, 1000));
           continue;
         }
-        console.log(messages);
+
         for (const stream of messages) {
           const [, streamMessages] = stream;
           for (const message of streamMessages) {
@@ -73,5 +73,4 @@ export class UpdateUserPointsStreamConsumer {
       },
     });
   }
-
 }
