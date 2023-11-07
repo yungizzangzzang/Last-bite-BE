@@ -51,6 +51,12 @@ export class UpdateUserPointStreamConsumer {
               remainUserPoint: remainUserPoint,
             });
 
+            await this.updateUserPointStream.xack(
+              streamName,
+              'updateUserPointGroup',
+              messageId,
+            );
+
             lastId = messageId;
           }
         }
@@ -62,8 +68,10 @@ export class UpdateUserPointStreamConsumer {
     }
   }
 
-  // 사용자의 포인트 업데이트
-  async handleUpdateUserPoint(jobData) {
+  async handleUpdateUserPoint(jobData: {
+    userId: number;
+    remainUserPoint: number;
+  }) {
     const { userId, remainUserPoint } = jobData;
 
     await this.prisma.users.update({

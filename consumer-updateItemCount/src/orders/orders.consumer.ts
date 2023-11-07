@@ -51,6 +51,12 @@ export class UpdateItemCountStreamConsumer {
               const count = parseInt(messageFields[countIndex + 1], 10);
 
               await this.handleUpdateItemCount(itemId, count);
+
+              await this.updateItemCountStream.xack(
+                streamName,
+                'updateItemGroup',
+                messageId,
+              );
             }
 
             lastId = messageId;
