@@ -51,6 +51,12 @@ export class CreateOrderStreamConsumer {
               const details = JSON.parse(messageFields[detailsIndex + 1]);
 
               await this.createOrderAndOrderItems(userId, details);
+
+              await this.createOrderStream.xack(
+                streamName,
+                'createOrderGroup',
+                messageId,
+              );
             }
 
             lastId = messageId;
@@ -62,7 +68,15 @@ export class CreateOrderStreamConsumer {
     }
   }
 
-  private async createOrderAndOrderItems(userId: number, details: any) {
+  private async createOrderAndOrderItems(
+    userId: number,
+    details: {
+      discount: number;
+      storeId: number;
+      totalPrice: number;
+      items: { itemId: number; count: number }[];
+    },
+  ) {
     const { discount, storeId, totalPrice, items } = details;
 
     const order = await this.prisma.orders.create({
