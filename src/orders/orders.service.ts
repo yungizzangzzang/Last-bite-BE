@@ -3,6 +3,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Redis } from 'ioredis';
@@ -109,31 +110,67 @@ export class OrdersService {
     return { newPoint: redisPoint - totalPrice, version };
   }
 
-  // 아이템 수량 감소 처리 함수
-  async updateItemCount(itemId: number, countToDeduct: number): Promise<void> {
-    let itemCount = await this.itemRedis.get(itemId.toString());
+  // 아이템 수량 및 버전 관리
+  async updateItemCount(
+    itemId: number,
+    countToDeduct: number,
+  ): Promise<{ newCount: number; version: number }> {
+    let version = 0;
 
-    if (itemCount === null) {
-      // Redis에서 값을 찾을 수 없다면, 데이터베이스에서 조회
-      const itemRecord = await this.prisma.items.findUnique({
+    // itemId로 redis에서 아이템 수량과 버전 조회 {itemId: {count: number, version: number}}
+    const getRedisItemData = await this.itemRedis.hgetall(itemId.toString());
+    let itemCount =
+      getRedisItemData && getRedisItemData.count
+        ? parseInt(getRedisItemData.count)
+        : -1;
+
+    // redis에 아이템 정보가 없을 때 DB 조회
+    if (itemCount === -1) {
+      const item = await this.prisma.items.findUnique({
         where: { itemId },
-        select: { count: true },
+        select: { count: true, version: true },
       });
 
-      if (!itemRecord || itemRecord.count === null) {
+      if (!item || item.count === null) {
         throw new BadRequestException('아이템의 수량 정보를 찾을 수 없습니다.');
       }
 
-      itemCount = itemRecord.count.toString();
-      await this.itemRedis.set(itemId.toString(), itemCount);
+      version = item.version ?? 0;
+      itemCount = item.count;
+
+      await this.itemRedis.hmset(
+        itemId.toString(),
+        'count',
+        itemCount.toString(),
+        'version',
+        version.toString(),
+      );
+    } else {
+      const redisVersion = await this.itemRedis.hget(
+        itemId.toString(),
+        'version',
+      );
+      version = parseInt(redisVersion ?? '0');
+
+      if (isNaN(version)) {
+        throw new InternalServerErrorException(
+          '아이템 버전 정보를 확인할 수 없습니다.',
+        );
+      }
     }
 
-    if (parseInt(itemCount) < countToDeduct) {
+    // 아이템 수량 검증
+    if (itemCount < countToDeduct) {
       throw new BadRequestException('아이템의 수량이 부족합니다.');
     }
 
-    // 감소된 수량으로 Redis 값을 업데이트
-    await this.itemRedis.decrby(itemId.toString(), countToDeduct);
+    // 아이템 수량 차감
+    await this.itemRedis.hincrby(itemId.toString(), 'count', -countToDeduct);
+    // 버전 정보 증가 및 저장
+    version++;
+    await this.itemRedis.hset(itemId.toString(), 'version', version.toString());
+
+    return { newCount: itemCount - countToDeduct, version };
   }
 
   async validateStoreExistence(storeId: number): Promise<void> {
@@ -180,13 +217,25 @@ export class OrdersService {
         version.toString(),
       );
 
-      // 아이템 수량 감소 처리
-      const updateItemsResults: { itemId: number; count: number }[] = [];
+      // 아이템 수량 감소 및 버전++
+      const updateItemsResults: {
+        itemId: number;
+        newCount: number;
+        version: number;
+      }[] = [];
       for (const item of createOrderOrderItemDto.items) {
-        await this.updateItemCount(item.itemId, item.count);
-        updateItemsResults.push({ itemId: item.itemId, count: item.count });
+        const updateResult = await this.updateItemCount(
+          item.itemId,
+          item.count,
+        );
 
-        // 아이템 수량 감소 처리 결과를 스트림에 추가
+        updateItemsResults.push({
+          itemId: item.itemId,
+          newCount: updateResult.newCount,
+          version: updateResult.version,
+        });
+
+        // 아이템 수량 감소 및 버전 관리 처리 결과를 스트림에 추가
         await this.updateItemStream.xadd(
           'updateItemCountStream',
           '*',
@@ -194,6 +243,8 @@ export class OrdersService {
           item.itemId.toString(),
           'count',
           item.count.toString(),
+          'version',
+          updateResult.version.toString(),
         );
       }
 
