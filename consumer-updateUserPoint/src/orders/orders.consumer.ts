@@ -13,36 +13,36 @@ export class UpdateUserPointStreamConsumer {
     return client;
   }
 
-  onModuleInit() {
+  constructor(private readonly prisma: PrismaService) {
+    this.updateUserPointStream = this.createRedisClient(7006);
     this.consumeUserPointStream();
   }
 
-  constructor(private readonly prisma: PrismaService) {
-    this.updateUserPointStream = this.createRedisClient(7006);
-  }
-
   async consumeUserPointStream() {
+    const consumerName = process.env.HOST as string;
+    const groupName = 'updateUserPointGroup';
     const streamName = 'updateUserPointStream';
-    let lastId = '$';
+
     try {
       while (true) {
-        const messages = await this.updateUserPointStream.xread(
+        const messages: any = await this.updateUserPointStream.xreadgroup(
+          'GROUP',
+          groupName,
+          consumerName,
+          'COUNT',
+          '1',
           'BLOCK',
-          0,
+          '1000',
           'STREAMS',
           streamName,
-          lastId,
+          '>',
         );
-
-        if (!messages) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (!messages || messages.length === 0 || messages[0][1].length === 0) {
           continue;
         }
 
-        for (const stream of messages) {
-          const [, streamMessages] = stream;
-          for (const message of streamMessages) {
-            const [messageId, messageFields] = message;
+        for (const [, streamMessages] of messages) {
+          for (const [messageId, messageFields] of streamMessages) {
             const userId = parseInt(messageFields[1]);
             const remainUserPoint = parseInt(messageFields[3]);
 
@@ -53,11 +53,9 @@ export class UpdateUserPointStreamConsumer {
 
             await this.updateUserPointStream.xack(
               streamName,
-              'updateUserPointGroup',
+              groupName,
               messageId,
             );
-
-            lastId = messageId;
           }
         }
 

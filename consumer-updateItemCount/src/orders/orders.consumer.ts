@@ -14,30 +14,32 @@ export class UpdateItemCountStreamConsumer {
     return client;
   }
 
-  onModuleInit() {
+  constructor(private readonly prisma: PrismaService) {
+    this.updateItemCountStream = this.createRedisClient(7005);
     this.consumeItemCountStream();
   }
 
-  constructor(private readonly prisma: PrismaService) {
-    this.updateItemCountStream = this.createRedisClient(7005);
-  }
-
   async consumeItemCountStream() {
-    const streamName = 'itemCountStream';
-    let lastId = '$';
+    const consumerName = process.env.HOST as string;
+    const groupName = 'updateItemGroup';
+    const streamName = 'updateItemCountStream';
 
     while (true) {
       try {
-        const messages = await this.updateItemCountStream.xread(
+        const messages: any = await this.updateItemCountStream.xreadgroup(
+          'GROUP',
+          groupName,
+          consumerName,
+          'COUNT',
+          '1',
           'BLOCK',
-          0,
+          '1000',
           'STREAMS',
           streamName,
-          lastId,
+          '>',
         );
 
-        if (!messages) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (!messages || messages.length === 0 || messages[0][1].length === 0) {
           continue;
         }
 
@@ -54,12 +56,10 @@ export class UpdateItemCountStreamConsumer {
 
               await this.updateItemCountStream.xack(
                 streamName,
-                'updateItemGroup',
+                groupName,
                 messageId,
               );
             }
-
-            lastId = messageId;
           }
         }
       } catch (error) {

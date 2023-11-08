@@ -162,7 +162,7 @@ export class OrdersService {
 
         // 아이템 수량 감소 처리 결과를 스트림에 추가
         await this.updateItemStream.xadd(
-          'itemCountStream',
+          'updateItemCountStream',
           '*',
           'itemId',
           item.itemId.toString(),
@@ -182,13 +182,14 @@ export class OrdersService {
       );
 
       // // 스트림에서 메시지 조회
-      // const userPointsStreamMessages = await this.updateUserPointStream.xrange(
-      //   'userPointsStream',
-      //   '-',
-      //   '+',
-      //   'COUNT',
-      //   '1',
-      // );
+      // const userPointsStreamMessages =
+      //   await this.updateUserPointStream.xrevrange(
+      //     'updateUserPointStream',
+      //     '+',
+      //     '-',
+      //     'COUNT',
+      //     '1',
+      //   );
       // console.log('User Points Stream Messages:', userPointsStreamMessages);
 
       // const itemCountsStreamMessages = await this.updateItemStream.xrange(
