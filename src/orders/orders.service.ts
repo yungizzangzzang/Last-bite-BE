@@ -45,19 +45,21 @@ export class OrdersService {
   async updateRedisUserPoint(
     userId: number,
     totalPrice: number,
-  ): Promise<number> {
-    // userId로 redis에서 포인트 조회
-    const getRedisPoint = await this.userRedis.get(userId.toString());
+  ): Promise<{ newPoint: number; version: number }> {
+    let version = 0;
 
-    let redisPoint = getRedisPoint ? +getRedisPoint : -1;
+    // userId로 redis에서 포인트 조회 {userId: point} -> userId: {point: number, version: number}
+    const getRedisPoint = await this.userRedis.hgetall(userId.toString());
+    let redisPoint =
+      getRedisPoint && getRedisPoint.point ? parseInt(getRedisPoint.point) : -1;
+
     // redis에 user 정보 없을 때 DB 조회
     if (redisPoint === -1) {
       const user = await this.prisma.users.findUnique({
         where: { userId },
-        select: { point: true },
+        select: { point: true, version: true },
       });
 
-      // user 및 user.point 정보 없을 때
       if (!user || !user.point) {
         throw new HttpException(
           { message: '사용자 정보를 확인할 수 없습니다.' },
@@ -65,11 +67,29 @@ export class OrdersService {
         );
       }
 
-      // DB에서 조회한 user 정보(point) redis에 넣기
-      const userPoint = user.point;
+      version = user.version ?? 0;
+      redisPoint = user.point;
 
-      await this.userRedis.set(userId.toString(), userPoint.toString());
-      redisPoint = userPoint;
+      await this.userRedis.hmset(
+        userId.toString(),
+        'point',
+        redisPoint.toString(),
+        'version',
+        version.toString(),
+      );
+    } else {
+      const redisVersion = await this.userRedis.hget(
+        userId.toString(),
+        'version',
+      );
+      version = parseInt(redisVersion ?? '0');
+
+      if (isNaN(version)) {
+        throw new HttpException(
+          { message: '사용자 버전 정보를 확인할 수 없습니다.' },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
 
     // redisPoint < totalPrice
@@ -80,10 +100,13 @@ export class OrdersService {
       );
     }
 
-    // redis point 차감 (point - totalPrice)
-    await this.userRedis.decrby(userId.toString(), totalPrice);
+    // 포인트 차감
+    await this.userRedis.hincrby(userId.toString(), 'point', -totalPrice);
+    // 버전 정보 저장
+    version++;
+    await this.userRedis.hset(userId.toString(), 'version', version.toString());
 
-    return redisPoint - totalPrice;
+    return { newPoint: redisPoint - totalPrice, version };
   }
 
   // 아이템 수량 감소 처리 함수
@@ -139,7 +162,8 @@ export class OrdersService {
       // 스토어 존재 여부 검증
       await this.validateStoreExistence(createOrderOrderItemDto.storeId);
 
-      const redisUserPoint = await this.updateRedisUserPoint(
+      // 포인트 감소 처리 및 버전++
+      const { newPoint, version } = await this.updateRedisUserPoint(
         userId,
         createOrderOrderItemDto.totalPrice,
       );
@@ -151,7 +175,9 @@ export class OrdersService {
         'userId',
         userId.toString(),
         'remainUserPoint',
-        redisUserPoint.toString(),
+        newPoint.toString(),
+        'version',
+        version.toString(),
       );
 
       // 아이템 수량 감소 처리
