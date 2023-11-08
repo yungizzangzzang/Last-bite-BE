@@ -45,10 +45,12 @@ export class UpdateUserPointStreamConsumer {
           for (const [messageId, messageFields] of streamMessages) {
             const userId = parseInt(messageFields[1]);
             const remainUserPoint = parseInt(messageFields[3]);
+            const version = parseInt(messageFields[5]);
 
             await this.handleUpdateUserPoint({
               userId: userId,
               remainUserPoint: remainUserPoint,
+              version: version,
             });
 
             await this.updateUserPointStream.xack(
@@ -69,14 +71,26 @@ export class UpdateUserPointStreamConsumer {
   async handleUpdateUserPoint(jobData: {
     userId: number;
     remainUserPoint: number;
+    version: number;
   }) {
-    const { userId, remainUserPoint } = jobData;
+    const { userId, remainUserPoint, version } = jobData;
 
-    await this.prisma.users.update({
-      where: { userId },
-      data: {
-        point: remainUserPoint,
-      },
-    });
+    try {
+      const user = await this.prisma.users.findUnique({
+        where: { userId: userId },
+      });
+
+      if (user && user.version < version) {
+        await this.prisma.users.update({
+          where: { userId: userId },
+          data: {
+            point: remainUserPoint,
+            version: version,
+          },
+        });
+      }
+    } catch (error) {
+      throw error;
+    }
   }
 }
