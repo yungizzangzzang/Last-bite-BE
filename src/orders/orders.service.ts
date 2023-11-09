@@ -5,7 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Redis } from 'ioredis';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { ItemsRepository } from 'src/items/items.repository';
+import { StoresRepository } from 'src/stores/stores.repository';
+import { AuthService } from 'src/users/auth/auth.service';
 import { CreateOrderOrderItemDto } from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
@@ -39,7 +41,9 @@ export class OrdersService {
   }
   constructor(
     private readonly ordersRepository: OrdersRepository,
-    private readonly prisma: PrismaService,
+    private readonly storesRepository: StoresRepository,
+    private readonly authService: AuthService,
+    private readonly itemsRepository: ItemsRepository,
   ) {
     this.userRedis = this.createRedisClient(7001);
     this.itemRedis = this.createRedisClient(7002);
@@ -53,10 +57,7 @@ export class OrdersService {
     let storeExists = await this.storeRedis.get(storeId.toString());
 
     if (storeExists === null) {
-      const storeRecord = await this.prisma.stores.findUnique({
-        where: { storeId },
-        select: { storeId: true },
-      });
+      const storeRecord = await this.storesRepository.selectOneStore(storeId);
 
       storeExists = storeRecord ? '1' : '0';
       await this.storeRedis.set(storeId.toString(), storeExists);
@@ -87,10 +88,9 @@ export class OrdersService {
           : -1;
 
       if (redisPoint === -1) {
-        const user = await this.prisma.users.findUnique({
-          where: { userId },
-          select: { point: true, version: true },
-        });
+        const user = await this.authService.findOneUserWithPointAndVersion(
+          userId,
+        );
 
         if (!user || user.point === null) {
           throw new BadRequestException('사용자 정보를 확인할 수 없습니다.');
@@ -146,10 +146,9 @@ export class OrdersService {
             : -1;
 
         if (itemCount === -1) {
-          const itemRecord = await this.prisma.items.findUnique({
-            where: { itemId: Number(itemId) },
-            select: { count: true, version: true },
-          });
+          const itemRecord = await this.itemsRepository.getOneItem(
+            Number(itemId),
+          );
 
           if (!itemRecord || itemRecord.count === null) {
             throw new BadRequestException(

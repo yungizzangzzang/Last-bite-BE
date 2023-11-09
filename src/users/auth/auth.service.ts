@@ -133,6 +133,7 @@ export class AuthService {
         nickname: true,
         name: true,
         point: true,
+        version: true,
       },
     });
 
@@ -156,5 +157,17 @@ export class AuthService {
       },
     });
     return { message: '포인트 충전에 성공하였습니다.' };
+  }
+
+  async findOneUserWithPointAndVersion(userId: number) {
+    const user = await this.prisma.users.findFirst({
+      where: { userId },
+      select: {
+        point: true,
+        version: true,
+      },
+    });
+
+    return user;
   }
 }

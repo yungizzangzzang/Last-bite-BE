@@ -4,8 +4,6 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { GetItemDto } from './dto/get-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 
-const DEFAULT_AVAILABLE_ITEMS = 5;
-
 @Injectable()
 export class ItemsRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -32,7 +30,7 @@ export class ItemsRepository {
       );
     }
 
-    const createdItem = await this.prisma.items.create({
+    await this.prisma.items.create({
       data: {
         name: createItemDto.name,
         content: createItemDto.content,
@@ -68,6 +66,7 @@ export class ItemsRepository {
           startTime: true,
           endTime: true,
           imgUrl: true,
+          version: true,
           deletedAt: true,
         },
       });
@@ -85,7 +84,6 @@ export class ItemsRepository {
     startTime?: Date,
     endTime?: Date,
     userId?: number,
-    count?: number,
   ): Promise<{ message: string }> {
     // userId에 해당하는 storeId가 없을 때 업장 생성 문구 호출
     const store = await this.prisma.stores.findUnique({
@@ -143,16 +141,11 @@ export class ItemsRepository {
     return { message: '핫딜 삭제가 완료되었습니다.' };
   }
 
-  async getOneItem(itemId: number): Promise<GetItemDto> {
+  async getOneItem(itemId: number): Promise<GetItemDto | null> {
     const item = await this.prisma.items.findUnique({
       where: { itemId },
     });
-    if (!item) {
-      throw new HttpException(
-        { message: '핫딜 정보가 존재하지 않습니다.' },
-        HttpStatus.NOT_FOUND,
-      );
-    }
+
     return item;
   }
 }
