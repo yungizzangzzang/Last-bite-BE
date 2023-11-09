@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -104,10 +104,6 @@ export class UpdateItemCountStreamConsumer {
             },
           },
         });
-      } else if (item && item.version !== version) {
-        throw new ConflictException(
-          '버전이 일치하지 않습니다. 아이템 업데이트에 실패했습니다.',
-        );
       }
     } catch (error) {
       throw error;
