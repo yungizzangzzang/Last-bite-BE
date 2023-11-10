@@ -23,6 +23,7 @@ export class OrdersRepository {
           select: {
             storeId: true,
             name: true,
+            imgUrl: true,
           },
         },
         OrdersItems: {
@@ -50,6 +51,7 @@ export class OrdersRepository {
       createdAt: rawOrder.createdAt,
       storeId: rawOrder.Store.storeId,
       storeName: rawOrder.Store.name,
+      storeImage: rawOrder.Store.imgUrl,
       items: rawOrder.OrdersItems.map((orderItem) => ({
         name: orderItem.Item.name,
         imgUrl: orderItem.Item.imgUrl,
