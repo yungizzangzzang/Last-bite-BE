@@ -73,6 +73,7 @@ export class LikesRepository {
           address: store.Store.address,
           storePhoneNumber: store.Store.storePhoneNumber,
           category: store.Store.category,
+          imgUrl: store.Store.imgUrl,
         };
       });
     }

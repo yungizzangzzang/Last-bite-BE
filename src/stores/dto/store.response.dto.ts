@@ -12,6 +12,7 @@ export class GetStoreResData extends PickType(StoreEntity, [
   'address',
   'storePhoneNumber',
   'category',
+  'imgUrl',
 ] as const) {}
 
 export class GetAllStoresResDto extends CustomSuccessRes {

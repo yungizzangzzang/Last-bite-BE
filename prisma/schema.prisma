@@ -40,6 +40,7 @@ model Stores {
   updatedAt        DateTime? @updatedAt
   deletedAt        DateTime?
   ownerId          Int?      @unique
+  imgUrl           String?
 
   Owner   Users?    @relation("UserToStore", fields: [ownerId], references: [userId])
   Likes   Likes[]   @relation("LikesToStore")
