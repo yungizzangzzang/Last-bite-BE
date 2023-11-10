@@ -60,7 +60,7 @@ export class OrdersService {
       const storeRecord = await this.storesRepository.selectOneStore(storeId);
 
       storeExists = storeRecord ? '1' : '0';
-      await this.storeRedis.set(storeId.toString(), storeExists);
+      await this.storeRedis.set(storeId.toString(), storeExists, 'EX', 120);
     }
 
     if (storeExists === '0') {
@@ -105,6 +105,8 @@ export class OrdersService {
           redisPoint.toString(),
           'version',
           userVersion.toString(),
+          'EX',
+          120,
         );
       } else {
         const redisVersion = await this.userRedis.hget(userKey, 'version');
@@ -165,6 +167,8 @@ export class OrdersService {
             itemCount.toString(),
             'version',
             version.toString(),
+            'EX',
+            120,
           );
         } else {
           version = parseInt(getRedisItemData.version ?? '0');
@@ -207,6 +211,8 @@ export class OrdersService {
           update.itemId.toString(),
           'version',
           update.version.toString(),
+          'EX',
+          120,
         );
         await this.updateItemStream.xadd(
           'updateItemCountStream',
