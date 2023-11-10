@@ -17,7 +17,7 @@ export class StoresRepository {
     >(
       `SELECT *
       FROM Stores
-      WHERE ST_DISTANCE_SPHERE(POINT(${userLongitude}, ${userLatitude}), POINT(longitude, latitude)) <= 10000
+      WHERE ST_DISTANCE_SPHERE(POINT(${userLongitude}, ${userLatitude}), POINT(longitude, latitude)) <= 1000
       Limit 10`,
     );
 
@@ -40,6 +40,7 @@ export class StoresRepository {
         address: true,
         storePhoneNumber: true,
         category: true,
+        imgUrl: true,
       },
     });
 

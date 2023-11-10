@@ -14,6 +14,7 @@ export const mockUserLikedStores = [
     address: expect.any(String),
     storePhoneNumber: expect.any(String),
     category: expect.any(String),
+    imgUrl: expect.any(String),
   },
 ];
 

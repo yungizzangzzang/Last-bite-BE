@@ -66,6 +66,7 @@ describe('StoresController', () => {
       address: '서울특별시 종로구 새문안로5가길 33, 한누리빌딩 1층 (내자동)',
       storePhoneNumber: '',
       category: '휴게음식점',
+      imgUrl: 'http://s3',
     };
     const items: GetItemDto[] = [
       {
