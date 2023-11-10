@@ -81,6 +81,7 @@ describe('StoresService', () => {
         endTime: new Date('2023-10-23T22:25:00.000Z'),
         imgUrl: null,
         deletedAt: null,
+        version: 100,
       },
     ];
     const mockIsLiked = expect.any(Boolean);

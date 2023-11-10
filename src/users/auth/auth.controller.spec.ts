@@ -63,6 +63,7 @@ describe('AuthController', () => {
     nickname: expect.any(String),
     name: expect.any(String),
     point: expect.any(Number),
+    version: expect.any(Number),
   };
 
   beforeEach(async () => {
