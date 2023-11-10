@@ -12,4 +12,5 @@ export class GetItemDto extends PickType(ItemEntity, [
   'endTime',
   'imgUrl',
   'deletedAt',
+  'version',
 ] as const) {}

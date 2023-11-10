@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
 import { GetItemDto } from './dto/get-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
@@ -75,6 +75,9 @@ export class ItemsService {
 
   async getOneItem(itemId: number): Promise<GetItemDto> {
     const item = await this.itemsRepository.getOneItem(itemId);
+    if (!item) {
+      throw new NotFoundException('핫딜 정보가 존재하지 않습니다.');
+    }
     return item;
   }
 }
