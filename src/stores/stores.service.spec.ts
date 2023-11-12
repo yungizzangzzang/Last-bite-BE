@@ -7,23 +7,21 @@ import { UpdateStoreReqDto } from './dto/store.request.dto';
 import { GetStoreResData } from './dto/store.response.dto';
 import { StoresRepository } from './stores.repository';
 import { StoresService } from './stores.service';
-import { StoresMocks, storesTestingModule } from './stores.test-utils';
+import { storesTestingModule } from './stores.test-utils';
 
 describe('StoresService', () => {
   let service: StoresService;
   let repository: StoresRepository;
   let itemsRepository: ItemsRepository;
   let likesRepository: LikesRepository;
-  let mocks: StoresMocks;
 
   beforeEach(async () => {
-    const { moduleBuilder, mocks: mockObjects } = await storesTestingModule();
+    const { moduleBuilder } = await storesTestingModule();
     const module: TestingModule = await moduleBuilder.compile();
     service = module.get<StoresService>(StoresService);
     repository = module.get<StoresRepository>(StoresRepository);
     itemsRepository = module.get<ItemsRepository>(ItemsRepository);
     likesRepository = module.get<LikesRepository>(LikesRepository);
-    mocks = mockObjects;
   });
 
   /** Test1: 가게 전체 조회  /stores(GET)  */
@@ -244,11 +242,6 @@ describe('StoresService', () => {
       storePhoneNumber: '',
       category: '휴게음식점',
       imgUrl: 'http://s3',
-    };
-    const updateStoreDto: UpdateStoreReqDto = {
-      name: expect.any(String),
-      storePhoneNumber: expect.any(Number),
-      category: expect.any(Number),
     };
 
     it('test4-1(success) - 가게 삭제 권한이 있는 경우 -> 삭제', async () => {

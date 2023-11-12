@@ -4,19 +4,17 @@ import { UpdateStoreReqDto } from './dto/store.request.dto';
 import { GetStoreResData } from './dto/store.response.dto';
 import { StoresController } from './stores.controller';
 import { StoresService } from './stores.service';
-import { StoresMocks, storesTestingModule } from './stores.test-utils';
+import { storesTestingModule } from './stores.test-utils';
 
 describe('StoresController', () => {
   let controller: StoresController;
   let service: StoresService;
-  let mocks: StoresMocks;
 
   beforeEach(async () => {
-    const { moduleBuilder, mocks: mockObjects } = await storesTestingModule();
+    const { moduleBuilder } = await storesTestingModule();
     const module: TestingModule = await moduleBuilder.compile();
     controller = module.get<StoresController>(StoresController);
     service = module.get<StoresService>(StoresService);
-    mocks = mockObjects;
   });
 
   beforeEach(() => {

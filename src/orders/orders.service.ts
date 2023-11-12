@@ -106,7 +106,7 @@ export class OrdersService {
           'version',
           userVersion.toString(),
           'EX',
-          120,
+          60 * 60 * 12,
         );
       } else {
         const redisVersion = await this.userRedis.hget(userKey, 'version');
@@ -168,7 +168,7 @@ export class OrdersService {
             'version',
             version.toString(),
             'EX',
-            120,
+            60 * 60 * 12,
           );
         } else {
           version = parseInt(getRedisItemData.version ?? '0');
@@ -212,7 +212,7 @@ export class OrdersService {
           'version',
           update.version.toString(),
           'EX',
-          120,
+          60 * 60 * 12,
         );
         await this.updateItemStream.xadd(
           'updateItemCountStream',
