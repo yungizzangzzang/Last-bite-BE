@@ -43,21 +43,27 @@ export class UpdateUserPointStreamConsumer {
 
         for (const [, streamMessages] of messages) {
           for (const [messageId, messageFields] of streamMessages) {
-            const userId = parseInt(messageFields[1]);
-            const remainUserPoint = parseInt(messageFields[3]);
-            const version = parseInt(messageFields[5]);
+            try {
+              const userId = parseInt(messageFields[1]);
+              const remainUserPoint = parseInt(messageFields[3]);
+              const version = parseInt(messageFields[5]);
+              console.log(streamMessages);
 
-            await this.handleUpdateUserPoint({
-              userId: userId,
-              remainUserPoint: remainUserPoint,
-              version: version,
-            });
+              await this.handleUpdateUserPoint({
+                userId: userId,
+                remainUserPoint: remainUserPoint,
+                version: version,
+              });
 
-            await this.updateUserPointStream.xack(
-              streamName,
-              groupName,
-              messageId,
-            );
+              await this.updateUserPointStream.xack(
+                streamName,
+                groupName,
+                messageId,
+              );
+            } catch (error) {
+              console.error(`메시지 처리 실패 - ${messageId}:`, error);
+              await this.requeueMessage(streamName, messageFields);
+            }
           }
         }
 
@@ -91,6 +97,14 @@ export class UpdateUserPointStreamConsumer {
       }
     } catch (error) {
       throw error;
+    }
+  }
+
+  private async requeueMessage(streamName: string, messageFields: any[]) {
+    try {
+      await this.updateUserPointStream.xadd(streamName, '*', ...messageFields);
+    } catch (error) {
+      console.error('메시지 재큐 실패:', error);
     }
   }
 }

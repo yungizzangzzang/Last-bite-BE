@@ -48,32 +48,38 @@ export class UpdateItemCountStreamConsumer {
             const itemIdIndex = messageFields.indexOf('itemId');
             const countIndex = messageFields.indexOf('count');
             const versionIndex = messageFields.indexOf('version');
+            console.log(streamMessages);
 
             if (
               itemIdIndex !== -1 &&
               countIndex !== -1 &&
               versionIndex !== -1
             ) {
-              const itemId = parseInt(messageFields[itemIdIndex + 1], 10);
-              const count = parseInt(messageFields[countIndex + 1], 10);
-              const version = parseInt(messageFields[versionIndex + 1], 10);
+              try {
+                const itemId = parseInt(messageFields[itemIdIndex + 1], 10);
+                const count = parseInt(messageFields[countIndex + 1], 10);
+                const version = parseInt(messageFields[versionIndex + 1], 10);
 
-              await this.handleUpdateItemCount({
-                itemId: itemId,
-                count: count,
-                version: version,
-              });
+                await this.handleUpdateItemCount({
+                  itemId: itemId,
+                  count: count,
+                  version: version,
+                });
 
-              await this.updateItemCountStream.xack(
-                streamName,
-                groupName,
-                messageId,
-              );
+                await this.updateItemCountStream.xack(
+                  streamName,
+                  groupName,
+                  messageId,
+                );
+              } catch (error) {
+                console.error(`메시지 처리 실패 - ${messageId}:`, error);
+                await this.requeueMessage(streamName, messageFields);
+              }
             }
           }
         }
 
-        await new Promise((resolve) => setImmediate(resolve)); // 루프를 짧은 휴식을 취하도록 합니다.
+        await new Promise((resolve) => setImmediate(resolve));
       }
     } catch (error) {
       console.error('스트림 처리 중 오류가 발생했습니다:', error);
@@ -107,6 +113,14 @@ export class UpdateItemCountStreamConsumer {
       }
     } catch (error) {
       throw error;
+    }
+  }
+
+  private async requeueMessage(streamName: string, messageFields: any[]) {
+    try {
+      await this.updateItemCountStream.xadd(streamName, '*', ...messageFields);
+    } catch (error) {
+      console.error('메시지 재큐 실패:', error);
     }
   }
 }
