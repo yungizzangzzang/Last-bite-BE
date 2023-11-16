@@ -9,7 +9,7 @@ export class CreateOrderStreamConsumer {
   private createRedisClient(port: number): Redis {
     const client = new Redis({ port, host: process.env.REDIS_HOST });
     client.on('error', (err) => {
-      console.error(`Redis error on port ${port}:`, err);
+      console.error(`${port}번 포트 연결 실패`, err);
     });
     return client;
   }
@@ -25,6 +25,8 @@ export class CreateOrderStreamConsumer {
     const streamName = 'createOrderStream';
 
     while (true) {
+      let messageFields;
+
       try {
         const messages: any = await this.createOrderStream.xreadgroup(
           'GROUP',
@@ -44,13 +46,25 @@ export class CreateOrderStreamConsumer {
         }
 
         for (const [, streamMessages] of messages) {
-          for (const [messageId, messageFields] of streamMessages) {
-            await this.processMessage(messageId, messageFields);
+          for (const [messageId, fields] of streamMessages) {
+            messageFields = fields;
+            console.log(streamMessages);
+
+            const processingResult = await this.processMessage(
+              messageId,
+              messageFields,
+            );
+            if (!processingResult) {
+              throw new Error('메시지 처리 실패');
+            }
             await this.createOrderStream.xack(streamName, groupName, messageId);
           }
         }
       } catch (error) {
         console.error('스트림 처리 중 오류:', error);
+        if (messageFields) {
+          await this.requeueMessage(streamName, messageFields);
+        }
       }
     }
   }
@@ -99,5 +113,13 @@ export class CreateOrderStreamConsumer {
     await this.prisma.ordersItems.createMany({
       data: orderItemsData,
     });
+  }
+
+  private async requeueMessage(streamName: string, messageFields: any[]) {
+    try {
+      await this.createOrderStream.xadd(streamName, '*', ...messageFields);
+    } catch (error) {
+      console.error('메시지 재큐 실패:', error);
+    }
   }
 }

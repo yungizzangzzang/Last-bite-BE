@@ -15,7 +15,7 @@ kind: Deployment
 metadata:
   name: last-bite-update-item-consumer-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: last-bite-update-item-consumer
@@ -27,6 +27,22 @@ spec:
       containers:
         - name: last-bite-update-item-consumer-api 
           image: whdgnszz1/last-bite-update-item-consumer:latest
+          readinessProbe:
+            httpGet: 
+              path: /main
+              port: 8002
+          livenessProbe: 
+            httpGet:
+              path: /main
+              port: 8002
+            initialDelaySeconds: 7
+            timeoutSeconds: 3        
+            periodSeconds: 10        
+            failureThreshold: 3  
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
           env:
             - name: DATABASE_URL
               valueFrom:
