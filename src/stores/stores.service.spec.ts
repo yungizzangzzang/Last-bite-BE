@@ -7,23 +7,21 @@ import { UpdateStoreReqDto } from './dto/store.request.dto';
 import { GetStoreResData } from './dto/store.response.dto';
 import { StoresRepository } from './stores.repository';
 import { StoresService } from './stores.service';
-import { StoresMocks, storesTestingModule } from './stores.test-utils';
+import { storesTestingModule } from './stores.test-utils';
 
 describe('StoresService', () => {
   let service: StoresService;
   let repository: StoresRepository;
   let itemsRepository: ItemsRepository;
   let likesRepository: LikesRepository;
-  let mocks: StoresMocks;
 
   beforeEach(async () => {
-    const { moduleBuilder, mocks: mockObjects } = await storesTestingModule();
+    const { moduleBuilder } = await storesTestingModule();
     const module: TestingModule = await moduleBuilder.compile();
     service = module.get<StoresService>(StoresService);
     repository = module.get<StoresRepository>(StoresRepository);
     itemsRepository = module.get<ItemsRepository>(ItemsRepository);
     likesRepository = module.get<LikesRepository>(LikesRepository);
-    mocks = mockObjects;
   });
 
   /** Test1: 가게 전체 조회  /stores(GET)  */
@@ -68,6 +66,7 @@ describe('StoresService', () => {
       address: '서울특별시 종로구 새문안로5가길 33, 한누리빌딩 1층 (내자동)',
       storePhoneNumber: '',
       category: '휴게음식점',
+      imgUrl: 'http://s3',
     };
     const items: GetItemDto[] = [
       {
@@ -81,6 +80,7 @@ describe('StoresService', () => {
         endTime: new Date('2023-10-23T22:25:00.000Z'),
         imgUrl: null,
         deletedAt: null,
+        version: 100,
       },
     ];
     const mockIsLiked = expect.any(Boolean);
@@ -155,6 +155,7 @@ describe('StoresService', () => {
       address: '서울특별시 종로구 새문안로5가길 33, 한누리빌딩 1층 (내자동)',
       storePhoneNumber: '',
       category: '휴게음식점',
+      imgUrl: 'http://s3',
     };
     const updateStoreDto: UpdateStoreReqDto = {
       name: expect.any(String),
@@ -240,11 +241,7 @@ describe('StoresService', () => {
       address: '서울특별시 종로구 새문안로5가길 33, 한누리빌딩 1층 (내자동)',
       storePhoneNumber: '',
       category: '휴게음식점',
-    };
-    const updateStoreDto: UpdateStoreReqDto = {
-      name: expect.any(String),
-      storePhoneNumber: expect.any(Number),
-      category: expect.any(Number),
+      imgUrl: 'http://s3',
     };
 
     it('test4-1(success) - 가게 삭제 권한이 있는 경우 -> 삭제', async () => {

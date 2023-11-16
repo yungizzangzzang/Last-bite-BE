@@ -1,5 +1,3 @@
-import { getQueueToken } from '@nestjs/bull';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
 import { ItemsRepository } from 'src/items/items.repository';
 import { OrderItemsRepository } from 'src/order-items/order-items.repository';
@@ -35,9 +33,7 @@ export const ordersTestingModule = async (): Promise<{
         OrdersService,
         { provide: OrdersRepository, useValue: mockOrdersRepository },
         { provide: OrderItemsRepository, useValue: mockOrderItemsRepository },
-        { provide: EventEmitter2, useValue: mockEventEmitter },
         { provide: ItemsRepository, useValue: mockItemsRepository },
-        { provide: getQueueToken('orders'), useValue: mockQueue },
       ],
     }),
     mocks: {

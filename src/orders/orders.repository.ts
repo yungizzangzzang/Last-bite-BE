@@ -1,113 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  CreateOrderDto,
-  CreateOrderOrderItemDto,
-} from './dto/create-order.dto';
 import { OneOrderDTO } from './dto/get-one-order.dto';
 import { UserOrdersDTO } from './dto/get-user-orders.dto';
 @Injectable()
 export class OrdersRepository {
   constructor(private readonly prisma: PrismaService) {}
-
-  async createOrder(
-    createOrderOrderItemDto: CreateOrderOrderItemDto,
-    userId: number,
-  ): Promise<CreateOrderDto> {
-    const store = await this.prisma.stores.findUnique({
-      where: { storeId: createOrderOrderItemDto.storeId },
-    });
-    // storeId에 해당하는 Stores 없는 경우
-    if (!store) {
-      throw new HttpException(
-        { message: '가게 정보가 존재하지 않습니다.' },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    const transactionOrders: any[] = [];
-
-    await Promise.all(
-      createOrderOrderItemDto.items.map(async (Item) => {
-        const itemId = Item.itemId;
-
-        // Item에 대한 락
-        // await this.prisma
-        //   .$executeRaw`SELECT * FROM items WHERE itemId = ${itemId} FOR UPDATE`;
-
-        const item = await this.prisma.items.findUnique({
-          where: { itemId },
-          select: { storeId: true, count: true, price: true },
-        });
-        // itemId 해당하는 Items 가 없는 경우
-        if (!item) {
-          throw new HttpException(
-            { message: '핫딜 정보가 존재하지 않습니다.' },
-            HttpStatus.NOT_FOUND,
-          );
-        }
-        // 아이템(핫딜)의 storeId(가게정보)와 입력된 storeId가 다른 경우
-        if (item.storeId !== createOrderOrderItemDto.storeId) {
-          throw new HttpException(
-            { message: '가게 정보가 올바르지 않습니다.' },
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-
-        // User에 대한 락
-        // await this.prisma
-        //   .$executeRaw`SELECT * FROM users WHERE userId = ${userId} FOR UPDATE`;
-
-        transactionOrders.push(
-          // count update
-          this.prisma.items.update({
-            where: { itemId },
-            data: { count: item.count - Item.count },
-          }),
-        );
-        // count === 0 일때 deletedAt 업데이트
-        await this.prisma.items
-          .findUnique({
-            where: { itemId, count: 0 },
-            select: { deletedAt: true, itemId: true },
-          })
-          .then((itemToUpdate) => {
-            if (itemToUpdate) {
-              this.prisma.items.update({
-                where: { itemId: itemToUpdate.itemId },
-                data: { deletedAt: new Date() },
-              });
-            }
-          });
-      }),
-    );
-    const user: any = await this.prisma.users.findUnique({
-      where: { userId },
-      select: { point: true },
-    });
-
-    // point update
-    await this.prisma.users.update({
-      where: { userId },
-      data: { point: user.point - createOrderOrderItemDto.totalPrice },
-    });
-
-    transactionOrders.push(
-      // 주문 정보 생성
-      this.prisma.orders.create({
-        data: {
-          userId,
-          storeId: createOrderOrderItemDto.storeId,
-          discount: createOrderOrderItemDto.discount,
-          totalPrice: createOrderOrderItemDto.totalPrice,
-        },
-      }),
-    );
-
-    const [_, __, order] = await this.prisma.$transaction(transactionOrders);
-
-    return order;
-  }
 
   async getUserOrders(userId: number): Promise<UserOrdersDTO[]> {
     const rawOrders = await this.prisma.orders.findMany({
@@ -126,6 +23,7 @@ export class OrdersRepository {
           select: {
             storeId: true,
             name: true,
+            imgUrl: true,
           },
         },
         OrdersItems: {
@@ -153,6 +51,7 @@ export class OrdersRepository {
       createdAt: rawOrder.createdAt,
       storeId: rawOrder.Store.storeId,
       storeName: rawOrder.Store.name,
+      storeImage: rawOrder.Store.imgUrl,
       items: rawOrder.OrdersItems.map((orderItem) => ({
         name: orderItem.Item.name,
         imgUrl: orderItem.Item.imgUrl,

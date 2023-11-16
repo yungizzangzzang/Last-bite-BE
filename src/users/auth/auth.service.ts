@@ -22,12 +22,6 @@ export class AuthService {
       const { email, password, name, isClient, nickname, managementNumber } =
         body;
 
-      // if (!email || !password || !name || !nickname) {
-      //   throw new BadRequestException({
-      //     errorMessage: '데이터 형식이 잘못되었습니다.',
-      //   });
-      // }
-
       const isExistEmail = await this.prisma.users.findUnique({
         where: { email },
       });
@@ -41,7 +35,7 @@ export class AuthService {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const user = await this.prisma.users.create({
+      await this.prisma.users.create({
         data: {
           email,
           password: hashedPassword,
@@ -57,15 +51,6 @@ export class AuthService {
           errorMessage: '관리자 번호를 입력해주세요',
         });
       }
-      if (isClient === false && managementNumber) {
-        // 사장인데, 관리번호 입력안하면 빠꾸
-        const store = await this.prisma.stores.update({
-          where: { managementNumber },
-          data: {
-            ownerId: user.userId,
-          },
-        });
-      }
 
       return { message: '회원가입 성공, 가즈아!!' };
     } catch (err) {
@@ -77,11 +62,6 @@ export class AuthService {
   }
 
   async login(body: LoginDto) {
-    // if (!body.email || !body.password) {
-    //   throw new BadRequestException({
-    //     errorMessage: '데이터 형식이 잘못되었습니다.',
-    //   });
-    // }
     const { email, password } = body;
 
     // 가입된 유저여야 합니다
@@ -118,13 +98,16 @@ export class AuthService {
     }
 
     // 비밀번호가 일치해야 합니다
-    const isPasswordMatched = await bcrypt.compare(password, user.password!);
-    if (!isPasswordMatched) {
-      throw new ForbiddenException({
-        message: '이메일과 비밀번호를 확인해주세요',
-      });
+    if (user.password) {
+      const isPasswordMatched = await bcrypt.compare(password, user.password);
+      if (!isPasswordMatched) {
+        throw new ForbiddenException({
+          message: '이메일과 비밀번호를 확인해주세요',
+        });
+      }
+      delete user.password;
     }
-    delete user.password;
+
     try {
       const payload = { user };
       const accessToken = this.jwtService.sign(payload, {
@@ -150,6 +133,7 @@ export class AuthService {
         nickname: true,
         name: true,
         point: true,
+        version: true,
       },
     });
 
@@ -173,5 +157,17 @@ export class AuthService {
       },
     });
     return { message: '포인트 충전에 성공하였습니다.' };
+  }
+
+  async findOneUserWithPointAndVersion(userId: number) {
+    const user = await this.prisma.users.findFirst({
+      where: { userId },
+      select: {
+        point: true,
+        version: true,
+      },
+    });
+
+    return user;
   }
 }

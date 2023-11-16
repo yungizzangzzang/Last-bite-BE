@@ -25,17 +25,15 @@ export class StoresService {
     let { longitude, latitude } = requestInfo;
 
     if (!longitude) {
-      longitude = 129.7444851;
-      latitude = 35.24452483;
+      longitude = 126.9784;
+      latitude = 37.56661;
     }
 
     const stores = await this.storesRepository.selectAllStoreWithInRadius(
       longitude,
       latitude,
     );
-
     const { category } = requestInfo;
-
     if (category) {
       return stores.filter((store) => store.category == category);
     } else {

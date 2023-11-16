@@ -4,19 +4,17 @@ import { UpdateStoreReqDto } from './dto/store.request.dto';
 import { GetStoreResData } from './dto/store.response.dto';
 import { StoresController } from './stores.controller';
 import { StoresService } from './stores.service';
-import { StoresMocks, storesTestingModule } from './stores.test-utils';
+import { storesTestingModule } from './stores.test-utils';
 
 describe('StoresController', () => {
   let controller: StoresController;
   let service: StoresService;
-  let mocks: StoresMocks;
 
   beforeEach(async () => {
-    const { moduleBuilder, mocks: mockObjects } = await storesTestingModule();
+    const { moduleBuilder } = await storesTestingModule();
     const module: TestingModule = await moduleBuilder.compile();
     controller = module.get<StoresController>(StoresController);
     service = module.get<StoresService>(StoresService);
-    mocks = mockObjects;
   });
 
   beforeEach(() => {
@@ -66,6 +64,7 @@ describe('StoresController', () => {
       address: '서울특별시 종로구 새문안로5가길 33, 한누리빌딩 1층 (내자동)',
       storePhoneNumber: '',
       category: '휴게음식점',
+      imgUrl: 'http://s3',
     };
     const items: GetItemDto[] = [
       {
@@ -79,6 +78,7 @@ describe('StoresController', () => {
         endTime: new Date('2023-10-23T22:25:00.000Z'),
         imgUrl: null,
         deletedAt: null,
+        version: 100,
       },
     ];
     const mockResult1: any = { store, items };

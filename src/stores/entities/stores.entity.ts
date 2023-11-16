@@ -86,6 +86,15 @@ export class StoreEntity implements Stores {
   managementNumber: string;
 
   @ApiProperty({
+    type: String,
+    example: '031 1234567',
+    description: '가게 이미지',
+    nullable: true,
+  })
+  @IsString()
+  imgUrl!: string | null;
+
+  @ApiProperty({
     type: Date,
     example: '2023-10-10 00:00:00.000',
     description: '가게 데이터 생성 날짜',

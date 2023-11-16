@@ -156,6 +156,7 @@ describe('ItemsService', () => {
       endTime: new Date(),
       imgUrl: 'asd',
       deletedAt: new Date(),
+      version: 100,
     };
 
     it('test4', async () => {

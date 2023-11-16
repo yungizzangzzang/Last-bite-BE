@@ -4,8 +4,6 @@ services:
     image: 'redis'
     ports:
       - '6379:6379'
-    volumes:
-      - redis_data:/data
 
   backend:
     build: ./
@@ -15,21 +13,46 @@ services:
       - ./:/app
       - /app/node_modules
     env_file:
-      - ./.env.development
+      - ./.env
     depends_on:
       - redis
 
-  consumer:
-    build: ./yungizzangzzang-be-consumer
+  consumer-update-user-point:
+    build: ./consumer-updateUserPoint
     ports:
       - '8001:8001'
     volumes:
-      - ./yungizzangzzang-be-consumer:/app
+      - ./consumer-updateUserPoint:/app
       - /app/node_modules
     env_file:
-      - ./.env.development
+      - ./.env
+    depends_on:
+      - redis
+      
+  consumer-update-item-count:
+    build: ./consumer-updateItemCount
+    ports:
+      - '8002:8002'
+    volumes:
+      - ./consumer-updateItemCount:/app
+      - /app/node_modules
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+
+  consumer-create-order:
+    build: ./consumer-createOrder
+    ports:
+      - '8003:8003'
+    volumes:
+      - ./consumer-createOrder:/app
+      - /app/node_modules
+    env_file:
+      - ./.env
     depends_on:
       - redis
 
 volumes:
   redis_data:
+  
