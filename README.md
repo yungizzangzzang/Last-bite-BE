@@ -102,3 +102,23 @@
       <p align="center"> 
         <img width="500" alt="ver3 0 sequence" src="https://github.com/yungizzangzzang/Last-bite-BE/assets/115535910/dd177094-0e04-426d-bc61-c8e61f064060">
       </p>
+
+ 4. **DB 조회 시간 개선**
+
+    **4-1. 공간 인덱스 적용**
+    
+      <p align="center"> 
+        <img width="500" alt="공간 인덱스 적용" src="https://github.com/yungizzangzzang/Last-bite-BE/assets/115535910/2b348595-2124-48d0-96cd-6169213524f0">
+      </p>        
+
+    **4-2. 단일 인덱스 적용**
+
+      <p align="center"> 
+        <img width="500" alt="단일 인덱스 적용" src="https://github.com/yungizzangzzang/Last-bite-BE/assets/115535910/06d67f7b-df39-4d1b-bd5e-7cfcd631e4a7">
+      </p>   
+      
+    **4-3. 복합 인덱스 적용**
+
+      <p align="center"> 
+        <img width="500" alt="복합 인덱스 적용" src="https://github.com/yungizzangzzang/Last-bite-BE/assets/115535910/cb61c407-f5b2-41b3-921d-d0e4286c8a3c">
+      </p> 
