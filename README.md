@@ -12,7 +12,9 @@
 <p align="center"> 
   <img width="500" alt="last-bite-architecture_ver3" src="https://github.com/yungizzangzzang/Last-bite-BE/assets/115535910/bf75d67f-c0db-4eca-ba92-9671fbca2fa4">
 </p>  
+
 - HPA(Horizontal Pod Autoscaler)를 도입하여 CPU 사용량에 기반한 자동 스케일링을 구현, 트래픽 변동에 유연하게 대응하여 항상 최적의 리소스 사용률을 유지.
+
 - 실시간 모니터링을 통해 시스템의 건강 상태를 지속적으로 추적하고, 개발자가 부재중일 시 알람을 통해 빠른 대처가 가능하게 함.
 
 ---
